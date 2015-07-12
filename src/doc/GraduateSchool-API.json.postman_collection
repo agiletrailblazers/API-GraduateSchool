@@ -1,0 +1,56 @@
+{
+	"id": "b207a48e-b9fe-8c69-3e49-dfff0ab40ef8",
+	"name": "GraduateSchool-API",
+	"description": "",
+	"order": [
+		"4182b5fa-9f71-9a9e-cfc1-3577bc4a3281",
+		"9339e483-2aca-ddaa-c6d1-d0c9e3102a50"
+	],
+	"folders": [],
+	"timestamp": 1436731751085,
+	"owner": "",
+	"remoteLink": "",
+	"public": false,
+	"requests": [
+		{
+			"id": "4182b5fa-9f71-9a9e-cfc1-3577bc4a3281",
+			"headers": "",
+			"url": "http://localhost:8080/api/v1/ping",
+			"pathVariables": {},
+			"preRequestScript": "",
+			"method": "GET",
+			"collectionId": "b207a48e-b9fe-8c69-3e49-dfff0ab40ef8",
+			"data": [],
+			"dataMode": "params",
+			"name": "Ping",
+			"description": "A ping test API",
+			"descriptionFormat": "html",
+			"time": 1436731751085,
+			"version": 2,
+			"responses": [],
+			"tests": "",
+			"currentHelper": "normal",
+			"helperAttributes": {}
+		},
+		{
+			"id": "9339e483-2aca-ddaa-c6d1-d0c9e3102a50",
+			"headers": "",
+			"url": "http://localhost:8080/api/v1/course?search=government",
+			"pathVariables": {},
+			"preRequestScript": "",
+			"method": "GET",
+			"collectionId": "b207a48e-b9fe-8c69-3e49-dfff0ab40ef8",
+			"data": [],
+			"dataMode": "params",
+			"name": "Course Search",
+			"description": "Search for a course by a description or course code",
+			"descriptionFormat": "html",
+			"time": 1436731833090,
+			"version": 2,
+			"responses": [],
+			"tests": "",
+			"currentHelper": "normal",
+			"helperAttributes": {}
+		}
+	]
+}
