@@ -2,8 +2,6 @@ package com.gs.api.controller;
 
 import java.io.IOException;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.map.JsonMappingException;
@@ -15,7 +13,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -41,9 +38,9 @@ public class SearchController {
 	 * @return Empty response with HttpStatus of OK
 	 * @throws Exception
 	 */
-	@RequestMapping(value = "/v1/ping", method = RequestMethod.GET, produces=MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(value = "/ping", method = RequestMethod.GET, produces=MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<HttpStatus> ping() throws Exception {
-		logger.debug("Service /ping initiated");
+		logger.debug("Service ping initiated");
 		return new ResponseEntity<HttpStatus>(HttpStatus.OK);
 	}
 	
@@ -52,10 +49,10 @@ public class SearchController {
 	 * @return SearchResponse
 	 * @throws Exception
 	 */
-	@RequestMapping(value = "/v1/course", method = RequestMethod.GET, produces=MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(value = "/course", method = RequestMethod.GET, produces=MediaType.APPLICATION_JSON_VALUE)
 	public @ResponseBody CourseSearchResponse searchCourse(@RequestParam String search) throws Exception {
 
-		logger.debug("initiated with search param of: " + search);
+		logger.debug("Course search initiated with search param of: " + search);
 		
 		if (StringUtils.isEmpty(search)) {
 			logger.error("Search string not provided");
@@ -66,19 +63,22 @@ public class SearchController {
 	}
 
 	/**
-	 * Internal server error response
+	 * Return json formatted error response for any internal server error
 	 * @return ResponseBody
 	 */
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	@ExceptionHandler({ Exception.class })
 	public @ResponseBody String handleException(Exception ex) {
-		// method called when a security exception occurs
 		logger.error(ex.getMessage());
-		return "{\"code\":\"500\", \"userMessage\":\"It blew up\"}";
+		final StringBuffer response = new StringBuffer();
+		response.append("{\"code\":\"500\", \"userMessage\":\"");
+		response.append(ex.getMessage());
+		response.append("\"}");
+		return response.toString();
 	}
 
 	/**
-	 * Bad Request response
+	 * Return json formatted error response for bad request
 	 * @return ResponseBody
 	 */
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
