@@ -26,9 +26,9 @@ import com.gs.api.service.CourseSearchService;
 
 @Configuration
 @RestController
-public class SearchController {
+public class CourseController {
 
-	private static final Logger logger = LoggerFactory.getLogger(SearchController.class);
+	private static final Logger logger = LoggerFactory.getLogger(CourseController.class);
 
 	@Autowired
 	private CourseSearchService courseSearchService;
