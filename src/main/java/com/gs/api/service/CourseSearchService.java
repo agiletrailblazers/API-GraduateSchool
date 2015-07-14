@@ -4,6 +4,6 @@ import com.gs.api.domain.CourseSearchResponse;
 
 public interface CourseSearchService {
 
-	public CourseSearchResponse searchCourses(String search);
+    public CourseSearchResponse searchCourses(String search);
 
 }
