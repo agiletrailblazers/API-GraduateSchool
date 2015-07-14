@@ -66,8 +66,7 @@ public class CourseControllerTest {
 				.accept(MediaType.APPLICATION_JSON_VALUE))
 			.andExpect(status().isInternalServerError())
 			.andExpect(content().contentType("application/json"))
-            .andExpect(jsonPath("$.code").value(is("500")))
-            .andExpect(jsonPath("$.userMessage").value(is("Search string not provided")));
+            .andExpect(jsonPath("$.message").value(is("Search string not provided")));
 		
 	}
 	

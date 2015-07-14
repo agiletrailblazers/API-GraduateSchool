@@ -71,7 +71,7 @@ public class CourseController {
 	public @ResponseBody String handleException(Exception ex) {
 		logger.error(ex.getMessage());
 		final StringBuffer response = new StringBuffer();
-		response.append("{\"code\":\"500\", \"userMessage\":\"");
+		response.append("{\"message\":\"");
 		response.append(ex.getMessage());
 		response.append("\"}");
 		return response.toString();
@@ -85,7 +85,7 @@ public class CourseController {
 	@ExceptionHandler({ HttpMessageNotReadableException.class })
 	public @ResponseBody String handleValidationException(HttpMessageNotReadableException ex) throws IOException {
 		// method called when a input validation failure occurs
-		return "{\"code\":\"400\",  \"systemMessage\": \"Invalid Request \"}";
+		return "{\"message\": \"Invalid Request \"}";
 	}
 
 }
