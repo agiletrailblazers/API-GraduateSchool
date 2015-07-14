@@ -1,14 +1,18 @@
 package com.gs.api.domain;
 
-import org.codehaus.jackson.map.annotate.JsonSerialize;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
-@JsonSerialize(include=JsonSerialize.Inclusion.ALWAYS)
+@JsonInclude(Include.ALWAYS)
 public class Course {
 
 	private String courseId;
 	private String courseTitle;
 	private String courseDescription;
 
+	public Course() {
+	}
+			
 	/**
 	 * Constructor
 	 * @param courseId

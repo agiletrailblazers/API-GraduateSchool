@@ -3,8 +3,8 @@ package com.gs.api.controller;
 import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.codehaus.jackson.JsonGenerationException;
-import org.codehaus.jackson.map.JsonMappingException;
+//import org.codehaus.jackson.JsonGenerationException;
+//import org.codehaus.jackson.map.JsonMappingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,7 +83,7 @@ public class CourseController {
 	 */
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	@ExceptionHandler({ HttpMessageNotReadableException.class })
-	public @ResponseBody String handleValidationException(HttpMessageNotReadableException ex) throws JsonGenerationException, JsonMappingException, IOException {
+	public @ResponseBody String handleValidationException(HttpMessageNotReadableException ex) throws IOException {
 		// method called when a input validation failure occurs
 		return "{\"code\":\"400\",  \"systemMessage\": \"Invalid Request \"}";
 	}

@@ -76,10 +76,7 @@ public class CourseControllerTest {
 		
 		mockMvc.perform(get("/bad=")
 				.accept(MediaType.APPLICATION_JSON_VALUE))
-			.andExpect(status().isBadRequest())
-			.andExpect(content().contentType("application/json"))
-            .andExpect(jsonPath("$.code").value(is("500")))
-            .andExpect(jsonPath("$.userMessage").value(is("Search string not provided")));
+			.andExpect(status().isNotFound());
 		
 	}
 }
