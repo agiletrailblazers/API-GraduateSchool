@@ -22,7 +22,7 @@ public class CourseSearchServiceImpl implements CourseSearchService {
         if (search.equals("WRIT7043D")) {
             response.setExactMatch(true);
             response.setCourses(new Course[] { new Course("WRIT7043D", "Plain Writing: It is the Law (Classroom-Day)",
-                    "The Plain Writing Act of 2010 (October 13, 2010) requires the Federal government to...") });
+                    "The Plain Writing Act of 2015 (October 13, 2010) requires the Federal government to...") });
         } else {
             response.setExactMatch(false);
             response.setCourses(new Course[] {
