@@ -25,10 +25,15 @@ NOTE: JRE_HOME is optional but if you are running multiple Java version this is 
 TODO
 
 <h2>Postman</h2>
-The APIs can be run using Postman.  A Postman collection is included in the repo. 
+The APIs can be run using Postman.  A Postman collection is included in the repo.
 - Download Postman Client: https://www.getpostman.com/
 - Import Collection from:
 ```
 API-GraduateSchool/src/doc/GraduateSchool-API.json.postman_collection
 ```
 - Run any of the APIs (you must be running locally on port 8080)
+
+
+<h2>Solr Installation for Tomcat 7 and JDK8</h2>
+-Please follow the steps in this document to install Solr
+http://ericsod.com/2014/12/22/java-8-tomcat-7-and-solr-43-yosemite-drupal-development
