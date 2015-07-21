@@ -51,14 +51,14 @@ public class CourseController {
      */
     @RequestMapping(value = "/course", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody CourseSearchResponse searchCourse(@RequestParam String search) throws Exception {
-
+        
         logger.debug("Course search initiated with search param of: " + search);
 
         if (StringUtils.isEmpty(search)) {
             logger.error("Search string not provided");
             throw new Exception("Search string not provided");
         }
-
+        
         return courseSearchService.searchCourses(search);
     }
 

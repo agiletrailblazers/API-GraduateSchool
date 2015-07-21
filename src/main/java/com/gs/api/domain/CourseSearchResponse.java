@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 @JsonInclude(Include.ALWAYS)
 public class CourseSearchResponse {
 
+    private int numFound;
     private boolean exactMatch;
     private Course[] courses;
 
@@ -24,5 +25,15 @@ public class CourseSearchResponse {
     public void setCourses(Course[] courses) {
         this.courses = courses;
     }
+
+    public int getNumFound() {
+        return numFound;
+    }
+
+    public void setNumFound(int numFound) {
+        this.numFound = numFound;
+    }
+    
+    
 
 }
