@@ -18,4 +18,6 @@
 
 	<annotation-driven />
 
+	<beans:bean id="restTemplate" class="org.springframework.web.client.RestTemplate"/>
+
 </beans:beans>
