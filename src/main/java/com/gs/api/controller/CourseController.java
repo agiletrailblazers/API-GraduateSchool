@@ -12,6 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.gs.api.domain.Course;
 import com.gs.api.domain.CourseSearchResponse;
 import com.gs.api.service.CourseSearchService;
 
@@ -60,6 +62,31 @@ public class CourseController {
         }
         
         return courseSearchService.searchCourses(search);
+    }
+    
+    @RequestMapping(value = "/course/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody Course getCourse(@PathVariable("id") String id) throws Exception {
+        
+        logger.debug("Course details initiated with  course id: " + id);
+
+        if (StringUtils.isEmpty(id)) {
+            logger.error("Course code not provided");
+            throw new Exception("Course code not provided");
+        }
+        
+        Course course = new Course();
+        course.setCourseId(id);
+        course.setCourseCode(id);
+        course.setCourseTitle("This is the title of a Course");
+        course.setCourseDescription("This is the description of a course and is typically very long");
+        course.setCredit("3");
+        course.setCreditType("CPE");
+        course.setLength("30");
+        course.setInterval("Days");
+        course.setType("Classroom-Day");
+        course.setObjective("--- objective ---");
+        
+        return course;
     }
 
     /**
