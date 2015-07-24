@@ -6,10 +6,10 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 @JsonInclude(Include.ALWAYS)
 public class Course {
 
-    private String courseId;
-    private String courseCode;
-    private String courseTitle;
-    private String courseDescription;
+    private String id;
+    private String code;
+    private String title;
+    private String description;
     private String type;
     private String length;
     private String interval;
@@ -31,42 +31,42 @@ public class Course {
      * @param courseTitle
      * @param courseDescription
      */
-    public Course(String courseId, String courseTitle, String courseDescription) {
-        this.courseId = courseId;
-        this.courseTitle = courseTitle;
-        this.courseDescription = courseDescription;
+    public Course(String id, String title, String description) {
+        this.id = id;
+        this.title = title;
+        this.description = description;
     }
 
-    public String getCourseId() {
-        return courseId;
+    public String getId() {
+        return id;
     }
 
-    public void setCourseId(String courseId) {
-        this.courseId = courseId;
+    public void setId(String id) {
+        this.id = id;
     }
 
-    public String getCourseTitle() {
-        return courseTitle;
+    public String getCode() {
+        return code;
     }
 
-    public void setCourseTitle(String courseTitle) {
-        this.courseTitle = courseTitle;
+    public void setCode(String code) {
+        this.code = code;
     }
 
-    public String getCourseDescription() {
-        return courseDescription;
+    public String getTitle() {
+        return title;
     }
 
-    public void setCourseDescription(String courseDescription) {
-        this.courseDescription = courseDescription;
+    public void setTitle(String title) {
+        this.title = title;
     }
 
-    public String getCourseCode() {
-        return courseCode;
+    public String getDescription() {
+        return description;
     }
 
-    public void setCourseCode(String courseCode) {
-        this.courseCode = courseCode;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public String getType() {

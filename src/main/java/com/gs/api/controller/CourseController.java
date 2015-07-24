@@ -75,10 +75,10 @@ public class CourseController {
         }
         
         Course course = new Course();
-        course.setCourseId(id);
-        course.setCourseCode(id);
-        course.setCourseTitle("This is the title of a Course");
-        course.setCourseDescription("This is the description of a course and is typically very long");
+        course.setId(id);
+        course.setCode(id);
+        course.setTitle("This is the title of a Course");
+        course.setDescription("This is the description of a course and is typically very long");
         course.setCredit("3");
         course.setCreditType("CPE");
         course.setLength("30");
