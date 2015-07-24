@@ -56,7 +56,7 @@ public class CourseSearchServiceTest {
         CourseSearchResponse response = courseSearchService.searchCourses("stuff");
         assertNotNull(response);
         assertEquals(1, response.getNumFound());
-        assertEquals("ABC123", response.getCourses()[0].getCourseId());
+        assertEquals("ABC123", response.getCourses()[0].getId());
         assertFalse(response.isExactMatch());
 
     }
@@ -68,7 +68,7 @@ public class CourseSearchServiceTest {
         CourseSearchResponse response = courseSearchService.searchCourses("ABC123");
         assertNotNull(response);
         assertEquals(1, response.getNumFound());
-        assertEquals("ABC123", response.getCourses()[0].getCourseId());
+        assertEquals("ABC123", response.getCourses()[0].getId());
         assertTrue(response.isExactMatch());
 
     }
