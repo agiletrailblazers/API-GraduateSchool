@@ -14,6 +14,7 @@ Java/Spring API Layer for Graduate School
 - Add the following Tomcat argument to pick the right properties file<br/>
 -- For Dev:  ```-DpropertiesLoc=/properties/dev```<br/>
 -- For Prod: ```-DpropertiesLoc=/properties/prod```<br/>
+<img src="readme/Tomcat-Setup.png" />
 - To run in a standalone Tomcat (Linux) add a file "setenv.sh" to the /conf folder with:</br>
 ```
 JRE_HOME=/Library/Java/JavaVirtualMachines/jdk1.8.0_20.jdk/Contents/Home/jre
