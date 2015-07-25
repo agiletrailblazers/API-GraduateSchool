@@ -21,6 +21,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.gs.api.domain.Course;
+import com.gs.api.domain.CourseCredit;
+import com.gs.api.domain.CourseLength;
 import com.gs.api.domain.CourseSearchResponse;
 import com.gs.api.service.CourseSearchService;
 
@@ -79,10 +81,14 @@ public class CourseController {
         course.setCode(id);
         course.setTitle("This is the title of a Course");
         course.setDescription("This is the description of a course and is typically very long");
-        course.setCredit("3");
-        course.setCreditType("CPE");
-        course.setLength("30");
-        course.setInterval("Days");
+        CourseCredit credit = new CourseCredit();
+        credit.setValue("3");
+        credit.setType("CPE");
+        course.setCredit(credit);
+        CourseLength length = new CourseLength();
+        length.setValue("30");
+        length.setInterval("Days");
+        course.setLength(length);
         course.setType("Classroom-Day");
         course.setObjective("--- objective ---");
         

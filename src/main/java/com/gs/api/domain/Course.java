@@ -11,15 +11,14 @@ public class Course {
     private String title;
     private String description;
     private String type;
-    private String length;
-    private String interval;
-    private String credit;
-    private String creditType;
     private String overview;
     private String objective;
     private String prerequisites;
     private String certificate;
     private String outcomes;
+    private CourseCredit credit;
+    private CourseLength length;
+    private CourseSchedule schedule;
     
     public Course() {
     }
@@ -77,30 +76,6 @@ public class Course {
         this.type = type;
     }
 
-    public String getLength() {
-        return length;
-    }
-
-    public void setLength(String length) {
-        this.length = length;
-    }
-
-    public String getInterval() {
-        return interval;
-    }
-
-    public void setInterval(String interval) {
-        this.interval = interval;
-    }
-
-    public String getCredit() {
-        return credit;
-    }
-
-    public void setCredit(String credit) {
-        this.credit = credit;
-    }
-
     public String getOverview() {
         return overview;
     }
@@ -141,13 +116,28 @@ public class Course {
         this.outcomes = outcomes;
     }
 
-    public String getCreditType() {
-        return creditType;
+    public CourseCredit getCredit() {
+        return credit;
     }
 
-    public void setCreditType(String creditType) {
-        this.creditType = creditType;
+    public void setCredit(CourseCredit credit) {
+        this.credit = credit;
     }
-    
+
+    public CourseLength getLength() {
+        return length;
+    }
+
+    public void setLength(CourseLength length) {
+        this.length = length;
+    }
+
+    public CourseSchedule getSchedule() {
+        return schedule;
+    }
+
+    public void setSchedule(CourseSchedule schedule) {
+        this.schedule = schedule;
+    }
 
 }

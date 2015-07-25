@@ -1,6 +1,8 @@
 package com.gs.api.controller;
 
 import static org.hamcrest.Matchers.is;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -22,6 +24,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import com.gs.api.domain.Course;
+import com.gs.api.domain.CourseSearchResponse;
 import com.gs.api.service.CourseSearchService;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -54,35 +58,49 @@ public class CourseControllerTest {
 
     @Test
     public void testPing() throws Exception {
-
-        mockMvc.perform(get("/ping").accept(MediaType.APPLICATION_JSON_VALUE)).andExpect(status().isOk());
-
+        mockMvc.perform(get("/ping").accept(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(status().isOk());
     }
 
     @Test
     public void testCourseSearch() throws Exception {
-
+        when(courseSearchService.searchCourses(anyString())).thenReturn(createSearchResponse());
         mockMvc.perform(get("/course?search=training").accept(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isOk());
-                //.andExpect(content().contentType("application/json"))
-                //.andExpect(jsonPath("$.exactMatch").value(is(false)));
-
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.exactMatch").value(is(false)))
+                .andExpect(jsonPath("$.numFound").value(is(1)));
     }
 
     @Test
     public void testCourseSearch_MissingParam() throws Exception {
-
         mockMvc.perform(get("/course?search=").accept(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isInternalServerError())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$.message").value(is("Search string not provided")));
-
     }
 
     @Test
     public void testCourseSearch_BadRequest() throws Exception {
-
-        mockMvc.perform(get("/bad=").accept(MediaType.APPLICATION_JSON_VALUE)).andExpect(status().isNotFound());
-
+        mockMvc.perform(get("/bad=").accept(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(status().isNotFound());
     }
+    
+    @Test
+    public void testGetCourse() throws Exception {
+        mockMvc.perform(get("/course/12345").accept(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(is("12345")))
+                .andExpect(jsonPath("$.code").value(is("12345")))
+                .andExpect(jsonPath("$.title").value(is("This is the title of a Course")));
+    }
+    
+    //create object for mocks
+    private CourseSearchResponse createSearchResponse() {
+        final CourseSearchResponse response = new CourseSearchResponse();
+        response.setExactMatch(false);
+        response.setNumFound(1);
+        response.setCourses(new Course[] {new Course("1", "title", "description")});
+        return response;
+    }
+    
 }
