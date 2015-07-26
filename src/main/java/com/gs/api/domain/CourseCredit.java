@@ -7,8 +7,17 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 public class CourseCredit {
 
     private String value;
-    private String type;
+    private CourseCreditType type;
 
+    public CourseCredit() {
+        //public constructor
+    }
+    
+    public CourseCredit(String value, CourseCreditType type) {
+        this.value = value;
+        this.type = type;
+    }
+    
     public String getValue() {
         return value;
     }
@@ -17,11 +26,11 @@ public class CourseCredit {
         this.value = value;
     }
 
-    public String getType() {
+    public CourseCreditType getType() {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(CourseCreditType type) {
         this.type = type;
     }
 

@@ -21,9 +21,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.gs.api.domain.Course;
-import com.gs.api.domain.CourseCredit;
-import com.gs.api.domain.CourseLength;
 import com.gs.api.domain.CourseSearchResponse;
+import com.gs.api.service.CourseDetailService;
 import com.gs.api.service.CourseSearchService;
 
 @Configuration
@@ -34,6 +33,9 @@ public class CourseController {
 
     @Autowired
     private CourseSearchService courseSearchService;
+    
+    @Autowired
+    private CourseDetailService courseDetailService;
 
     /**
      * A simple "is alive" API.
@@ -67,31 +69,13 @@ public class CourseController {
     }
     
     @RequestMapping(value = "/course/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody Course getCourse(@PathVariable("id") String id) throws Exception {
-        
+    public @ResponseBody Course getCourse(@PathVariable("id") String id) throws Exception {        
         logger.debug("Course details initiated with  course id: " + id);
-
-        if (StringUtils.isEmpty(id)) {
-            logger.error("Course code not provided");
-            throw new Exception("Course code not provided");
+        final Course course = courseDetailService.getCourse(id);
+        if (null == course || StringUtils.isEmpty(course.getId())){
+            logger.error("No course found for id {}", id);
+            throw new Exception("No course found for course id " + id);
         }
-        
-        Course course = new Course();
-        course.setId(id);
-        course.setCode(id);
-        course.setTitle("This is the title of a Course");
-        course.setDescription("This is the description of a course and is typically very long");
-        CourseCredit credit = new CourseCredit();
-        credit.setValue("3");
-        credit.setType("CPE");
-        course.setCredit(credit);
-        CourseLength length = new CourseLength();
-        length.setValue("30");
-        length.setInterval("Days");
-        course.setLength(length);
-        course.setType("Classroom-Day");
-        course.setObjective("--- objective ---");
-        
         return course;
     }
 

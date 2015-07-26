@@ -9,6 +9,15 @@ public class CourseLength {
     private String value;
     private String interval;
     
+    public CourseLength() {
+        //public constructor
+    }
+    
+    public CourseLength(String value, String interval) {
+        this.value = value;
+        this.interval = interval;
+    }
+    
     public String getValue() {
         return value;
     }
