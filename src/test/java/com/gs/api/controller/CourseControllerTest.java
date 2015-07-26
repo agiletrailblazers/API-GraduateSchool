@@ -26,6 +26,8 @@ import org.springframework.web.context.WebApplicationContext;
 
 import com.gs.api.domain.Course;
 import com.gs.api.domain.CourseSearchResponse;
+import com.gs.api.helper.CourseTestHelper;
+import com.gs.api.service.CourseDetailService;
 import com.gs.api.service.CourseSearchService;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -45,6 +47,9 @@ public class CourseControllerTest {
     
     @Mock
     private CourseSearchService courseSearchService;
+    
+    @Mock
+    private CourseDetailService courseDetailService;
     
     @Before
     public void setUp() throws Exception {
@@ -87,11 +92,30 @@ public class CourseControllerTest {
     
     @Test
     public void testGetCourse() throws Exception {
+        when(courseDetailService.getCourse(anyString())).thenReturn(CourseTestHelper.createCourse());
         mockMvc.perform(get("/course/12345").accept(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(is("12345")))
                 .andExpect(jsonPath("$.code").value(is("12345")))
                 .andExpect(jsonPath("$.title").value(is("This is the title of a Course")));
+    }
+    
+    @Test
+    public void testGetCourse_NullCourse() throws Exception {
+        when(courseDetailService.getCourse(anyString())).thenReturn(null);
+        mockMvc.perform(get("/course/1").accept(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(jsonPath("$.message").value(is("No course found for course id 1")));
+    }
+    
+    @Test
+    public void testGetCourse_MissingCourseCode() throws Exception {
+        when(courseDetailService.getCourse(anyString())).thenReturn(new Course());
+        mockMvc.perform(get("/course/1").accept(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(jsonPath("$.message").value(is("No course found for course id 1")));
     }
     
     //create object for mocks

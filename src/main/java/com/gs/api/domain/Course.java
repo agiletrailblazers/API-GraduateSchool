@@ -131,7 +131,7 @@ public class Course {
     public void setLength(CourseLength length) {
         this.length = length;
     }
-
+    
     public CourseSchedule getSchedule() {
         return schedule;
     }

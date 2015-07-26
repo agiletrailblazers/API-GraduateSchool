@@ -5,6 +5,14 @@ Java/Spring API Layer for Graduate School
 - Java 8
 - Apache Tomcat 7.0.62
 
+<h2>Requires Oracle Driver OJDBC </h2>
+Due to Oracle license issues the Maven Central cannot hold the Oracle JBCD JAR.  Therefore you need to
+install it in your local Maven repo.  The JAR is includes in the /src/lib folder so just run the Maven
+command below to install it
+```
+> mvn install:install-file -DgroupId=com.oracle -DartifactId=ojdbc14 -Dversion=10.2.0.5 -Dpackaging=jar -Dfile=src/lib/ojdbc14.jar -DgeneratePom=true
+```
+
 <h2>Maven command to build</h2>
 ```
 > mvn eclipse:clean clean -U install eclipse:eclipse -Dwtpversion=2.0

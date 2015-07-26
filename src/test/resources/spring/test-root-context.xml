@@ -13,6 +13,16 @@
 	<context:property-placeholder
 		system-properties-mode="OVERRIDE"
 		location="classpath:test.application.properties" />
+		
+		<!-- Enables the Spring MVC @Controller programming model -->
+	<beans:bean id="dev-dataSource" class="org.apache.commons.dbcp.BasicDataSource">
+		<beans:property name="driverClassName" value="${datasource.driverClassName}" />
+		<beans:property name="url" value="${datasource.url}" />
+		<beans:property name="username" value="${datasource.username}" />
+		<beans:property name="password" value="${datasource.password}" />
+		<beans:property name="initialSize" value="2" />
+		<beans:property name="maxActive" value="5" />
+	</beans:bean>
 
 	<context:component-scan base-package="com.gs.api" />
 	
