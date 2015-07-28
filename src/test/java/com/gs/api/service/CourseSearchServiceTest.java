@@ -20,6 +20,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.client.RestOperations;
@@ -33,6 +34,9 @@ import com.gs.api.rest.object.CourseSearchRestResponse;
 @ContextConfiguration(locations = { "classpath:spring/test-root-context.xml" })
 public class CourseSearchServiceTest {
 
+    @Value("${course.search.solr.endpoint}")
+    private String courseSearchSolrEndpoint;
+    
     @InjectMocks
     @Autowired
     private CourseSearchService courseSearchService;
@@ -52,10 +56,12 @@ public class CourseSearchServiceTest {
     @Test
     public void testSearch_ResultsFound() throws Exception {
 
-        when(restTemplate.getForObject(anyString(), any())).thenReturn(createCourseContainer());
-        CourseSearchResponse response = courseSearchService.searchCourses("stuff");
+        when(restTemplate.getForObject(anyString(), any())).thenReturn(createCourseContainer(1, 224));
+        CourseSearchResponse response = courseSearchService.searchCourses("stuff", 1, 100);
         assertNotNull(response);
-        assertEquals(1, response.getNumFound());
+        assertEquals(224, response.getNumFound());
+        assertEquals(1,  response.getStart());
+        assertEquals(101,  response.getStartNext());
         assertEquals("ABC123", response.getCourses()[0].getId());
         assertFalse(response.isExactMatch());
 
@@ -64,8 +70,8 @@ public class CourseSearchServiceTest {
     @Test
     public void testSearch_ExactMatch() throws Exception {
 
-        when(restTemplate.getForObject(anyString(), any())).thenReturn(createCourseContainer());
-        CourseSearchResponse response = courseSearchService.searchCourses("ABC123");
+        when(restTemplate.getForObject(anyString(), any())).thenReturn(createCourseContainer(1, 1));
+        CourseSearchResponse response = courseSearchService.searchCourses("ABC123", 1, 100);
         assertNotNull(response);
         assertEquals(1, response.getNumFound());
         assertEquals("ABC123", response.getCourses()[0].getId());
@@ -77,12 +83,45 @@ public class CourseSearchServiceTest {
     public void testSearch_NoMatch() throws Exception {
 
         when(restTemplate.getForObject(anyString(), any())).thenReturn(createCourseContainerNothing());
-        CourseSearchResponse response = courseSearchService.searchCourses("find-nothing");
+        CourseSearchResponse response = courseSearchService.searchCourses("find-nothing", 1, 100);
         assertNotNull(response);
-        assertEquals(0, response.getNumFound());
+        assertEquals(1, response.getNumFound());
+        assertEquals(1, response.getStart());
+        assertEquals(-1, response.getStartNext());
         assertNull(response.getCourses());
         assertFalse(response.isExactMatch());
 
+    }
+    
+    @Test
+    public void testSearch_LastPage() throws Exception {
+
+        when(restTemplate.getForObject(anyString(), any())).thenReturn(createCourseContainer(101, 162));
+        CourseSearchResponse response = courseSearchService.searchCourses("stuff", 101, 100);
+        assertNotNull(response);
+        assertEquals(162, response.getNumFound());
+        assertEquals(101, response.getStart());
+        assertEquals(-1, response.getStartNext());
+        assertEquals("ABC123", response.getCourses()[0].getId());
+        assertFalse(response.isExactMatch());
+
+    }
+    
+    @Test
+    public void buildSearchString() {
+        
+        //single term
+        final String SINGLE_TERM_RESULT = "http://ec2-54-175-112-131.compute-1.amazonaws.com:8983/solr/collection1/select?q=(course_name:(*fraud*)) OR (course_id:(*fraud*)) OR (course_description:(*fraud*)) OR (course_desc_obj:(*fraud*))&start=1&rows=100&wt=json&indent=true";            
+        String endpoint = courseSearchService.buildSearchString(courseSearchSolrEndpoint, "fraud");
+        System.out.println(endpoint);
+        assertEquals(SINGLE_TERM_RESULT, endpoint);
+    
+        //two terms
+        final String DOUBLE_TERM_RESULT = "http://ec2-54-175-112-131.compute-1.amazonaws.com:8983/solr/collection1/select?q=(course_name:(*Project* AND *Management*)) OR (course_id:(*Project* AND *Management*)) OR (course_description:(*Project* AND *Management*)) OR (course_desc_obj:(*Project* AND *Management*))&start=1&rows=100&wt=json&indent=true";
+        endpoint = courseSearchService.buildSearchString(courseSearchSolrEndpoint, "Project Management");
+        System.out.println(endpoint);
+        assertEquals(DOUBLE_TERM_RESULT, endpoint);
+        
     }
 
     private Object createCourseContainerNothing() {
@@ -95,7 +134,7 @@ public class CourseSearchServiceTest {
         return container;
     }
 
-    private Object createCourseContainer() {
+    private Object createCourseContainer(int start, int numFound) {
         final CourseSearchContainer container = new CourseSearchContainer();
         final CourseSearchRestResponse response = new CourseSearchRestResponse();
         List<CourseSearchDoc> docs = new ArrayList<CourseSearchDoc>();
@@ -104,10 +143,10 @@ public class CourseSearchServiceTest {
         doc.setCourse_name("Course Name for ABC123");
         docs.add(doc);
         response.setDocs(docs);
-        response.setNumFound(1);
-        response.setStart(1);
+        response.setNumFound(numFound);
+        response.setStart(start);
         container.setResponse(response);
         return container;
     }
-
+  
 }

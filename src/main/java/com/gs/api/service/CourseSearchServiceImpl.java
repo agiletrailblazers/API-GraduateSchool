@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,14 +34,15 @@ public class CourseSearchServiceImpl implements CourseSearchService {
      * @param request
      * @return SearchResponse
      */
-    public CourseSearchResponse searchCourses(String search) {
+    public CourseSearchResponse searchCourses(String search, int start, int numRequested) {
 
         boolean exactMatch = false;
         int numFound = 0;
         
         //perform search
-        final CourseSearchContainer container = restTemplate.getForObject(
-                courseSearchSolrEndpoint.replace("~", search), 
+        final String searchString = buildSearchString(courseSearchSolrEndpoint, search);
+        logger.info(searchString);
+        final CourseSearchContainer container = restTemplate.getForObject(searchString, 
                 CourseSearchContainer.class);
 
         //log results
@@ -65,9 +67,23 @@ public class CourseSearchServiceImpl implements CourseSearchService {
             }
             response.setCourses(courses.toArray(new Course[courses.size()]));
         }
-        response.setNumFound(numFound);
+        response.setStart(container.getResponse().getStart());
+        response.setNumFound(container.getResponse().getNumFound());
+        int nextStart = start + numRequested; 
+        if (nextStart <= container.getResponse().getNumFound()) {
+            response.setStartNext(nextStart);
+        }
         response.setExactMatch(exactMatch);
         return response;
+    }
+
+    public String buildSearchString(String endpoint, String search) {
+        final String[] searchTerm = StringUtils.split(search, " ");
+        StringBuffer searchTerms = new StringBuffer(StringUtils.join(searchTerm, "* AND *"));
+        searchTerms.insert(0, "*").append("*");
+        
+        StringBuffer solrEndpoint = new StringBuffer(endpoint.replace("{search}", searchTerms));
+        return solrEndpoint.toString();
     }
 
 }
