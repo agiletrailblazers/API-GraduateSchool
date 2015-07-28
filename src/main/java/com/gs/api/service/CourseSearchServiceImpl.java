@@ -61,7 +61,7 @@ public class CourseSearchServiceImpl implements CourseSearchService {
                 courses.add(newCourse);
                 //if the course id returned is exactly the same as the search string, this is 
                 //  almost certainly an exact match
-                if (doc.getCourse_id().equals(search)) {
+                if (doc.getCourse_id().equalsIgnoreCase(search)) {
                     exactMatch = true;
                 }
             }
