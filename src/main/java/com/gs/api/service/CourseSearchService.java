@@ -7,5 +7,7 @@ public interface CourseSearchService {
     public CourseSearchResponse searchCourses(String search, int start, int numRequested);
     
     public String buildSearchString(String endpoint, String search);
+    
+    public String stripAndEncode(String search);
 
 }

@@ -77,13 +77,36 @@ public class CourseSearchServiceImpl implements CourseSearchService {
         return response;
     }
 
+    /**
+     * Break apart each work (separated by spaces) in the search string and format into
+     * the proper SOLR search format for multiple words.  Example: *Word1* AND *Word2*
+     */
+    @Override
     public String buildSearchString(String endpoint, String search) {
-        final String[] searchTerm = StringUtils.split(search, " ");
-        StringBuffer searchTerms = new StringBuffer(StringUtils.join(searchTerm, "* AND *"));
+        final String[] searchTerm = StringUtils.split(stripAndEncode(search), " ");
+        final StringBuffer searchTerms = new StringBuffer(StringUtils.join(searchTerm, "* AND *"));
         searchTerms.insert(0, "*").append("*");
         
         StringBuffer solrEndpoint = new StringBuffer(endpoint.replace("{search}", searchTerms));
         return solrEndpoint.toString();
+    }
+
+    /**
+     * Strip characters considered invalid to SOLR.  Encode other characters which are
+     * supported by SOLR but need to be SOLR encoded (add "\" before character). 
+     * 
+     * SOLR Invalid: #, %, ^, &
+     * SOLR Encoded: + - || ! ( ) { } [ ] " ~ * ? : \
+     * Useless: Remove AND or OR from search string as these only confuse the situation
+     * 
+     * @param search
+     * @return string
+     */
+    @Override
+    public String stripAndEncode(String search) {
+        String[] searchList = {"#", "%", "^", "&", "+", "-", "||", "!", "(", ")", "{", "}", "[", "]", "\"", "~", "*", "?", ":", "\\"};        
+        String[] replaceList = {"", "", "", "", "\\+", "\\-", "\\||", "\\!", "\\(", "\\)", "\\{", "\\}", "\\[", "\\]", "\\\"", "\\~", "\\*", "\\?", "\\:", "\\\\"};
+        return StringUtils.replaceEach(search, searchList, replaceList);
     }
 
 }

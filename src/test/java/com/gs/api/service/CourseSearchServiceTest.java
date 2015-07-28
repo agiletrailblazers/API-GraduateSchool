@@ -123,6 +123,14 @@ public class CourseSearchServiceTest {
         assertEquals(DOUBLE_TERM_RESULT, endpoint);
         
     }
+    
+    @Test
+    public void testStripAndEncode() {
+        
+        String result = courseSearchService.stripAndEncode("#&^%+-||!(){}[]\"~*?:\\");
+        assertEquals("\\+\\-\\||\\!\\(\\)\\{\\}\\[\\]\\\"\\~\\*\\?\\:\\\\", result);
+        
+    }
 
     private Object createCourseContainerNothing() {
         final CourseSearchContainer container = new CourseSearchContainer();
