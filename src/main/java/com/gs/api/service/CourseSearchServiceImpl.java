@@ -5,10 +5,15 @@ import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jasypt.contrib.org.apache.commons.codec_1_3.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestOperations;
 
@@ -24,6 +29,9 @@ public class CourseSearchServiceImpl implements CourseSearchService {
     
     @Value("${course.search.solr.endpoint}")
     private String courseSearchSolrEndpoint;
+    
+    @Value("${course.search.solr.credentials}")
+    private String solrCredentials;
 
     @Autowired(required=true)
     private RestOperations restTemplate;
@@ -39,12 +47,23 @@ public class CourseSearchServiceImpl implements CourseSearchService {
         boolean exactMatch = false;
         int numFound = 0;
         
-        //perform search
+        //get search string
         final String searchString = buildSearchString(courseSearchSolrEndpoint, search);
         logger.info(searchString);
-        final CourseSearchContainer container = restTemplate.getForObject(searchString, 
-                CourseSearchContainer.class);
 
+        //create request header contain basic auth credentials
+        byte[] plainCredsBytes = solrCredentials.getBytes();
+        byte[] base64CredsBytes = Base64.encodeBase64(plainCredsBytes);
+        String base64Creds = new String(base64CredsBytes);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization", "Basic " + base64Creds);
+        HttpEntity<String> request = new HttpEntity<String>(headers);
+        
+        //perform search
+        ResponseEntity<CourseSearchContainer> responseEntity = restTemplate.exchange(searchString, HttpMethod.GET, 
+                request, CourseSearchContainer.class);
+        CourseSearchContainer container = responseEntity.getBody();
+        
         //log results
         if (CollectionUtils.isNotEmpty(container.getResponse().getDocs())) {
             numFound = container.getResponse().getDocs().size();

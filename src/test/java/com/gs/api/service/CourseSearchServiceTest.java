@@ -8,6 +8,8 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.times;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +23,10 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.client.RestOperations;
@@ -53,10 +59,14 @@ public class CourseSearchServiceTest {
     public void tearDown() throws Exception {
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testSearch_ResultsFound() throws Exception {
 
-        when(restTemplate.getForObject(anyString(), any())).thenReturn(createCourseContainer(1, 224));
+        ResponseEntity<CourseSearchContainer> responseEntity = new ResponseEntity<CourseSearchContainer>(
+                createCourseContainer(1, 224), HttpStatus.OK);
+        when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
+            .thenReturn(responseEntity);
         CourseSearchResponse response = courseSearchService.searchCourses("stuff", 1, 100);
         assertNotNull(response);
         assertEquals(224, response.getNumFound());
@@ -64,25 +74,35 @@ public class CourseSearchServiceTest {
         assertEquals(101,  response.getStartNext());
         assertEquals("ABC123", response.getCourses()[0].getId());
         assertFalse(response.isExactMatch());
+        verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class));
 
     }
     
+    @SuppressWarnings("unchecked")
     @Test
     public void testSearch_ExactMatch() throws Exception {
 
-        when(restTemplate.getForObject(anyString(), any())).thenReturn(createCourseContainer(1, 1));
+        ResponseEntity<CourseSearchContainer> responseEntity = new ResponseEntity<CourseSearchContainer>(
+                createCourseContainer(1, 1), HttpStatus.OK);
+        when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
+            .thenReturn(responseEntity);
         CourseSearchResponse response = courseSearchService.searchCourses("ABC123", 1, 100);
         assertNotNull(response);
         assertEquals(1, response.getNumFound());
         assertEquals("ABC123", response.getCourses()[0].getId());
         assertTrue(response.isExactMatch());
+        verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class));
 
     }
     
+    @SuppressWarnings("unchecked")
     @Test
     public void testSearch_NoMatch() throws Exception {
 
-        when(restTemplate.getForObject(anyString(), any())).thenReturn(createCourseContainerNothing());
+        ResponseEntity<CourseSearchContainer> responseEntity = new ResponseEntity<CourseSearchContainer>(
+                createCourseContainerNothing(), HttpStatus.OK);
+        when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
+            .thenReturn(responseEntity);
         CourseSearchResponse response = courseSearchService.searchCourses("find-nothing", 1, 100);
         assertNotNull(response);
         assertEquals(1, response.getNumFound());
@@ -90,13 +110,18 @@ public class CourseSearchServiceTest {
         assertEquals(-1, response.getStartNext());
         assertNull(response.getCourses());
         assertFalse(response.isExactMatch());
+        verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class));
 
     }
     
+    @SuppressWarnings("unchecked")
     @Test
     public void testSearch_LastPage() throws Exception {
 
-        when(restTemplate.getForObject(anyString(), any())).thenReturn(createCourseContainer(101, 162));
+        ResponseEntity<CourseSearchContainer> responseEntity = new ResponseEntity<CourseSearchContainer>(
+                createCourseContainer(101, 162), HttpStatus.OK);
+        when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
+            .thenReturn(responseEntity);
         CourseSearchResponse response = courseSearchService.searchCourses("stuff", 101, 100);
         assertNotNull(response);
         assertEquals(162, response.getNumFound());
@@ -104,6 +129,7 @@ public class CourseSearchServiceTest {
         assertEquals(-1, response.getStartNext());
         assertEquals("ABC123", response.getCourses()[0].getId());
         assertFalse(response.isExactMatch());
+        verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class));
 
     }
     
@@ -132,7 +158,7 @@ public class CourseSearchServiceTest {
         
     }
 
-    private Object createCourseContainerNothing() {
+    private CourseSearchContainer createCourseContainerNothing() {
         final CourseSearchContainer container = new CourseSearchContainer();
         final CourseSearchRestResponse response = new CourseSearchRestResponse();
         response.setDocs(null);
@@ -142,7 +168,7 @@ public class CourseSearchServiceTest {
         return container;
     }
 
-    private Object createCourseContainer(int start, int numFound) {
+    private CourseSearchContainer createCourseContainer(int start, int numFound) {
         final CourseSearchContainer container = new CourseSearchContainer();
         final CourseSearchRestResponse response = new CourseSearchRestResponse();
         List<CourseSearchDoc> docs = new ArrayList<CourseSearchDoc>();
