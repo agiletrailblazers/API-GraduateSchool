@@ -69,7 +69,7 @@ public class CourseController {
         }
         
         return courseSearchService.searchCourses(search, 
-                NumberUtils.toInt(start, 1), 
+                NumberUtils.toInt(start, 0), 
                 NumberUtils.toInt(numRequested, 100));
     }
     

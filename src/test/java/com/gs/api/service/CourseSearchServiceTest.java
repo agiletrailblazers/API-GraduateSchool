@@ -64,14 +64,14 @@ public class CourseSearchServiceTest {
     public void testSearch_ResultsFound() throws Exception {
 
         ResponseEntity<CourseSearchContainer> responseEntity = new ResponseEntity<CourseSearchContainer>(
-                createCourseContainer(1, 224), HttpStatus.OK);
+                createCourseContainer(0, 224), HttpStatus.OK);
         when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
             .thenReturn(responseEntity);
-        CourseSearchResponse response = courseSearchService.searchCourses("stuff", 1, 100);
+        CourseSearchResponse response = courseSearchService.searchCourses("stuff", 0, 100);
         assertNotNull(response);
         assertEquals(224, response.getNumFound());
-        assertEquals(1,  response.getStart());
-        assertEquals(101,  response.getStartNext());
+        assertEquals(0,  response.getStart());
+        assertEquals(100,  response.getStartNext());
         assertEquals("ABC123", response.getCourses()[0].getId());
         assertFalse(response.isExactMatch());
         verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class));
@@ -83,10 +83,10 @@ public class CourseSearchServiceTest {
     public void testSearch_ExactMatch() throws Exception {
 
         ResponseEntity<CourseSearchContainer> responseEntity = new ResponseEntity<CourseSearchContainer>(
-                createCourseContainer(1, 1), HttpStatus.OK);
+                createCourseContainer(0, 1), HttpStatus.OK);
         when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
             .thenReturn(responseEntity);
-        CourseSearchResponse response = courseSearchService.searchCourses("ABC123", 1, 100);
+        CourseSearchResponse response = courseSearchService.searchCourses("ABC123", 0, 100);
         assertNotNull(response);
         assertEquals(1, response.getNumFound());
         assertEquals("ABC123", response.getCourses()[0].getId());
@@ -103,10 +103,10 @@ public class CourseSearchServiceTest {
                 createCourseContainerNothing(), HttpStatus.OK);
         when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
             .thenReturn(responseEntity);
-        CourseSearchResponse response = courseSearchService.searchCourses("find-nothing", 1, 100);
+        CourseSearchResponse response = courseSearchService.searchCourses("find-nothing", 0, 100);
         assertNotNull(response);
         assertEquals(1, response.getNumFound());
-        assertEquals(1, response.getStart());
+        assertEquals(0, response.getStart());
         assertEquals(-1, response.getStartNext());
         assertNull(response.getCourses());
         assertFalse(response.isExactMatch());
@@ -119,13 +119,13 @@ public class CourseSearchServiceTest {
     public void testSearch_LastPage() throws Exception {
 
         ResponseEntity<CourseSearchContainer> responseEntity = new ResponseEntity<CourseSearchContainer>(
-                createCourseContainer(101, 162), HttpStatus.OK);
+                createCourseContainer(100, 162), HttpStatus.OK);
         when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
             .thenReturn(responseEntity);
-        CourseSearchResponse response = courseSearchService.searchCourses("stuff", 101, 100);
+        CourseSearchResponse response = courseSearchService.searchCourses("stuff", 100, 100);
         assertNotNull(response);
         assertEquals(162, response.getNumFound());
-        assertEquals(101, response.getStart());
+        assertEquals(100, response.getStart());
         assertEquals(-1, response.getStartNext());
         assertEquals("ABC123", response.getCourses()[0].getId());
         assertFalse(response.isExactMatch());
@@ -137,14 +137,14 @@ public class CourseSearchServiceTest {
     public void buildSearchString() {
         
         //single term
-        final String SINGLE_TERM_RESULT = "http://ec2-54-175-112-131.compute-1.amazonaws.com:8983/solr/gs_solr/select?q=(course_name:(*fraud*)) OR (course_id:(*fraud*)) OR (course_description:(*fraud*)) OR (course_desc_obj:(*fraud*))&start=1&rows=100&wt=json&indent=true";            
-        String endpoint = courseSearchService.buildSearchString(courseSearchSolrEndpoint, "fraud");
+        final String SINGLE_TERM_RESULT = "http://ec2-54-175-112-131.compute-1.amazonaws.com:8983/solr/gs_solr/select?q=(course_name:(*fraud*))^5 OR (course_id:(*fraud*)) OR (course_description:(*fraud*)) OR (course_desc_obj:(*fraud*))&start=0&rows=100&wt=json&indent=true";            
+        String endpoint = courseSearchService.buildSearchString(courseSearchSolrEndpoint, "fraud", 0, 100);
         System.out.println(endpoint);
         assertEquals(SINGLE_TERM_RESULT, endpoint);
     
         //two terms
-        final String DOUBLE_TERM_RESULT = "http://ec2-54-175-112-131.compute-1.amazonaws.com:8983/solr/gs_solr/select?q=(course_name:(*Project* AND *Management*)) OR (course_id:(*Project* AND *Management*)) OR (course_description:(*Project* AND *Management*)) OR (course_desc_obj:(*Project* AND *Management*))&start=1&rows=100&wt=json&indent=true";
-        endpoint = courseSearchService.buildSearchString(courseSearchSolrEndpoint, "Project Management");
+        final String DOUBLE_TERM_RESULT = "http://ec2-54-175-112-131.compute-1.amazonaws.com:8983/solr/gs_solr/select?q=(course_name:(*Project* AND *Management*))^5 OR (course_id:(*Project* AND *Management*)) OR (course_description:(*Project* AND *Management*)) OR (course_desc_obj:(*Project* AND *Management*))&start=0&rows=100&wt=json&indent=true";
+        endpoint = courseSearchService.buildSearchString(courseSearchSolrEndpoint, "Project Management", 0, 100);
         System.out.println(endpoint);
         assertEquals(DOUBLE_TERM_RESULT, endpoint);
         
@@ -163,7 +163,7 @@ public class CourseSearchServiceTest {
         final CourseSearchRestResponse response = new CourseSearchRestResponse();
         response.setDocs(null);
         response.setNumFound(1);
-        response.setStart(1);
+        response.setStart(0);
         container.setResponse(response);
         return container;
     }

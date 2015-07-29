@@ -48,7 +48,7 @@ public class CourseSearchServiceImpl implements CourseSearchService {
         int numFound = 0;
         
         //get search string
-        final String searchString = buildSearchString(courseSearchSolrEndpoint, search);
+        final String searchString = buildSearchString(courseSearchSolrEndpoint, search, start, numRequested);
         logger.info(searchString);
 
         //create request header contain basic auth credentials
@@ -101,13 +101,19 @@ public class CourseSearchServiceImpl implements CourseSearchService {
      * the proper SOLR search format for multiple words.  Example: *Word1* AND *Word2*
      */
     @Override
-    public String buildSearchString(String endpoint, String search) {
+    public String buildSearchString(String endpoint, String search, int start, int numRequested) {
+        
+        //build search criteria
         final String[] searchTerm = StringUtils.split(stripAndEncode(search), " ");
         final StringBuffer searchTerms = new StringBuffer(StringUtils.join(searchTerm, "* AND *"));
         searchTerms.insert(0, "*").append("*");
+        endpoint = StringUtils.replace(endpoint, "{search}", searchTerms.toString());
+
+        //update start and num requested
+        endpoint = StringUtils.replace(endpoint, "{start}", Integer.toString(start));
+        endpoint = StringUtils.replace(endpoint, "{numRequested}", Integer.toString(numRequested));
         
-        StringBuffer solrEndpoint = new StringBuffer(endpoint.replace("{search}", searchTerms));
-        return solrEndpoint.toString();
+        return endpoint;
     }
 
     /**
