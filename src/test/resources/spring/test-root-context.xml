@@ -12,9 +12,9 @@
 		infrastructure -->
 	<context:property-placeholder
 		system-properties-mode="OVERRIDE"
-		location="classpath:${propertiesLoc}/application.properties" />
-
-	<!-- Enables the Spring MVC @Controller programming model -->
+		location="classpath:test.application.properties" />
+		
+		<!-- Enables the Spring MVC @Controller programming model -->
 	<beans:bean id="dev-dataSource" class="org.apache.commons.dbcp.BasicDataSource">
 		<beans:property name="driverClassName" value="${datasource.driverClassName}" />
 		<beans:property name="url" value="${datasource.url}" />
@@ -25,9 +25,9 @@
 	</beans:bean>
 
 	<context:component-scan base-package="com.gs.api" />
-
+	
 	<annotation-driven />
-
+	
 	<beans:bean id="restTemplate" class="org.springframework.web.client.RestTemplate"/>
 
 </beans:beans>

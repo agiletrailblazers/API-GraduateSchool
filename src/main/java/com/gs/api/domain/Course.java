@@ -1,44 +1,125 @@
 package com.gs.api.domain;
 
-import org.codehaus.jackson.map.annotate.JsonSerialize;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
-@JsonSerialize(include=JsonSerialize.Inclusion.ALWAYS)
+@JsonInclude(Include.ALWAYS)
 public class Course {
 
-	private String courseId;
-	private String courseTitle;
-	private String courseDescription;
+    private String id;
+    private String code;
+    private String title;
+    private String description;
+    private String type;
+    private String objective;
+    private String prerequisites;
+    private String outcomes;
+    private CourseCredit credit;
+    private CourseLength length;
+    private CourseSchedule schedule;
+    
+    public Course() {
+    }
 
-	/**
-	 * Constructor
-	 * @param courseId
-	 * @param courseTitle
-	 * @param courseDescription
-	 */
-	public Course(String courseId, String courseTitle, String courseDescription) {
-		this.courseId = courseId;
-		this.courseTitle = courseTitle;
-		this.courseDescription = courseDescription;
-	}
-	
-	public String getCourseId() {
-		return courseId;
-	}
-	public void setCourseId(String courseId) {
-		this.courseId = courseId;
-	}
-	public String getCourseTitle() {
-		return courseTitle;
-	}
-	public void setCourseTitle(String courseTitle) {
-		this.courseTitle = courseTitle;
-	}
-	public String getCourseDescription() {
-		return courseDescription;
-	}
-	public void setCourseDescription(String courseDescription) {
-		this.courseDescription = courseDescription;
-	}
-	
-	
+    /**
+     * Constructor
+     * 
+     * @param courseId
+     * @param courseTitle
+     * @param courseDescription
+     */
+    public Course(String id, String title, String description) {
+        this.id = id;
+        this.title = title;
+        this.description = description;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getObjective() {
+        return objective;
+    }
+
+    public void setObjective(String objective) {
+        this.objective = objective;
+    }
+
+    public String getPrerequisites() {
+        return prerequisites;
+    }
+
+    public void setPrerequisites(String prerequisites) {
+        this.prerequisites = prerequisites;
+    }
+
+    public String getOutcomes() {
+        return outcomes;
+    }
+
+    public void setOutcomes(String outcomes) {
+        this.outcomes = outcomes;
+    }
+
+    public CourseCredit getCredit() {
+        return credit;
+    }
+
+    public void setCredit(CourseCredit credit) {
+        this.credit = credit;
+    }
+
+    public CourseLength getLength() {
+        return length;
+    }
+
+    public void setLength(CourseLength length) {
+        this.length = length;
+    }
+    
+    public CourseSchedule getSchedule() {
+        return schedule;
+    }
+
+    public void setSchedule(CourseSchedule schedule) {
+        this.schedule = schedule;
+    }
+
 }
