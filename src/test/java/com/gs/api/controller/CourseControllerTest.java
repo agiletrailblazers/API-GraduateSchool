@@ -2,6 +2,7 @@ package com.gs.api.controller;
 
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -69,7 +70,8 @@ public class CourseControllerTest {
 
     @Test
     public void testCourseSearch() throws Exception {
-        when(courseSearchService.searchCourses(anyString())).thenReturn(createSearchResponse());
+        when(courseSearchService.searchCourses(anyString(), anyInt(), anyInt()))
+            .thenReturn(createSearchResponse());
         mockMvc.perform(get("/course?search=training").accept(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.exactMatch").value(is(false)))

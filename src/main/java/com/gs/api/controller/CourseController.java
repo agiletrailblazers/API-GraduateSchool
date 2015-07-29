@@ -3,6 +3,7 @@ package com.gs.api.controller;
 import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,7 +57,9 @@ public class CourseController {
      * @throws Exception
      */
     @RequestMapping(value = "/course", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody CourseSearchResponse searchCourse(@RequestParam String search) throws Exception {
+    public @ResponseBody CourseSearchResponse searchCourse(@RequestParam String search, 
+            @RequestParam(required=false) String start, 
+            @RequestParam(required=false) String numRequested) throws Exception {
         
         logger.debug("Course search initiated with search param of: " + search);
 
@@ -65,7 +68,9 @@ public class CourseController {
             throw new Exception("Search string not provided");
         }
         
-        return courseSearchService.searchCourses(search);
+        return courseSearchService.searchCourses(search, 
+                NumberUtils.toInt(start, 1), 
+                NumberUtils.toInt(numRequested, 100));
     }
     
     @RequestMapping(value = "/course/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
