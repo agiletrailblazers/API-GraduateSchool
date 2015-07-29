@@ -11,10 +11,8 @@ public class Course {
     private String title;
     private String description;
     private String type;
-    private String overview;
     private String objective;
     private String prerequisites;
-    private String certificate;
     private String outcomes;
     private CourseCredit credit;
     private CourseLength length;
@@ -76,14 +74,6 @@ public class Course {
         this.type = type;
     }
 
-    public String getOverview() {
-        return overview;
-    }
-
-    public void setOverview(String overview) {
-        this.overview = overview;
-    }
-
     public String getObjective() {
         return objective;
     }
@@ -98,14 +88,6 @@ public class Course {
 
     public void setPrerequisites(String prerequisites) {
         this.prerequisites = prerequisites;
-    }
-
-    public String getCertificate() {
-        return certificate;
-    }
-
-    public void setCertificate(String certificate) {
-        this.certificate = certificate;
     }
 
     public String getOutcomes() {
