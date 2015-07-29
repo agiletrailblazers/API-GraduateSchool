@@ -137,13 +137,13 @@ public class CourseSearchServiceTest {
     public void buildSearchString() {
         
         //single term
-        final String SINGLE_TERM_RESULT = "http://ec2-54-175-112-131.compute-1.amazonaws.com:8983/solr/collection1/select?q=(course_name:(*fraud*)) OR (course_id:(*fraud*)) OR (course_description:(*fraud*)) OR (course_desc_obj:(*fraud*))&start=1&rows=100&wt=json&indent=true";            
+        final String SINGLE_TERM_RESULT = "http://ec2-54-175-112-131.compute-1.amazonaws.com:8983/solr/gs_solr/select?q=(course_name:(*fraud*)) OR (course_id:(*fraud*)) OR (course_description:(*fraud*)) OR (course_desc_obj:(*fraud*))&start=1&rows=100&wt=json&indent=true";            
         String endpoint = courseSearchService.buildSearchString(courseSearchSolrEndpoint, "fraud");
         System.out.println(endpoint);
         assertEquals(SINGLE_TERM_RESULT, endpoint);
     
         //two terms
-        final String DOUBLE_TERM_RESULT = "http://ec2-54-175-112-131.compute-1.amazonaws.com:8983/solr/collection1/select?q=(course_name:(*Project* AND *Management*)) OR (course_id:(*Project* AND *Management*)) OR (course_description:(*Project* AND *Management*)) OR (course_desc_obj:(*Project* AND *Management*))&start=1&rows=100&wt=json&indent=true";
+        final String DOUBLE_TERM_RESULT = "http://ec2-54-175-112-131.compute-1.amazonaws.com:8983/solr/gs_solr/select?q=(course_name:(*Project* AND *Management*)) OR (course_id:(*Project* AND *Management*)) OR (course_description:(*Project* AND *Management*)) OR (course_desc_obj:(*Project* AND *Management*))&start=1&rows=100&wt=json&indent=true";
         endpoint = courseSearchService.buildSearchString(courseSearchSolrEndpoint, "Project Management");
         System.out.println(endpoint);
         assertEquals(DOUBLE_TERM_RESULT, endpoint);
