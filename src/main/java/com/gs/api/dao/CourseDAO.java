@@ -44,6 +44,7 @@ public class CourseDAO {
      */
     public Course getCourse(String id) {
         logger.debug("Getting course from database for course id {}", id);
+        logger.debug(sql);
         try {
             final Course course = this.jdbcTemplate.queryForObject(sql, new Object[] { id, id }, 
                     new CourseRowMapper());
@@ -71,12 +72,13 @@ public class CourseDAO {
             course.setId(rs.getString("CD_CRS"));
             course.setCode(rs.getString("CD_CRS_COURSE"));
             course.setTitle(rs.getString("NM_CRS"));
-            course.setDescription(rs.getString("TX_CRS_DESC"));
+            course.setDescription(rs.getString("TX_CRS_DESC"));  //or do we use DESCRIPTION field?
             course.setLength(new CourseLength(rs.getString("TM_CD_DUR"), 
                     calculateCourseInterval(rs.getString("TX_CRS_INTERVAL"))));
             course.setType(rs.getString("COURSE_TYPE"));
             course.setCredit(calculateCourseCredit(rs));
-            //TODO: add fields
+            course.setObjective(rs.getString("ABSTRACT"));
+            course.setPrerequisites(rs.getString("CUSTOM10"));
 
             return course;
         }
