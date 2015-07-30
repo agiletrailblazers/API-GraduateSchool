@@ -80,7 +80,8 @@ public class CourseDAO {
             course.setCredit(calculateCourseCredit(rs));
             course.setObjective(rs.getString("ABSTRACT"));
             course.setPrerequisites(rs.getString("CUSTOM10"));
-            course.setType(rs.getString("TX_CRS_SUSER3"));
+            course.setType(rs.getString("COURSE_TYPE"));
+            course.setSegment(rs.getString("CD_SEG"));
 
             return course;
         }

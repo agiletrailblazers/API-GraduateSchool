@@ -159,7 +159,7 @@ public class CourseDAOTest {
         when(rs.getString("CEU_CREDIT")).thenReturn(creditType==CourseCreditType.CEU ? "3":"0");
         when(rs.getString("CPE_CREDIT")).thenReturn(creditType==CourseCreditType.CPE ? "3":"0");
         when(rs.getString("ACE_CREDIT")).thenReturn(creditType==CourseCreditType.ACE ? "3":"0");
-        when(rs.getString("TX_CRS_SUSER3")).thenReturn("type");
+        when(rs.getString("COURSE_TYPE")).thenReturn("type");
         return rs;
     }
     
