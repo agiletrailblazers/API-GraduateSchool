@@ -48,6 +48,7 @@ public class CourseDAO {
         try {
             final Course course = this.jdbcTemplate.queryForObject(sql, new Object[] { id, id }, 
                     new CourseRowMapper());
+            logger.debug("Found course match for {}", id);
             return course;
         } 
         catch (EmptyResultDataAccessException e) {

@@ -60,8 +60,14 @@ public class CourseSearchServiceImpl implements CourseSearchService {
         HttpEntity<String> request = new HttpEntity<String>(headers);
         
         //perform search
-        ResponseEntity<CourseSearchContainer> responseEntity = restTemplate.exchange(searchString, HttpMethod.GET, 
-                request, CourseSearchContainer.class);
+        ResponseEntity<CourseSearchContainer> responseEntity = null;
+        try {
+            responseEntity = restTemplate.exchange(searchString, HttpMethod.GET, 
+                    request, CourseSearchContainer.class);
+        } catch (Exception e) {
+            logger.error("Failed to get search results from SOLR", e);
+            throw new RuntimeException("Failed to get search results from SOLR");
+        }
         CourseSearchContainer container = responseEntity.getBody();
         
         //log results
@@ -75,8 +81,8 @@ public class CourseSearchServiceImpl implements CourseSearchService {
         List<Course> courses = new ArrayList<Course>();
         if (CollectionUtils.isNotEmpty(container.getResponse().getDocs())) {
             for (CourseSearchDoc doc : container.getResponse().getDocs()) {
-                Course newCourse = new Course(doc.getCourse_id(), doc.getCourse_name(),
-                                doc.getCourse_description());
+                Course newCourse = new Course(doc.getCourse_id(), doc.getCourse_code(), 
+                        doc.getCourse_name(), doc.getCourse_description());
                 courses.add(newCourse);
                 //if the course id returned is exactly the same as the search string, this is 
                 //  almost certainly an exact match

@@ -125,7 +125,7 @@ public class CourseControllerTest {
         final CourseSearchResponse response = new CourseSearchResponse();
         response.setExactMatch(false);
         response.setNumFound(1);
-        response.setCourses(new Course[] {new Course("1", "title", "description")});
+        response.setCourses(new Course[] {new Course("1", "code", "title", "description")});
         return response;
     }
     

@@ -1,5 +1,8 @@
 package com.gs.api.helper;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.gs.api.domain.Course;
 import com.gs.api.domain.CourseCredit;
 import com.gs.api.domain.CourseCreditType;
@@ -28,6 +31,17 @@ public class CourseTestHelper {
         course.setType("Classroom-Day");
         course.setObjective("--- objective ---");
         return course;
+    }
+    
+    /**
+     * Create a list of strings
+     * return List
+     */
+    public static List<String> createCompetencyList() {
+        List<String> list = new ArrayList<String>();
+        list.add("Line number 1");
+        list.add("Line number 2");
+        return list;
     }
     
 }
