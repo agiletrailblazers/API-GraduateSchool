@@ -6,6 +6,7 @@ import java.util.List;
 import com.gs.api.domain.Course;
 import com.gs.api.domain.CourseCredit;
 import com.gs.api.domain.CourseCreditType;
+import com.gs.api.domain.CourseDescription;
 import com.gs.api.domain.CourseLength;
 import com.gs.api.domain.CourseSession;
 
@@ -20,7 +21,7 @@ public class CourseTestHelper {
         course.setId("12345");
         course.setCode("12345");
         course.setTitle("This is the title of a Course");
-        course.setDescription("This is the description of a course and is typically very long");
+        course.setDescription(new CourseDescription("This is the description of a course and is typically very long", ""));
         CourseCredit credit = new CourseCredit();
         credit.setValue("3");
         credit.setType(CourseCreditType.CPE);

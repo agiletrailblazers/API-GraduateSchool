@@ -134,7 +134,8 @@ public class CourseDAOTest {
         assertEquals("12345000", course.getId());
         assertEquals("12345", course.getCode());
         assertEquals("title", course.getTitle());
-        assertEquals("description", course.getDescription());
+        assertEquals("text-description", course.getDescription().getText());
+        assertEquals("formatted-description", course.getDescription().getFormatted());
         assertEquals("type", course.getType());
         assertEquals("30", course.getLength().getValue());
         assertEquals((expectDefaultInterval ? "Variable" : "Days"), course.getLength().getInterval());
@@ -152,7 +153,8 @@ public class CourseDAOTest {
         when(rs.getString("CD_CRS")).thenReturn("12345000");
         when(rs.getString("CD_CRS_COURSE")).thenReturn("12345");
         when(rs.getString("NM_CRS")).thenReturn("title");
-        when(rs.getString("TX_CRS_DESC")).thenReturn("description");
+        when(rs.getString("DESC_TEXT")).thenReturn("text-description");
+        when(rs.getString("DESC_FORMAT")).thenReturn("formatted-description");
         when(rs.getString("COURSE_TYPE")).thenReturn("type");
         when(rs.getString("TM_CD_DUR")).thenReturn("30");
         when(rs.getString("TX_CRS_INTERVAL")).thenReturn(expectDefaultInterval ? null : "Days");

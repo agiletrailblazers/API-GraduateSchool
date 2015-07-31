@@ -11,7 +11,6 @@ public class Course {
     private String id;
     private String code;
     private String title;
-    private String description;
     private String type;
     private String objective;
     private String prerequisites;
@@ -19,6 +18,7 @@ public class Course {
     private CourseCredit credit;
     private CourseLength length;
     private String segment;
+    private CourseDescription description;
     
     public Course() {
     }
@@ -34,7 +34,7 @@ public class Course {
         this.id = id;
         this.code = code;
         this.title = title;
-        this.description = description;
+        this.description = new CourseDescription(description, null);
     }
 
     public String getId() {
@@ -59,14 +59,6 @@ public class Course {
 
     public void setTitle(String title) {
         this.title = title;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 
     public String getType() {
@@ -123,6 +115,14 @@ public class Course {
 
     public void setSegment(String segment) {
         this.segment = segment;
+    }
+
+    public CourseDescription getDescription() {
+        return description;
+    }
+
+    public void setDescription(CourseDescription description) {
+        this.description = description;
     }
 
 }
