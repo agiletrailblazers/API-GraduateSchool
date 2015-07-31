@@ -6,6 +6,7 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
+import com.gs.api.domain.CourseInstructor;
 import com.gs.api.domain.CourseLocation;
 import com.gs.api.domain.CourseSession;
 
@@ -87,6 +89,13 @@ public class CourseSessionDAO {
             location.setState(rs.getString("STATE"));
             location.setPostalCode(rs.getString("ZIP"));
             session.setLocation(location);
+            if (!StringUtils.isEmpty(rs.getString("PERSON_NO"))) {
+                CourseInstructor instructor = new CourseInstructor();
+                instructor.setId(rs.getString("PERSON_NO"));
+                instructor.setFirstName(rs.getString("FNAME"));
+                instructor.setLastName(rs.getString("LNAME"));
+                session.setInstructor(instructor);
+            }
             return session;
         }
     }
