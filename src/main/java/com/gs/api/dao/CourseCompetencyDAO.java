@@ -40,7 +40,7 @@ public class CourseCompetencyDAO {
         try {
             final List<String> competency = this.jdbcTemplate.query(sql, new Object[] { id }, 
                     new CompetencyRowMapper());
-            logger.debug("Found {} competency matchs for {}", competency.size(), id);
+            logger.debug("Found {} competency matches for {}", competency.size(), id);
             return competency;
         } 
         catch (EmptyResultDataAccessException e) {

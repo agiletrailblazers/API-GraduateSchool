@@ -19,6 +19,7 @@ import org.springframework.web.client.RestOperations;
 
 import com.gs.api.domain.Course;
 import com.gs.api.domain.CourseSearchResponse;
+import com.gs.api.exception.NotFoundException;
 import com.gs.api.rest.object.CourseSearchContainer;
 import com.gs.api.rest.object.CourseSearchDoc;
 
@@ -42,7 +43,7 @@ public class CourseSearchServiceImpl implements CourseSearchService {
      * @param request
      * @return SearchResponse
      */
-    public CourseSearchResponse searchCourses(String search, int start, int numRequested) {
+    public CourseSearchResponse searchCourses(String search, int start, int numRequested) throws NotFoundException {
 
         boolean exactMatch = false;
         int numFound = 0;
@@ -66,7 +67,7 @@ public class CourseSearchServiceImpl implements CourseSearchService {
                     request, CourseSearchContainer.class);
         } catch (Exception e) {
             logger.error("Failed to get search results from SOLR", e);
-            throw new RuntimeException("Failed to get search results from SOLR");
+            throw new NotFoundException("No search results found");
         }
         CourseSearchContainer container = responseEntity.getBody();
         

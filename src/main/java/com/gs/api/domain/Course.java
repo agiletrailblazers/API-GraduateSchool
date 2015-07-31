@@ -18,7 +18,6 @@ public class Course {
     private List<String> outcomes;
     private CourseCredit credit;
     private CourseLength length;
-    private CourseSchedule schedule;
     private String segment;
     
     public Course() {
@@ -109,14 +108,6 @@ public class Course {
     public void setLength(CourseLength length) {
         this.length = length;
     }
-    
-    public CourseSchedule getSchedule() {
-        return schedule;
-    }
-
-    public void setSchedule(CourseSchedule schedule) {
-        this.schedule = schedule;
-    }
 
     public List<String> getOutcomes() {
         return outcomes;
@@ -133,6 +124,5 @@ public class Course {
     public void setSegment(String segment) {
         this.segment = segment;
     }
-    
 
 }

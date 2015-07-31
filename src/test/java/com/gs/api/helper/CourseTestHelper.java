@@ -7,6 +7,7 @@ import com.gs.api.domain.Course;
 import com.gs.api.domain.CourseCredit;
 import com.gs.api.domain.CourseCreditType;
 import com.gs.api.domain.CourseLength;
+import com.gs.api.domain.CourseSession;
 
 public class CourseTestHelper {
 
@@ -42,6 +43,28 @@ public class CourseTestHelper {
         list.add("Line number 1");
         list.add("Line number 2");
         return list;
+    }
+
+    /**
+     * Get a list of sessions
+     * @return List
+     */
+    public static List<CourseSession> createSessions() {
+        List<CourseSession> list = new ArrayList<CourseSession>();
+        list.add(createSession("1"));
+        list.add(createSession("2"));
+        return list;
+    }
+    
+    /**
+     * Get a single session object
+     * @param classNumber
+     * @return Session
+     */
+    private static CourseSession createSession(String classNumber) {
+        CourseSession session = new CourseSession();
+        session.setClassNumber(classNumber);
+        return session;
     }
     
 }

@@ -1,13 +1,16 @@
 package com.gs.api.controller;
 
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Matchers.anyString;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.times;
 
 import org.junit.After;
 import org.junit.Before;
@@ -72,52 +75,84 @@ public class CourseControllerTest {
     public void testCourseSearch() throws Exception {
         when(courseSearchService.searchCourses(anyString(), anyInt(), anyInt()))
             .thenReturn(createSearchResponse());
-        mockMvc.perform(get("/course?search=training").accept(MediaType.APPLICATION_JSON_VALUE))
+        mockMvc.perform(get("/courses?search=training").accept(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.exactMatch").value(is(false)))
                 .andExpect(jsonPath("$.numFound").value(is(1)));
+        verify(courseSearchService, times(1)).searchCourses(anyString(), anyInt(), anyInt());
     }
 
     @Test
     public void testCourseSearch_MissingParam() throws Exception {
-        mockMvc.perform(get("/course?search=").accept(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isInternalServerError())
+        mockMvc.perform(get("/courses?search=").accept(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isNotFound())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$.message").value(is("Search string not provided")));
+        verify(courseSearchService, times(0)).searchCourses(anyString(), anyInt(), anyInt());
     }
 
     @Test
     public void testCourseSearch_BadRequest() throws Exception {
         mockMvc.perform(get("/bad=").accept(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(status().isNotFound());
+        verify(courseSearchService, times(0)).searchCourses(anyString(), anyInt(), anyInt());
     }
     
     @Test
     public void testGetCourse() throws Exception {
         when(courseDetailService.getCourse(anyString())).thenReturn(CourseTestHelper.createCourse());
-        mockMvc.perform(get("/course/12345").accept(MediaType.APPLICATION_JSON_VALUE))
+        mockMvc.perform(get("/courses/12345").accept(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(is("12345")))
                 .andExpect(jsonPath("$.code").value(is("12345")))
                 .andExpect(jsonPath("$.title").value(is("This is the title of a Course")));
+        verify(courseDetailService, times(1)).getCourse(anyString());
     }
     
     @Test
     public void testGetCourse_NullCourse() throws Exception {
         when(courseDetailService.getCourse(anyString())).thenReturn(null);
-        mockMvc.perform(get("/course/1").accept(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isInternalServerError())
+        mockMvc.perform(get("/courses/1").accept(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isNotFound())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$.message").value(is("No course found for course id 1")));
+        verify(courseDetailService, times(1)).getCourse(anyString());
     }
     
     @Test
     public void testGetCourse_MissingCourseCode() throws Exception {
         when(courseDetailService.getCourse(anyString())).thenReturn(new Course());
-        mockMvc.perform(get("/course/1").accept(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isInternalServerError())
+        mockMvc.perform(get("/courses/1").accept(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isNotFound())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$.message").value(is("No course found for course id 1")));
+        verify(courseDetailService, times(1)).getCourse(anyString());
+    }
+    
+    @Test
+    public void testGetSessions() throws Exception {
+        when(courseDetailService.getSessions(anyString())).thenReturn(CourseTestHelper.createSessions());
+        mockMvc.perform(get("/courses/1/sessions").accept(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(jsonPath("$[0].classNumber").value(is("1")))
+                .andExpect(jsonPath("$[1].classNumber").value(is("2")));
+        verify(courseDetailService, times(1)).getSessions(anyString());
+    }
+    
+    @Test
+    public void testGetSessions_NotFound() throws Exception {
+        when(courseDetailService.getSessions(anyString())).thenReturn(null);
+        mockMvc.perform(get("/courses/1/sessions").accept(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentType("application/json"));
+        verify(courseDetailService, times(1)).getSessions(anyString());
+    }
+    
+    @Test
+    public void testHandleError() throws Exception {
+        String response = courseController.handleException(new Exception("test"));
+        assertEquals("{\"message\":\"test\"}", response);
     }
     
     //create object for mocks
