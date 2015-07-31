@@ -69,8 +69,8 @@ public class CourseSessionDAO {
             session.setSegment(rs.getString("CD_SEG"));
             session.setStartDate(rs.getDate("START_DATE"));
             session.setEndDate(rs.getDate("END_DATE"));
-            session.setScheduleMaximum(rs.getInt("MAX_CT"));
-            session.setScheduleAvailable(rs.getInt("STUD_CT"));
+            session.setScheduleMaximum(rs.getInt("QUANTITY_SCHEDULE_MAX"));
+            session.setScheduleAvailable(rs.getInt("QUANTITY_SCHEDULE_AVAIL"));
             session.setStatus(rs.getString("STATUS"));
             session.setNotes(rs.getString("NOTES"));
             session.setTuition(rs.getDouble("TUITION"));

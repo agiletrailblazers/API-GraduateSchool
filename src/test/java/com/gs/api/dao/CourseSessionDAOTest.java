@@ -27,9 +27,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.gs.api.dao.CourseCompetencyDAO.CompetencyRowMapper;
 import com.gs.api.dao.CourseSessionDAO.SessionsRowMapper;
-import com.gs.api.domain.Course;
 import com.gs.api.domain.CourseSession;
 import com.gs.api.helper.CourseTestHelper;
 
