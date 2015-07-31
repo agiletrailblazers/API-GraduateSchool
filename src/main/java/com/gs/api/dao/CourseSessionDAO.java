@@ -81,6 +81,11 @@ public class CourseSessionDAO {
             location.setId(rs.getString("FACILITY_NO"));
             location.setName(rs.getString("FACILITY_NAME"));
             location.setTelephone(rs.getString("CONTACT_PHONE"));
+            location.setAddress1(rs.getString("ADDR1"));
+            location.setAddress2(rs.getString("ADDR2"));
+            location.setCity(rs.getString("CITY"));
+            location.setState(rs.getString("STATE"));
+            location.setPostalCode(rs.getString("ZIP"));
             session.setLocation(location);
             return session;
         }
