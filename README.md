@@ -40,7 +40,13 @@ The APIs can be run using Postman.  A Postman collection is included in the repo
 ```
 API-GraduateSchool/src/doc/GraduateSchool-API.json.postman_collection
 ```
-- Run any of the APIs (you must be running locally on port 8080)
+- Import Environments from:
+```
+API-GraduateSchool/src/doc/dev.postman_environment
+API-GraduateSchool/src/doc/local.postman_environment
+```
+- Set your Environment (upper right corner - local, dev, etc)
+- Run any of the APIs
 
 
 <h2>Solr Installation for Tomcat 7 and JDK8</h2>

@@ -32,6 +32,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.client.RestOperations;
 
 import com.gs.api.domain.CourseSearchResponse;
+import com.gs.api.exception.NotFoundException;
 import com.gs.api.rest.object.CourseSearchContainer;
 import com.gs.api.rest.object.CourseSearchDoc;
 import com.gs.api.rest.object.CourseSearchRestResponse;
@@ -112,6 +113,22 @@ public class CourseSearchServiceTest {
         assertFalse(response.isExactMatch());
         verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class));
 
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testSearch_Exception() throws Exception {
+        when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
+            .thenThrow(new RuntimeException("I didn't expect this to happen"));
+        try {
+            courseSearchService.searchCourses("find-nothing", 0, 100);
+            assertTrue(false);   //fail test as we should not get here
+        } catch (Exception e) {
+            assertTrue(e instanceof NotFoundException);
+            NotFoundException nfe = (NotFoundException) e;
+            assertEquals("No search results found", nfe.getMessage());
+        }
+        verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class));
     }
     
     @SuppressWarnings("unchecked")

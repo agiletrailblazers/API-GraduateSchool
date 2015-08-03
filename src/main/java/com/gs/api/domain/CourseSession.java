@@ -1,0 +1,111 @@
+package com.gs.api.domain;
+
+import java.util.Date;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
+@JsonInclude(Include.ALWAYS)
+public class CourseSession {
+
+    private String classNumber;
+    private String segment;
+    private Date startDate;
+    private Date endDate;
+    private String startTime;
+    private String endTime;
+    private String days;
+    private int scheduleMaximum;
+    private int scheduleAvailable;
+    private String status;
+    private String notes;
+    private double tuition;
+    private CourseLocation location;
+    private CourseInstructor instructor;
+    
+    public String getClassNumber() {
+        return classNumber;
+    }
+    public void setClassNumber(String classNumber) {
+        this.classNumber = classNumber;
+    }
+    public String getSegment() {
+        return segment;
+    }
+    public void setSegment(String segment) {
+        this.segment = segment;
+    }
+    public Date getStartDate() {
+        return startDate;
+    }
+    public void setStartDate(Date startDate) {
+        this.startDate = startDate;
+    }
+    public Date getEndDate() {
+        return endDate;
+    }
+    public void setEndDate(Date endDate) {
+        this.endDate = endDate;
+    }
+    public String getStartTime() {
+        return startTime;
+    }
+    public void setStartTime(String startTime) {
+        this.startTime = startTime;
+    }
+    public String getEndTime() {
+        return endTime;
+    }
+    public void setEndTime(String endTime) {
+        this.endTime = endTime;
+    }
+    public String getDays() {
+        return days;
+    }
+    public void setDays(String days) {
+        this.days = days;
+    }
+    public int getScheduleMaximum() {
+        return scheduleMaximum;
+    }
+    public void setScheduleMaximum(int scheduleMaximum) {
+        this.scheduleMaximum = scheduleMaximum;
+    }
+    public int getScheduleAvailable() {
+        return scheduleAvailable;
+    }
+    public void setScheduleAvailable(int scheduleAvailable) {
+        this.scheduleAvailable = scheduleAvailable;
+    }
+    public String getStatus() {
+        return status;
+    }
+    public void setStatus(String status) {
+        this.status = status;
+    }
+    public String getNotes() {
+        return notes;
+    }
+    public void setNotes(String notes) {
+        this.notes = notes;
+    }
+    public double getTuition() {
+        return tuition;
+    }
+    public void setTuition(double tuition) {
+        this.tuition = tuition;
+    }
+    public CourseLocation getLocation() {
+        return location;
+    }
+    public void setLocation(CourseLocation location) {
+        this.location = location;
+    }
+    public CourseInstructor getInstructor() {
+        return instructor;
+    }
+    public void setInstructor(CourseInstructor instructor) {
+        this.instructor = instructor;
+    }
+    
+}

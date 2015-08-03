@@ -7,6 +7,7 @@ public class CourseSearchDoc {
 
     private String course_name;
     private String course_id;
+    private String course_code;
     private String course_desc_obj;
     private String course_description;
     private String course_notes;
@@ -41,7 +42,11 @@ public class CourseSearchDoc {
     public void setCourse_notes(String course_notes) {
         this.course_notes = course_notes;
     }
-    
-    
+    public String getCourse_code() {
+        return course_code;
+    }
+    public void setCourse_code(String course_code) {
+        this.course_code = course_code;
+    }
     
 }

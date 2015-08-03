@@ -1,7 +1,9 @@
 package com.gs.api.controller;
 
 import java.io.IOException;
+import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
@@ -23,6 +25,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.gs.api.domain.Course;
 import com.gs.api.domain.CourseSearchResponse;
+import com.gs.api.domain.CourseSession;
+import com.gs.api.exception.NotFoundException;
 import com.gs.api.service.CourseDetailService;
 import com.gs.api.service.CourseSearchService;
 
@@ -56,7 +60,7 @@ public class CourseController {
      * @return SearchResponse
      * @throws Exception
      */
-    @RequestMapping(value = "/course", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/courses", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody CourseSearchResponse searchCourse(@RequestParam String search, 
             @RequestParam(required=false) String start, 
             @RequestParam(required=false) String numRequested) throws Exception {
@@ -65,7 +69,7 @@ public class CourseController {
 
         if (StringUtils.isEmpty(search)) {
             logger.error("Search string not provided");
-            throw new Exception("Search string not provided");
+            throw new NotFoundException("Search string not provided");
         }
         
         return courseSearchService.searchCourses(search, 
@@ -73,20 +77,58 @@ public class CourseController {
                 NumberUtils.toInt(numRequested, 100));
     }
     
-    @RequestMapping(value = "/course/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    /**
+     * Get a course for the given id
+     * @param id
+     * @return Course
+     * @throws Exception
+     */
+    @RequestMapping(value = "/courses/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody Course getCourse(@PathVariable("id") String id) throws Exception {        
         logger.debug("Course details initiated with  course id: " + id);
         final Course course = courseDetailService.getCourse(id);
         if (null == course || StringUtils.isEmpty(course.getId())){
             logger.error("No course found for id {}", id);
-            throw new Exception("No course found for course id " + id);
+            throw new NotFoundException("No course found for course id " + id);
         }
         return course;
     }
+    
+    /**
+     * Get course sessions given a course id
+     * @param id
+     * @return List of Course Sessions
+     * @throws Exception
+     */
+    @RequestMapping(value = "/courses/{id}/sessions", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody List<CourseSession> getSessions(@PathVariable("id") String id) throws Exception {        
+        logger.debug("Course sessions initiated with  course id: " + id);
+        final List<CourseSession> sessions = courseDetailService.getSessions(id);
+        if (CollectionUtils.isEmpty(sessions)){
+            logger.error("No sessions found for id {}", id);
+            throw new NotFoundException("No sessions found for course id " + id);
+        }
+        return sessions;
+    }
+    
 
     /**
-     * Return json formatted error response for any internal server error
-     * 
+     * Return json formatted error response for any custom "not found" errors
+     * @return ResponseBody
+     */
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler({ NotFoundException.class })
+    public @ResponseBody String handleNotFoundException(Exception ex) {
+        logger.error(ex.getMessage());
+        final StringBuffer response = new StringBuffer();
+        response.append("{\"message\":\"");
+        response.append(ex.getMessage());
+        response.append("\"}");
+        return response.toString();
+    }
+    
+    /**
+     * Return json formatted error response for any internal server errors
      * @return ResponseBody
      */
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
