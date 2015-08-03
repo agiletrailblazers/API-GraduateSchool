@@ -7,9 +7,9 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -154,13 +154,13 @@ public class CourseSearchServiceTest {
     public void buildSearchString() {
         
         //single term
-        final String SINGLE_TERM_RESULT = "http://ec2-54-86-157-133.compute-1.amazonaws.com:8983/solr/gs_solr/select?q=(course_name:(*fraud*))^5 OR (course_id:(*fraud*)) OR (course_description:(*fraud*)) OR (course_desc_obj:(*fraud*))&start=0&rows=100&wt=json&indent=true";            
+        final String SINGLE_TERM_RESULT = "http://ec2-54-86-157-133.compute-1.amazonaws.com:8080/solr/gs_solr/select?q=(course_name:(*fraud*))^5 OR (course_id:(*fraud*)) OR (course_description:(*fraud*)) OR (course_desc_obj:(*fraud*))&start=0&rows=100&wt=json&indent=true";            
         String endpoint = courseSearchService.buildSearchString(courseSearchSolrEndpoint, "fraud", 0, 100);
         System.out.println(endpoint);
         assertEquals(SINGLE_TERM_RESULT, endpoint);
     
         //two terms
-        final String DOUBLE_TERM_RESULT = "http://ec2-54-86-157-133.compute-1.amazonaws.com:8983/solr/gs_solr/select?q=(course_name:(*Project* AND *Management*))^5 OR (course_id:(*Project* AND *Management*)) OR (course_description:(*Project* AND *Management*)) OR (course_desc_obj:(*Project* AND *Management*))&start=0&rows=100&wt=json&indent=true";
+        final String DOUBLE_TERM_RESULT = "http://ec2-54-86-157-133.compute-1.amazonaws.com:8080/solr/gs_solr/select?q=(course_name:(*Project* AND *Management*))^5 OR (course_id:(*Project* AND *Management*)) OR (course_description:(*Project* AND *Management*)) OR (course_desc_obj:(*Project* AND *Management*))&start=0&rows=100&wt=json&indent=true";
         endpoint = courseSearchService.buildSearchString(courseSearchSolrEndpoint, "Project Management", 0, 100);
         System.out.println(endpoint);
         assertEquals(DOUBLE_TERM_RESULT, endpoint);
