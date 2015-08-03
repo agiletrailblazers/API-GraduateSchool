@@ -1,5 +1,7 @@
 package com.gs.api.domain;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
@@ -9,14 +11,14 @@ public class Course {
     private String id;
     private String code;
     private String title;
-    private String description;
     private String type;
     private String objective;
     private String prerequisites;
-    private String outcomes;
+    private List<String> outcomes;
     private CourseCredit credit;
     private CourseLength length;
-    private CourseSchedule schedule;
+    private String segment;
+    private CourseDescription description;
     
     public Course() {
     }
@@ -28,10 +30,11 @@ public class Course {
      * @param courseTitle
      * @param courseDescription
      */
-    public Course(String id, String title, String description) {
+    public Course(String id, String code, String title, String description) {
         this.id = id;
+        this.code = code;
         this.title = title;
-        this.description = description;
+        this.description = new CourseDescription(description, null);
     }
 
     public String getId() {
@@ -58,14 +61,6 @@ public class Course {
         this.title = title;
     }
 
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
     public String getType() {
         return type;
     }
@@ -89,15 +84,7 @@ public class Course {
     public void setPrerequisites(String prerequisites) {
         this.prerequisites = prerequisites;
     }
-
-    public String getOutcomes() {
-        return outcomes;
-    }
-
-    public void setOutcomes(String outcomes) {
-        this.outcomes = outcomes;
-    }
-
+ 
     public CourseCredit getCredit() {
         return credit;
     }
@@ -113,13 +100,29 @@ public class Course {
     public void setLength(CourseLength length) {
         this.length = length;
     }
-    
-    public CourseSchedule getSchedule() {
-        return schedule;
+
+    public List<String> getOutcomes() {
+        return outcomes;
     }
 
-    public void setSchedule(CourseSchedule schedule) {
-        this.schedule = schedule;
+    public void setOutcomes(List<String> outcomes) {
+        this.outcomes = outcomes;
+    }
+
+    public String getSegment() {
+        return segment;
+    }
+
+    public void setSegment(String segment) {
+        this.segment = segment;
+    }
+
+    public CourseDescription getDescription() {
+        return description;
+    }
+
+    public void setDescription(CourseDescription description) {
+        this.description = description;
     }
 
 }

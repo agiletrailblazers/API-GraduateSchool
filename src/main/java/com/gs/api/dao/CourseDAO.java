@@ -18,6 +18,7 @@ import org.springframework.stereotype.Repository;
 import com.gs.api.domain.Course;
 import com.gs.api.domain.CourseCredit;
 import com.gs.api.domain.CourseCreditType;
+import com.gs.api.domain.CourseDescription;
 import com.gs.api.domain.CourseLength;
 
 @Repository
@@ -48,6 +49,7 @@ public class CourseDAO {
         try {
             final Course course = this.jdbcTemplate.queryForObject(sql, new Object[] { id, id }, 
                     new CourseRowMapper());
+            logger.debug("Found course match for {}", id);
             return course;
         } 
         catch (EmptyResultDataAccessException e) {
@@ -72,13 +74,16 @@ public class CourseDAO {
             course.setId(rs.getString("CD_CRS"));
             course.setCode(rs.getString("CD_CRS_COURSE"));
             course.setTitle(rs.getString("NM_CRS"));
-            course.setDescription(rs.getString("TX_CRS_DESC"));  //or do we use DESCRIPTION field?
+            course.setDescription(new CourseDescription(
+                    rs.getString("DESC_TEXT"), rs.getString("DESC_FORMAT")));
             course.setLength(new CourseLength(rs.getString("TM_CD_DUR"), 
                     calculateCourseInterval(rs.getString("TX_CRS_INTERVAL"))));
             course.setType(rs.getString("COURSE_TYPE"));
             course.setCredit(calculateCourseCredit(rs));
             course.setObjective(rs.getString("ABSTRACT"));
-            course.setPrerequisites(rs.getString("CUSTOM10"));
+            course.setPrerequisites(rs.getString("PREREQUISITES"));
+            course.setType(rs.getString("COURSE_TYPE"));
+            course.setSegment(rs.getString("CD_SEG"));
 
             return course;
         }
