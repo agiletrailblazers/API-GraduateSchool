@@ -154,7 +154,7 @@ public class CourseSearchServiceTest {
     public void buildSearchString() {
         
         //single term
-        final String SINGLE_TERM_RESULT = "http://ec2-54-175-112-131.compute-1.amazonaws.com:8983/solr/gs_solr/select?q=(course_name:(*fraud*))^5 OR (course_id:(*fraud*)) OR (course_description:(*fraud*)) OR (course_desc_obj:(*fraud*))&start=0&rows=100&wt=json&indent=true";            
+        final String SINGLE_TERM_RESULT = "http://ec2-54-174-123-251.compute-1.amazonaws.com:8080/solr/gs_solr/select?q=(course_name:(*fraud*))^5 OR (course_id:(*fraud*)) OR (course_description:(*fraud*)) OR (course_desc_obj:(*fraud*))&start=0&rows=100&wt=json&indent=true";            
         String endpoint = courseSearchService.buildSearchString(courseSearchSolrEndpoint, "fraud", 0, 100);
         System.out.println(endpoint);
         assertEquals(SINGLE_TERM_RESULT, endpoint);
