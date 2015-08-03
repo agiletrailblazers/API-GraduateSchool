@@ -143,7 +143,7 @@ public class CourseSearchServiceTest {
         assertEquals(SINGLE_TERM_RESULT, endpoint);
     
         //two terms
-        final String DOUBLE_TERM_RESULT = "http://ec2-54-175-112-131.compute-1.amazonaws.com:8983/solr/gs_solr/select?q=(course_name:(*Project* AND *Management*))^5 OR (course_id:(*Project* AND *Management*)) OR (course_description:(*Project* AND *Management*)) OR (course_desc_obj:(*Project* AND *Management*))&start=0&rows=100&wt=json&indent=true";
+        final String DOUBLE_TERM_RESULT = "http://ec2-54-174-123-251.compute-1.amazonaws.com:8080/solr/gs_solr/select?q=(course_name:(*Project* AND *Management*))^5 OR (course_id:(*Project* AND *Management*)) OR (course_description:(*Project* AND *Management*)) OR (course_desc_obj:(*Project* AND *Management*))&start=0&rows=100&wt=json&indent=true";
         endpoint = courseSearchService.buildSearchString(courseSearchSolrEndpoint, "Project Management", 0, 100);
         System.out.println(endpoint);
         assertEquals(DOUBLE_TERM_RESULT, endpoint);
