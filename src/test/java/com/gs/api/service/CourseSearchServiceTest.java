@@ -115,6 +115,23 @@ public class CourseSearchServiceTest {
     
     @SuppressWarnings("unchecked")
     @Test
+    public void testSearch_ContainsMixedCaseExactMatch() throws Exception {
+
+        ResponseEntity<CourseSearchContainer> responseEntity = new ResponseEntity<CourseSearchContainer>(
+                createCourseContainer("ABC123001", 0, 1), HttpStatus.OK);
+        when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
+            .thenReturn(responseEntity);
+        CourseSearchResponse response = courseSearchService.searchCourses("abc123", 0, 100);
+        assertNotNull(response);
+        assertEquals(1, response.getNumFound());
+        assertEquals("ABC123001", response.getCourses()[0].getId());
+        assertTrue(response.isExactMatch());
+        verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class));
+
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Test
     public void testSearch_NoMatch() throws Exception {
 
         ResponseEntity<CourseSearchContainer> responseEntity = new ResponseEntity<CourseSearchContainer>(
