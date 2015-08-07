@@ -89,8 +89,7 @@ public class CourseSearchServiceImpl implements CourseSearchService {
 
                 // if the course id returned is exactly the same as the search string, or the search
                 // string is contained in the course id then this is almost certainly an exact match
-                if (numFound == 1 && 
-                        (courseId.equalsIgnoreCase(search) || StringUtils.contains(courseId, search))) {
+                if (numFound == 1 && StringUtils.containsIgnoreCase(courseId, search)) {
                     exactMatch = true;
                 }
             }
