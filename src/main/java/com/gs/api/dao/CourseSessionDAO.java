@@ -78,7 +78,7 @@ public class CourseSessionDAO {
             session.setTuition(rs.getDouble("TUITION"));
             session.setStartTime(rs.getString("START_TIME"));
             session.setEndTime(rs.getString("END_TIME"));
-            session.setDays(rs.getString("DAY_MAP"));
+            session.setDays(rs.getString("SESSION_TEMPLATE"));
             CourseLocation location = new CourseLocation();
             location.setId(rs.getString("FACILITY_NO"));
             location.setName(rs.getString("FACILITY_NAME"));
