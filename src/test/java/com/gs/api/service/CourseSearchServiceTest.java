@@ -43,14 +43,14 @@ public class CourseSearchServiceTest {
 
     @Value("${course.search.solr.endpoint}")
     private String courseSearchSolrEndpoint;
-    
+
     @InjectMocks
     @Autowired
     private CourseSearchService courseSearchService;
 
     @Mock
     private RestOperations restTemplate;
-    
+
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
@@ -78,7 +78,7 @@ public class CourseSearchServiceTest {
         verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class));
 
     }
-    
+
     @SuppressWarnings("unchecked")
     @Test
     public void testSearch_ExactMatch() throws Exception {
@@ -95,7 +95,7 @@ public class CourseSearchServiceTest {
         verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class));
 
     }
-    
+
     @SuppressWarnings("unchecked")
     @Test
     public void testSearch_ContainsExactMatch() throws Exception {
@@ -112,7 +112,7 @@ public class CourseSearchServiceTest {
         verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class));
 
     }
-    
+
     @SuppressWarnings("unchecked")
     @Test
     public void testSearch_ContainsMixedCaseExactMatch() throws Exception {
@@ -129,7 +129,7 @@ public class CourseSearchServiceTest {
         verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class));
 
     }
-    
+
     @SuppressWarnings("unchecked")
     @Test
     public void testSearch_NoMatch() throws Exception {
@@ -148,7 +148,7 @@ public class CourseSearchServiceTest {
         verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class));
 
     }
-    
+
     @SuppressWarnings("unchecked")
     @Test
     public void testSearch_Exception() throws Exception {
@@ -164,7 +164,7 @@ public class CourseSearchServiceTest {
         }
         verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class));
     }
-    
+
     @SuppressWarnings("unchecked")
     @Test
     public void testSearch_LastPage() throws Exception {
@@ -183,32 +183,32 @@ public class CourseSearchServiceTest {
         verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class));
 
     }
-    
+
     @Test
     public void buildSearchString() {
-        
+
         //single term
-        final String SINGLE_TERM_RESULT = "http://ec2-54-86-157-133.compute-1.amazonaws.com:8983/solr/collection1/select?q=(course_name:(*fraud*))^5 OR (course_id:(*fraud*)) OR (course_description:(*fraud*)) OR (course_desc_obj:(*fraud*))&start=0&rows=100&wt=json&indent=true";            
-          
+        final String SINGLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:8983/solr/collection1/select?q=(course_name:(*fraud*))^5 OR (course_id:(*fraud*)) OR (course_description:(*fraud*)) OR (course_desc_obj:(*fraud*))&start=0&rows=100&wt=json&indent=true";
+
     	String endpoint = courseSearchService.buildSearchString(courseSearchSolrEndpoint, "fraud", 0, 100);
         System.out.println(endpoint);
         assertEquals(SINGLE_TERM_RESULT, endpoint);
     
         //two terms
-        final String DOUBLE_TERM_RESULT = "http://ec2-54-86-157-133.compute-1.amazonaws.com:8983/solr/collection1/select?q=(course_name:(*Project* AND *Management*))^5 OR (course_id:(*Project* AND *Management*)) OR (course_description:(*Project* AND *Management*)) OR (course_desc_obj:(*Project* AND *Management*))&start=0&rows=100&wt=json&indent=true";
-        
+        final String DOUBLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:8983/solr/collection1/select?q=(course_name:(*Project* AND *Management*))^5 OR (course_id:(*Project* AND *Management*)) OR (course_description:(*Project* AND *Management*)) OR (course_desc_obj:(*Project* AND *Management*))&start=0&rows=100&wt=json&indent=true";
+
         endpoint = courseSearchService.buildSearchString(courseSearchSolrEndpoint, "Project Management", 0, 100);
         System.out.println(endpoint);
         assertEquals(DOUBLE_TERM_RESULT, endpoint);
-        
+
     }
-    
+
     @Test
     public void testStripAndEncode() {
-        
+
         String result = courseSearchService.stripAndEncode("#&^%+-||!(){}[]\"~*?:\\");
         assertEquals("\\+\\-\\||\\!\\(\\)\\{\\}\\[\\]\\\"\\~\\*\\?\\:\\\\", result);
-        
+
     }
 
     private CourseSearchContainer createCourseContainerNothing() {
@@ -235,5 +235,5 @@ public class CourseSearchServiceTest {
         container.setResponse(response);
         return container;
     }
-  
+
 }
