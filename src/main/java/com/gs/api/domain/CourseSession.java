@@ -17,6 +17,7 @@ public class CourseSession {
     private String days;
     private int scheduleMaximum;
     private int scheduleAvailable;
+    private int scheduleMinimum;
     private String status;
     private String notes;
     private double tuition;
@@ -77,7 +78,13 @@ public class CourseSession {
     public void setScheduleAvailable(int scheduleAvailable) {
         this.scheduleAvailable = scheduleAvailable;
     }
-    public String getStatus() {
+    public int getScheduleMinimum() {
+		return scheduleMinimum;
+	}
+	public void setScheduleMinimum(int scheduleMinimum) {
+		this.scheduleMinimum = scheduleMinimum;
+	}
+	public String getStatus() {
         return status;
     }
     public void setStatus(String status) {
