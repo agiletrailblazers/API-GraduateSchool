@@ -52,3 +52,5 @@ API-GraduateSchool/src/doc/local.postman_environment
 <h2>Solr Installation for Tomcat 7 and JDK8</h2>
 -Please follow the steps in this document to install Solr
 http://ericsod.com/2014/12/22/java-8-tomcat-7-and-solr-43-yosemite-drupal-development
+
+

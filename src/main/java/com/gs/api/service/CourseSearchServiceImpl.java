@@ -82,12 +82,14 @@ public class CourseSearchServiceImpl implements CourseSearchService {
         List<Course> courses = new ArrayList<Course>();
         if (CollectionUtils.isNotEmpty(container.getResponse().getDocs())) {
             for (CourseSearchDoc doc : container.getResponse().getDocs()) {
-                Course newCourse = new Course(doc.getCourse_id(), doc.getCourse_code(), 
+                String courseId = doc.getCourse_id();
+                Course newCourse = new Course(courseId, doc.getCourse_code(), 
                         doc.getCourse_name(), doc.getCourse_description());
                 courses.add(newCourse);
-                //if the course id returned is exactly the same as the search string, this is 
-                //  almost certainly an exact match
-                if (doc.getCourse_id().equalsIgnoreCase(search)) {
+
+                // if the course id returned is exactly the same as the search string, or the search
+                // string is contained in the course id then this is almost certainly an exact match
+                if (numFound == 1 && StringUtils.containsIgnoreCase(courseId, search)) {
                     exactMatch = true;
                 }
             }
