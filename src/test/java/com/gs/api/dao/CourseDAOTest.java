@@ -134,7 +134,7 @@ public class CourseDAOTest {
         assertEquals("12345000", course.getId());
         assertEquals("12345", course.getCode());
         assertEquals("title", course.getTitle());
-        assertEquals("text-description", course.getDescription().getText());
+        assertEquals(null, course.getDescription().getText());
         assertEquals("formatted-description", course.getDescription().getFormatted());
         assertEquals("type", course.getType());
         assertEquals("30", course.getLength().getValue());
