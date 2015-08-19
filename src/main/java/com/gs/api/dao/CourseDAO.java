@@ -74,17 +74,15 @@ public class CourseDAO {
             course.setId(rs.getString("CD_CRS"));
             course.setCode(rs.getString("CD_CRS_COURSE"));
             course.setTitle(rs.getString("NM_CRS"));
-            course.setDescription(new CourseDescription(
-                    rs.getString("DESC_TEXT"), rs.getString("DESC_FORMAT")));
+            course.setDescription(new CourseDescription(rs.getString("DESC_FORMAT")));
             course.setLength(new CourseLength(rs.getString("TM_CD_DUR"), 
                     calculateCourseInterval(rs.getString("TX_CRS_INTERVAL"))));
             course.setType(rs.getString("COURSE_TYPE"));
             course.setCredit(calculateCourseCredit(rs));
             course.setObjective(rs.getString("ABSTRACT"));
             course.setPrerequisites(rs.getString("PREREQUISITES"));
-            course.setType(rs.getString("COURSE_TYPE"));
             course.setSegment(rs.getString("CD_SEG"));
-
+    
             return course;
         }
 
