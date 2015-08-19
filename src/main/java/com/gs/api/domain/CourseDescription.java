@@ -13,7 +13,12 @@ public class CourseDescription {
         //default constructor
     }
     
-    //for convienence
+    //for ease of creation
+    public CourseDescription(String formatted) {
+        this.formatted = formatted;
+    }
+    
+    //for ease of creation
     public CourseDescription(String text, String formatted) {
         this.text = text;
         this.formatted = formatted;
