@@ -75,8 +75,9 @@ public class CourseDAO {
             course.setCode(rs.getString("CD_CRS_COURSE"));
             course.setTitle(rs.getString("NM_CRS"));
             course.setDescription(new CourseDescription(rs.getString("DESC_FORMAT")));
-            course.setLength(new CourseLength(rs.getString("TM_CD_DUR"), 
-                    calculateCourseInterval(rs.getString("TX_CRS_INTERVAL"))));
+            String interval = calculateCourseInterval(rs.getString("TX_CRS_INTERVAL"));
+            course.setLength(new CourseLength(
+                calculateCourseDuration(interval, rs.getInt("TM_CD_DUR")), interval));
             course.setType(rs.getString("COURSE_TYPE"));
             course.setCredit(calculateCourseCredit(rs));
             course.setObjective(rs.getString("ABSTRACT"));
@@ -84,6 +85,39 @@ public class CourseDAO {
             course.setSegment(rs.getString("CD_SEG"));
     
             return course;
+        }
+
+        /**
+         * Calculate duration based in given value
+         * Note: I didn't make this crap up. I just had to implement it.
+         * @param string
+         * @return String
+         */
+        protected Integer calculateCourseDuration(String interval, Integer duration) {
+            Integer finaDuration = null;
+            if (null != interval) {
+                switch (interval) {
+                case "Yr":
+                    finaDuration = duration / 525600;
+                    break;
+                case "Hr":
+                    finaDuration = duration / 60;
+                    break;
+                case "Wk":
+                    finaDuration = duration / 10080;
+                    break;
+                case "Mth":
+                    finaDuration = duration / 43200;
+                    break;
+                case "Day":
+                    finaDuration = duration / 1440;
+                    break;
+                default:
+                    finaDuration = duration;
+                    break;
+                }
+            }
+            return finaDuration;
         }
 
         /**
