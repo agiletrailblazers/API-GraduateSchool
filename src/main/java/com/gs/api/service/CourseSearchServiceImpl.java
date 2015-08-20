@@ -112,16 +112,13 @@ public class CourseSearchServiceImpl implements CourseSearchService {
     @Override
     public String buildSearchString(String endpoint, String search, int start, int numRequested) {
         
-        //build search criteria
-        final String[] searchTerm = StringUtils.split(stripAndEncode(search), " ");
-        final StringBuffer searchTerms = new StringBuffer(StringUtils.join(searchTerm, "* AND *"));
-        searchTerms.insert(0, "*").append("*");
-        endpoint = StringUtils.replace(endpoint, "{search}", searchTerms.toString());
-
-        //update start and num requested
+        // build search criteria
+        endpoint = StringUtils.replace(endpoint, "{search}", stripAndEncode(search));
+        
+        // update start and num requested
         endpoint = StringUtils.replace(endpoint, "{start}", Integer.toString(start));
         endpoint = StringUtils.replace(endpoint, "{numRequested}", Integer.toString(numRequested));
-        
+
         return endpoint;
     }
 
