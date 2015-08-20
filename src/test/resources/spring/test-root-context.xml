@@ -29,15 +29,6 @@
 	
 	<annotation-driven />
 	
-	<!--
-	INTENTIONALLY DISABLED FOR TESTING 
-	<ehcache:annotation-driven />
-     
-    <beans:bean id="cacheManager" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
-    	<beans:property name="configLocation" value="ecache.xml"/>
-	</beans:bean>
-	-->
-	
 	<beans:bean id="restTemplate" class="org.springframework.web.client.RestTemplate"/>
 
 </beans:beans>
