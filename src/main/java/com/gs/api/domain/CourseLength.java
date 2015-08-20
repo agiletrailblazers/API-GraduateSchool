@@ -6,23 +6,23 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 @JsonInclude(Include.ALWAYS)
 public class CourseLength {
     
-    private String value;
+    private Integer value;
     private String interval;
     
     public CourseLength() {
         //public constructor
     }
     
-    public CourseLength(String value, String interval) {
+    public CourseLength(Integer value, String interval) {
         this.value = value;
         this.interval = interval;
     }
     
-    public String getValue() {
+    public Integer getValue() {
         return value;
     }
 
-    public void setValue(String value) {
+    public void setValue(Integer value) {
         this.value = value;
     }
 

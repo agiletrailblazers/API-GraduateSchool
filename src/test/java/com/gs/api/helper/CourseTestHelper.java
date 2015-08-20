@@ -27,8 +27,8 @@ public class CourseTestHelper {
         credit.setType(CourseCreditType.CPE);
         course.setCredit(credit);
         CourseLength length = new CourseLength();
-        length.setValue("30");
-        length.setInterval("Days");
+        length.setValue(4320);
+        length.setInterval("Day");
         course.setLength(length);
         course.setType("Classroom-Day");
         course.setObjective("--- objective ---");
