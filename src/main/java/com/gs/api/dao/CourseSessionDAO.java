@@ -17,7 +17,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 import com.gs.api.domain.CourseInstructor;
-import com.gs.api.domain.CourseLocation;
+import com.gs.api.domain.Location;
 import com.gs.api.domain.CourseSession;
 
 @Repository
@@ -80,7 +80,7 @@ public class CourseSessionDAO {
             session.setStartTime(rs.getString("START_TIME"));
             session.setEndTime(rs.getString("END_TIME"));
             session.setDays(rs.getString("SESSION_TEMPLATE"));
-            CourseLocation location = new CourseLocation();
+            Location location = new Location();
             location.setId(rs.getString("FACILITY_NO"));
             location.setName(rs.getString("FACILITY_NAME"));
             location.setTelephone(rs.getString("CONTACT_PHONE"));

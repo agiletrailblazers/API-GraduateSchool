@@ -7,6 +7,7 @@ import com.gs.api.domain.Course;
 import com.gs.api.domain.CourseCredit;
 import com.gs.api.domain.CourseCreditType;
 import com.gs.api.domain.CourseDescription;
+import com.gs.api.domain.CourseInstructor;
 import com.gs.api.domain.CourseLength;
 import com.gs.api.domain.CourseSession;
 
@@ -65,6 +66,11 @@ public class CourseTestHelper {
     private static CourseSession createSession(String classNumber) {
         CourseSession session = new CourseSession();
         session.setClassNumber(classNumber);
+        CourseInstructor instructor = new CourseInstructor();
+        instructor.setId("1");
+        instructor.setFirstName("Steve");
+        instructor.setLastName("Jobs");
+        session.setInstructor(instructor);
         return session;
     }
     

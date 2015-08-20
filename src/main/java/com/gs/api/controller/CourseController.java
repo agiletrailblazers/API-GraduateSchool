@@ -26,21 +26,26 @@ import org.springframework.web.bind.annotation.RestController;
 import com.gs.api.domain.Course;
 import com.gs.api.domain.CourseSearchResponse;
 import com.gs.api.domain.CourseSession;
+import com.gs.api.domain.Location;
 import com.gs.api.exception.NotFoundException;
 import com.gs.api.service.CourseDetailService;
 import com.gs.api.service.CourseSearchService;
+import com.gs.api.service.LocationService;
 
 @Configuration
 @RestController
 public class CourseController {
 
-    private static final Logger logger = LoggerFactory.getLogger(CourseController.class);
+    static final Logger logger = LoggerFactory.getLogger(CourseController.class);
 
     @Autowired
     private CourseSearchService courseSearchService;
     
     @Autowired
     private CourseDetailService courseDetailService;
+    
+    @Autowired
+    private LocationService locationService;
 
     /**
      * A simple "is alive" API.
@@ -111,14 +116,26 @@ public class CourseController {
         return sessions;
     }
     
-
+    /**
+     * Get a list of active locations
+     * 
+     * @return SearchResponse
+     * @throws Exception
+     */
+    @RequestMapping(value = "/locations", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody List<Location> getLocations() throws Exception {
+        logger.debug("Location search initiated");        
+        return locationService.getLocations();
+    }
+    
     /**
      * Return json formatted error response for any custom "not found" errors
      * @return ResponseBody
      */
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler({ NotFoundException.class })
-    public @ResponseBody String handleNotFoundException(Exception ex) {
+    @ResponseBody
+    public String handleNotFoundException(Exception ex) {
         logger.error(ex.getMessage());
         final StringBuffer response = new StringBuffer();
         response.append("{\"message\":\"");
@@ -126,14 +143,15 @@ public class CourseController {
         response.append("\"}");
         return response.toString();
     }
-    
+
     /**
      * Return json formatted error response for any internal server errors
      * @return ResponseBody
      */
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler({ Exception.class })
-    public @ResponseBody String handleException(Exception ex) {
+    @ResponseBody
+    public String handleException(Exception ex) {
         logger.error(ex.getMessage());
         final StringBuffer response = new StringBuffer();
         response.append("{\"message\":\"");
@@ -149,7 +167,8 @@ public class CourseController {
      */
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler({ HttpMessageNotReadableException.class })
-    public @ResponseBody String handleValidationException(HttpMessageNotReadableException ex) throws IOException {
+    @ResponseBody
+    public String handleValidationException(HttpMessageNotReadableException ex) throws IOException {
         // method called when a input validation failure occurs
         return "{\"message\": \"Invalid Request \"}";
     }

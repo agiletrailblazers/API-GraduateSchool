@@ -9,6 +9,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.times;
 
@@ -30,9 +34,11 @@ import org.springframework.web.context.WebApplicationContext;
 
 import com.gs.api.domain.Course;
 import com.gs.api.domain.CourseSearchResponse;
+import com.gs.api.domain.Location;
 import com.gs.api.helper.CourseTestHelper;
 import com.gs.api.service.CourseDetailService;
 import com.gs.api.service.CourseSearchService;
+import com.gs.api.service.LocationService;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
@@ -54,6 +60,9 @@ public class CourseControllerTest {
     
     @Mock
     private CourseDetailService courseDetailService;
+    
+    @Mock
+    private LocationService locationService;
     
     @Before
     public void setUp() throws Exception {
@@ -155,6 +164,25 @@ public class CourseControllerTest {
         assertEquals("{\"message\":\"test\"}", response);
     }
     
+    @Test
+    public void testGetLocations() throws Exception {
+        when(locationService.getLocations())
+            .thenReturn(createLocationResponse());
+        mockMvc.perform(get("/locations").accept(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].city").value(is("Washington")))
+                .andExpect(jsonPath("$[0].state").value(is("DC")));
+        verify(locationService, times(1)).getLocations();
+    }
+    
+    //create object for mocks
+    private List<Location> createLocationResponse() {
+        List<Location> expect  = new ArrayList<Location>();
+        expect.add(new Location("Washington", "DC"));
+        expect.add(new Location("Philadelphia", "PA"));
+        return expect;
+    }
+
     //create object for mocks
     private CourseSearchResponse createSearchResponse() {
         final CourseSearchResponse response = new CourseSearchResponse();
