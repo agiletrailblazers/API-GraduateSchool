@@ -42,7 +42,7 @@ public class CourseController {
     private CourseSearchService courseSearchService;
     
     @Autowired
-    private CourseService courseDetailService;
+    private CourseService courseService;
     
     @Autowired
     private LocationService locationService;
@@ -84,7 +84,7 @@ public class CourseController {
                 throw new Exception("Parameter 'start' and 'numRequest' not supported with this request");
             }
             //this is a lookup of all courses
-           List<Course> courses = courseDetailService.getCourses();
+           List<Course> courses = courseService.getCourses();
            CourseSearchResponse response = new CourseSearchResponse();
            if (null != courses) {
                response.setCourses(courses.toArray(new Course[courses.size()]));
@@ -104,7 +104,7 @@ public class CourseController {
     @RequestMapping(value = "/courses/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody Course getCourse(@PathVariable("id") String id) throws Exception {        
         logger.debug("Course details initiated with  course id: " + id);
-        final Course course = courseDetailService.getCourse(id);
+        final Course course = courseService.getCourse(id);
         if (null == course || StringUtils.isEmpty(course.getId())){
             logger.error("No course found for id {}", id);
             throw new NotFoundException("No course found for course id " + id);
@@ -121,7 +121,7 @@ public class CourseController {
     @RequestMapping(value = "/courses/{id}/sessions", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody List<CourseSession> getSessions(@PathVariable("id") String id) throws Exception {        
         logger.debug("Course sessions initiated with  course id: " + id);
-        final List<CourseSession> sessions = courseDetailService.getSessions(id);
+        final List<CourseSession> sessions = courseService.getSessions(id);
         if (CollectionUtils.isEmpty(sessions)){
             logger.error("No sessions found for id {}", id);
             throw new NotFoundException("No sessions found for course id " + id);
