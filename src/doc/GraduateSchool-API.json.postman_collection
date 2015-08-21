@@ -9,13 +9,14 @@
 		"631c433e-f3e8-502f-914c-4cb7289be9b5",
 		"fde8c38e-20de-0931-6219-ff45a8a207d6",
 		"40ef5aa9-3c7b-b7cb-8bdd-b986820ee90e",
-		"10595e66-7853-7fa2-44b6-6d5131b5f7d9"
+		"10595e66-7853-7fa2-44b6-6d5131b5f7d9",
+		"31b768f3-9817-c0c1-c2c5-c3ad97ebbecf"
 	],
 	"folders": [],
 	"timestamp": 1436731751085,
 	"owner": 0,
+	"remoteLink": "",
 	"public": false,
-	"hasRequests": true,
 	"requests": [
 		{
 			"id": "10595e66-7853-7fa2-44b6-6d5131b5f7d9",
@@ -55,6 +56,26 @@
 			"description": "A ping test API",
 			"collectionId": "2f4c4af9-5a01-070e-f4c7-99725e5363e1",
 			"responses": []
+		},
+		{
+			"id": "31b768f3-9817-c0c1-c2c5-c3ad97ebbecf",
+			"headers": "",
+			"url": "http://{{url}}:8080/api/locations",
+			"pathVariables": {},
+			"preRequestScript": "",
+			"method": "GET",
+			"collectionId": "2f4c4af9-5a01-070e-f4c7-99725e5363e1",
+			"data": [],
+			"dataMode": "params",
+			"name": "Locations",
+			"description": "Get Locations",
+			"descriptionFormat": "html",
+			"time": 1440112867924,
+			"version": 2,
+			"responses": [],
+			"tests": "",
+			"currentHelper": "normal",
+			"helperAttributes": {}
 		},
 		{
 			"id": "40ef5aa9-3c7b-b7cb-8bdd-b986820ee90e",

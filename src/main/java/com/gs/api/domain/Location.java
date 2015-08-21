@@ -3,8 +3,8 @@ package com.gs.api.domain;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
-@JsonInclude(Include.ALWAYS)
-public class CourseLocation {
+@JsonInclude(Include.NON_NULL)
+public class Location {
 
     private String id;
     private String name;
@@ -14,6 +14,15 @@ public class CourseLocation {
     private String city;
     private String state;
     private String postalCode;
+    
+    public Location() {
+        //default
+    }
+    
+    public Location(String city, String state) {
+        this.city = city;
+        this.state = state;
+    }
     
     public String getId() {
         return id;

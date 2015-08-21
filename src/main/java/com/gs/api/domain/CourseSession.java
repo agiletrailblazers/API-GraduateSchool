@@ -21,7 +21,7 @@ public class CourseSession {
     private String status;
     private String notes;
     private double tuition;
-    private CourseLocation location;
+    private Location location;
     private CourseInstructor instructor;
     
     public String getClassNumber() {
@@ -102,10 +102,10 @@ public class CourseSession {
     public void setTuition(double tuition) {
         this.tuition = tuition;
     }
-    public CourseLocation getLocation() {
+    public Location getLocation() {
         return location;
     }
-    public void setLocation(CourseLocation location) {
+    public void setLocation(Location location) {
         this.location = location;
     }
     public CourseInstructor getInstructor() {

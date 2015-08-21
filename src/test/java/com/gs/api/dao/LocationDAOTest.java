@@ -10,6 +10,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.After;
@@ -27,28 +28,26 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.gs.api.dao.CourseSessionDAO.SessionsRowMapper;
-import com.gs.api.domain.CourseSession;
-import com.gs.api.helper.CourseTestHelper;
+import com.gs.api.dao.LocationDAO.LocationRowMapper;
+import com.gs.api.domain.Location;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "classpath:spring/test-root-context.xml" })
-public class CourseSessionDAOTest {
+public class LocationDAOTest {
 
     @InjectMocks
     @Autowired
-    private CourseSessionDAO sessionDAO;
-    
+    private LocationDAO locationDAO;
+
     @Mock
     private JdbcTemplate jdbcTemplate;
     
-    private CourseSessionDAO.SessionsRowMapper rowMapper;
-    
+    private LocationDAO.LocationRowMapper rowMapper;    
     
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        rowMapper = sessionDAO.new SessionsRowMapper();
+        rowMapper = locationDAO.new LocationRowMapper();
     }
 
     @After
@@ -56,38 +55,38 @@ public class CourseSessionDAOTest {
     }
     
     @Test
-    public void testCourseSessionDAO_GetResult() throws Exception {
-
-        when(jdbcTemplate.query(anyString(), any(Object[].class), any(SessionsRowMapper.class)))
-            .thenAnswer(new Answer<List<CourseSession>>() {
+    public void testLocationByCityStateDAO_GetResult() throws Exception {
+         
+        when(jdbcTemplate.query(anyString(), any(LocationRowMapper.class)))
+            .thenAnswer(new Answer<List<Location>>() {
                 @Override
-                public List<CourseSession> answer(InvocationOnMock invocation) throws Throwable {
-                    return CourseTestHelper.createSessions();
+                public List<Location> answer(InvocationOnMock invocation) throws Throwable {
+                    return new ArrayList<Location>();
                 }
             });
-        List<CourseSession> list = sessionDAO.getSessions("12345");
+        List<Location> list = locationDAO.getLocationByCityState();
         assertNotNull(list);
-        assertEquals(2, list.size());
+        assertEquals(0, list.size());
         
     }
     
     @Test
-    public void testCourseSessionDAO_EmptyResultException() throws Exception {
+    public void testLocationByCityStateDAO_EmptyResultException() throws Exception {
 
-        when(jdbcTemplate.query(anyString(), any(Object[].class), any(SessionsRowMapper.class)))
+        when(jdbcTemplate.query(anyString(), any(LocationRowMapper.class)))
             .thenThrow(new EmptyResultDataAccessException(1));
-        List<CourseSession> list = sessionDAO.getSessions("12345");
+        List<Location> list = locationDAO.getLocationByCityState();
         assertNull(list);
         
     }
     
     @Test
-    public void testCourseSessionDAO_RuntimeException() throws Exception {
+    public void testLocationByCityStateDAO_RuntimeException() throws Exception {
 
-        when(jdbcTemplate.query(anyString(), any(Object[].class), any(SessionsRowMapper.class)))
+        when(jdbcTemplate.query(anyString(), any(LocationRowMapper.class)))
             .thenThrow(new RuntimeException("random exception"));
         try {
-            sessionDAO.getSessions("12345");
+            locationDAO.getLocationByCityState();
             assertTrue(false);   //should not get here
         } catch( Exception e) {
             assertNotNull(e);
@@ -97,14 +96,14 @@ public class CourseSessionDAOTest {
     }
     
     @Test
-    public void testSessionDAO_RowMapper() throws Exception {
+    public void testLocationDAO_RowMapper() throws Exception {
         ResultSet rs = mock(ResultSet.class);
-        when(rs.getString("CLASS_NO")).thenReturn("12345");
-        when(rs.getString("PERSON_NO")).thenReturn("55555");
-        CourseSession session = rowMapper.mapRow(rs, 0);
-        assertNotNull(session);
-        assertEquals("12345", session.getClassNumber());
-        assertEquals("55555", session.getInstructor().getId());
+        when(rs.getString("CITY")).thenReturn("Washington");
+        when(rs.getString("STATE")).thenReturn("DC");
+        Location location = rowMapper.mapRow(rs, 0);
+        assertNotNull(location);
+        assertEquals("Washington", location.getCity());
+        assertEquals("DC", location.getState());
     }
     
 }
