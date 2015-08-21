@@ -31,11 +31,11 @@ import com.gs.api.helper.CourseTestHelper;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "classpath:spring/test-root-context.xml" })
-public class CourseDetailServiceTest {
+public class CourseServiceTest {
     
     @InjectMocks
     @Autowired
-    private CourseDetailServiceImpl courseDetailService;
+    private CourseServiceImpl courseService;
 
     @Mock
     private CourseDAO courseDAO;
@@ -57,11 +57,11 @@ public class CourseDetailServiceTest {
 
     @Test
     public void testDetail_ResultsFound() throws Exception {
-        when(courseDAO.getCourse(anyString())).thenReturn(CourseTestHelper.createCourse());
+        when(courseDAO.getCourse(anyString())).thenReturn(CourseTestHelper.createCourse("12345"));
         when(competencyDAO.getCompetency(anyString())).thenReturn(CourseTestHelper.createCompetencyList());
-        Course course = courseDetailService.getCourse("12345");
+        Course course = courseService.getCourse("12345");
         assertNotNull(course);
-        assertEquals("12345", course.getId());
+        assertEquals("12345001", course.getId());
         assertNotNull(course.getCode());
         assertNotNull(course.getTitle());
         assertNotNull(course.getDescription());
@@ -72,16 +72,34 @@ public class CourseDetailServiceTest {
     @Test
     public void testDetail_NoResult() throws Exception {
         when(courseDAO.getCourse(anyString())).thenReturn(null);
-        Course course = courseDetailService.getCourse("12345");
+        Course course = courseService.getCourse("12345");
         assertNull(course);
         verify(courseDAO, times(1)).getCourse(anyString());
         verify(competencyDAO, times(0)).getCompetency(anyString());
     }
     
     @Test
+    public void testGetCourses() throws Exception {
+        when(courseDAO.getCourses()).thenReturn(CourseTestHelper.createCourseList());
+        List<Course> courses = courseService.getCourses();
+        assertNotNull(courses);
+        assertEquals(2, courses.size());
+        assertEquals("12345001", courses.get(0).getId());
+        verify(courseDAO, times(1)).getCourses();
+    }
+    
+    @Test
+    public void testGetCourses_NoResult() throws Exception {
+        when(courseDAO.getCourses()).thenReturn(null);
+        List<Course> courses = courseService.getCourses();
+        assertNull(courses);
+        verify(courseDAO, times(1)).getCourses();
+    }
+    
+    @Test
     public void testSessions() throws Exception {
         when(sessionDAO.getSessions(anyString())).thenReturn(CourseTestHelper.createSessions());
-        List<CourseSession> sessions = courseDetailService.getSessions("12345");
+        List<CourseSession> sessions = courseService.getSessions("12345");
         assertNotNull(sessions);
         assertEquals(2, sessions.size());
         assertEquals("1", sessions.get(0).getClassNumber());

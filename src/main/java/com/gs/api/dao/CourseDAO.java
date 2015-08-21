@@ -2,6 +2,7 @@ package com.gs.api.dao;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 import javax.sql.DataSource;
 
@@ -15,6 +16,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
+import com.googlecode.ehcache.annotations.Cacheable;
 import com.gs.api.domain.Course;
 import com.gs.api.domain.CourseCredit;
 import com.gs.api.domain.CourseCreditType;
@@ -27,8 +29,11 @@ public class CourseDAO {
     private static final Logger logger = LoggerFactory.getLogger(CourseDAO.class);
     private JdbcTemplate jdbcTemplate;
 
-    @Value("${sql.course.query}")
-    private String sql;
+    @Value("${sql.course.single.query}")
+    private String singleCourseSql;
+    
+    @Value("${sql.course.all.query}")
+    private String allCourseSql;
     
     @Value("${course.interval.default}")
     private String courseIntervalDefault;
@@ -45,10 +50,10 @@ public class CourseDAO {
      */
     public Course getCourse(String id) {
         logger.debug("Getting course from database for course id {}", id);
-        logger.debug(sql);
+        logger.debug(singleCourseSql);
         try {
-            final Course course = this.jdbcTemplate.queryForObject(sql, new Object[] { id, id }, 
-                    new CourseRowMapper());
+            final Course course = this.jdbcTemplate.queryForObject(singleCourseSql, new Object[] { id, id }, 
+                    new CourseDetailRowMapper());
             logger.debug("Found course match for {}", id);
             return course;
         } 
@@ -63,30 +68,44 @@ public class CourseDAO {
     }
     
     /**
+     * Get all active courses
+     * @return List of courses
+     */
+    @Cacheable(cacheName="allCourses")
+    public List<Course> getCourses() throws Exception {
+        logger.debug("Getting courses from database");
+        logger.debug(allCourseSql);
+        try {
+            List<Course> courses = this.jdbcTemplate.query(allCourseSql, 
+                    new CourseRowMapper());
+            logger.debug("Found {} courses", courses.size());
+            return courses;
+        } 
+        catch (EmptyResultDataAccessException e) {
+            logger.warn("Courses not found - {}", e);
+            return null;
+        }
+        catch (Exception e) {
+            logger.error("Error retrieving courses - {}", e);
+            throw e;
+        }
+    }
+    
+    /**
      * Maps a course result to a Course object
      */
-    protected final class CourseRowMapper implements RowMapper<Course> {
+    protected class CourseRowMapper implements RowMapper<Course> {
         /**
-         * Map row for Course object from result set
+         * Map row for Course object from result set - basic fields
          */
         public Course mapRow(ResultSet rs, int rowNum) throws SQLException {
             Course course = new Course();
             course.setId(rs.getString("CD_CRS"));
             course.setCode(rs.getString("CD_CRS_COURSE"));
             course.setTitle(rs.getString("NM_CRS"));
-            course.setDescription(new CourseDescription(rs.getString("DESC_FORMAT")));
-            String interval = calculateCourseInterval(rs.getString("TX_CRS_INTERVAL"));
-            course.setLength(new CourseLength(
-                calculateCourseDuration(interval, rs.getInt("TM_CD_DUR")), interval));
-            course.setType(rs.getString("COURSE_TYPE"));
-            course.setCredit(calculateCourseCredit(rs));
-            course.setObjective(rs.getString("ABSTRACT"));
-            course.setPrerequisites(rs.getString("PREREQUISITES"));
-            course.setSegment(rs.getString("CD_SEG"));
-    
             return course;
         }
-
+            
         /**
          * Calculate duration based in given value
          * Note: I didn't make this crap up. I just had to implement it.
@@ -125,7 +144,7 @@ public class CourseDAO {
          * @param interval
          * @return String
          */
-        private String calculateCourseInterval(String interval) {
+        protected String calculateCourseInterval(String interval) {
             if (StringUtils.isEmpty(interval)) {
                 interval = courseIntervalDefault;
             }
@@ -138,7 +157,7 @@ public class CourseDAO {
          * @return CourseCredit
          * @throws SQLException
          */
-        private CourseCredit calculateCourseCredit(ResultSet rs) throws SQLException {
+        protected CourseCredit calculateCourseCredit(ResultSet rs) throws SQLException {
             String creditValue = StringUtils.EMPTY;
             CourseCreditType creditType = null;
             String ceuCredit = rs.getString("CEU_CREDIT");
@@ -163,6 +182,25 @@ public class CourseDAO {
             }
             return new CourseCredit(creditValue, creditType);
         }
+    }
+    
+    protected class CourseDetailRowMapper extends CourseRowMapper implements RowMapper<Course> {
+
+        @Override
+        public Course mapRow(ResultSet rs, int rowNum) throws SQLException {
+             Course course = super.mapRow(rs, rowNum);
+             course.setDescription(new CourseDescription(rs.getString("DESC_FORMAT")));
+             String interval = calculateCourseInterval(rs.getString("TX_CRS_INTERVAL"));
+             course.setLength(new CourseLength(
+                 calculateCourseDuration(interval, rs.getInt("TM_CD_DUR")), interval));
+             course.setType(rs.getString("COURSE_TYPE"));
+             course.setCredit(calculateCourseCredit(rs));
+             course.setObjective(rs.getString("ABSTRACT"));
+             course.setPrerequisites(rs.getString("PREREQUISITES"));
+             course.setSegment(rs.getString("CD_SEG"));
+             return course;
+        }
+        
     }
 
 }

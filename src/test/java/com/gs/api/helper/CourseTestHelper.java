@@ -17,10 +17,10 @@ public class CourseTestHelper {
      * Create a course object for testing.
      * @return Course
      */
-    public static Course createCourse() { 
+    public static Course createCourse(String code) { 
         final Course course = new Course();
-        course.setId("12345");
-        course.setCode("12345");
+        course.setId(code + "001");
+        course.setCode(code);
         course.setTitle("This is the title of a Course");
         course.setDescription(new CourseDescription("This is the description of a course and is typically very long", ""));
         CourseCredit credit = new CourseCredit();
@@ -34,6 +34,16 @@ public class CourseTestHelper {
         course.setType("Classroom-Day");
         course.setObjective("--- objective ---");
         return course;
+    }
+    
+    /**
+     * Create a list of courses
+     */
+    public static List<Course> createCourseList() {
+        List<Course> courses = new ArrayList<Course>();
+        courses.add(createCourse("12345"));
+        courses.add(createCourse("67890"));
+        return courses;
     }
     
     /**

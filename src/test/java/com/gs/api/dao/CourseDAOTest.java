@@ -11,6 +11,7 @@ import static org.mockito.Mockito.mock;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 import org.junit.After;
 import org.junit.Before;
@@ -40,7 +41,9 @@ public class CourseDAOTest {
     @Autowired
     private CourseDAO courseDAO;
     
-    private CourseDAO.CourseRowMapper courseRowMapper;
+    //private CourseDAO.CourseRowMapper courseRowMapper;
+    
+    private CourseDAO.CourseDetailRowMapper courseDetailRowMapper;
     
     @Mock
     private JdbcTemplate jdbcTemplate;
@@ -49,7 +52,7 @@ public class CourseDAOTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        courseRowMapper = courseDAO.new CourseRowMapper();
+        courseDetailRowMapper = courseDAO.new CourseDetailRowMapper();
     }
 
     @After
@@ -57,25 +60,25 @@ public class CourseDAOTest {
     }
     
     @Test
-    public void testCourseDAO_GetResult() throws Exception {
+    public void testGetCourse_GetResult() throws Exception {
 
         when(jdbcTemplate.queryForObject(anyString(), any(Object[].class), any(CourseRowMapper.class)))
             .thenAnswer(new Answer<Course>() {
                 @Override
                 public Course answer(InvocationOnMock invocation) throws Throwable {
-                    return CourseTestHelper.createCourse();
+                    return CourseTestHelper.createCourse("12345");
                 }
             });
         Course course = courseDAO.getCourse("12345");
         assertNotNull(course);
-        assertEquals("12345", course.getId());
+        assertEquals("12345001", course.getId());
         assertNotNull(course.getCode());
         assertNotNull(course.getTitle());
         assertNotNull(course.getDescription());
     }
     
     @Test
-    public void testCourseDAO_EmptyResultException() throws Exception {
+    public void testGetCourse_EmptyResultException() throws Exception {
 
         when(jdbcTemplate.queryForObject(anyString(), any(Object[].class), any(CourseRowMapper.class)))
             .thenThrow(new EmptyResultDataAccessException(1));
@@ -85,7 +88,7 @@ public class CourseDAOTest {
     }
     
     @Test
-    public void testCourseDAO_RuntimeException() throws Exception {
+    public void testGetCourse_RuntimeException() throws Exception {
 
         when(jdbcTemplate.queryForObject(anyString(), any(Object[].class), any(CourseRowMapper.class)))
             .thenThrow(new RuntimeException("random exception"));
@@ -100,60 +103,102 @@ public class CourseDAOTest {
     }
     
     @Test
+    public void testGetCourses_GetResult() throws Exception {
+
+        when(jdbcTemplate.query(anyString(), any(CourseRowMapper.class)))
+            .thenAnswer(new Answer<List<Course>>() {
+                @Override
+                public List<Course> answer(InvocationOnMock invocation) throws Throwable {
+                    return CourseTestHelper.createCourseList();
+                }
+            });
+        List<Course> courses = courseDAO.getCourses();
+        assertNotNull(courses);
+        assertEquals(2, courses.size());
+        assertEquals("12345001", courses.get(0).getId());
+        assertEquals("12345", courses.get(0).getCode());
+    }
+    
+    @Test
+    public void testGetCourses_EmptyResultException() throws Exception {
+
+        when(jdbcTemplate.query(anyString(), any(CourseRowMapper.class)))
+            .thenThrow(new EmptyResultDataAccessException(1));
+        List<Course> courses = courseDAO.getCourses();
+        assertNull(courses);
+        
+    }
+    
+    @Test
+    public void testGetCourses_RuntimeException() throws Exception {
+
+        when(jdbcTemplate.query(anyString(), any(CourseRowMapper.class)))
+            .thenThrow(new RuntimeException("random exception"));
+        try {
+            courseDAO.getCourses();
+            assertTrue(false);   //should not get here
+        } catch( Exception e) {
+            assertNotNull(e);
+            assertTrue(e instanceof Exception);
+        }
+        
+    }
+    
+    @Test
     public void testCourseDAO_RowMapper_TypeACE() throws Exception {
         ResultSet rs = prepareResultSet(CourseCreditType.ACE, false);     
-        Course course = courseRowMapper.mapRow(rs, 0);
+        Course course = courseDetailRowMapper.mapRow(rs, 0);
         assertResultSet(course, CourseCreditType.ACE, false);
     }
     
     @Test
     public void testCourseDAO_RowMapper_TypeCEU() throws Exception {
         ResultSet rs = prepareResultSet(CourseCreditType.CEU, false);     
-        Course course = courseRowMapper.mapRow(rs, 0);
+        Course course = courseDetailRowMapper.mapRow(rs, 0);
         assertResultSet(course, CourseCreditType.CEU, false);
     }
     
     @Test
     public void testCourseDAO_RowMapper_TypeCPE() throws Exception {
         ResultSet rs = prepareResultSet(CourseCreditType.CPE, false);     
-        Course course = courseRowMapper.mapRow(rs, 0);
+        Course course = courseDetailRowMapper.mapRow(rs, 0);
         assertResultSet(course, CourseCreditType.CPE, false);
     }
     
     @Test
     public void testCourseDAO_RowMapper_TypeNone_DefaultInterval() throws Exception {
         ResultSet rs = prepareResultSet(null, true);     
-        Course course = courseRowMapper.mapRow(rs, 0);
+        Course course = courseDetailRowMapper.mapRow(rs, 0);
         assertResultSet(course, null, true);
     }
     
     @Test
     public void testCalculateDuration_Day() throws Exception {
-        Integer duration = courseRowMapper.calculateCourseDuration("Day", 4320);
+        Integer duration = courseDetailRowMapper.calculateCourseDuration("Day", 4320);
         assertEquals(new Integer(3), duration);
     }
     
     @Test
     public void testCalculateDuration_Yr() throws Exception {
-        Integer duration = courseRowMapper.calculateCourseDuration("Yr", 525600);
+        Integer duration = courseDetailRowMapper.calculateCourseDuration("Yr", 525600);
         assertEquals(new Integer(1), duration);
     }
     
     @Test
     public void testCalculateDuration_Wk() throws Exception {
-        Integer duration = courseRowMapper.calculateCourseDuration("Wk", 10080);
+        Integer duration = courseDetailRowMapper.calculateCourseDuration("Wk", 10080);
         assertEquals(new Integer(1), duration);
     }
     
     @Test
     public void testCalculateDuration_Mth() throws Exception {
-        Integer duration = courseRowMapper.calculateCourseDuration("Mth", 43200);
+        Integer duration = courseDetailRowMapper.calculateCourseDuration("Mth", 43200);
         assertEquals(new Integer(1), duration);
     }
     
     @Test
     public void testCalculateDuration_Hr() throws Exception {
-        Integer duration = courseRowMapper.calculateCourseDuration("Hr", 60);
+        Integer duration = courseDetailRowMapper.calculateCourseDuration("Hr", 60);
         assertEquals(new Integer(1), duration);
     }
 
