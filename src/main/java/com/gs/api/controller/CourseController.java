@@ -28,7 +28,7 @@ import com.gs.api.domain.CourseSearchResponse;
 import com.gs.api.domain.CourseSession;
 import com.gs.api.domain.Location;
 import com.gs.api.exception.NotFoundException;
-import com.gs.api.service.CourseDetailService;
+import com.gs.api.service.CourseService;
 import com.gs.api.service.CourseSearchService;
 import com.gs.api.service.LocationService;
 
@@ -42,7 +42,7 @@ public class CourseController {
     private CourseSearchService courseSearchService;
     
     @Autowired
-    private CourseDetailService courseDetailService;
+    private CourseService courseDetailService;
     
     @Autowired
     private LocationService locationService;
@@ -58,7 +58,7 @@ public class CourseController {
         logger.debug("Service ping initiated");
         return new ResponseEntity<HttpStatus>(HttpStatus.OK);
     }
-
+    
     /**
      * Given search criteria for a course return the results.
      * 
@@ -66,20 +66,33 @@ public class CourseController {
      * @throws Exception
      */
     @RequestMapping(value = "/courses", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody CourseSearchResponse searchCourse(@RequestParam String search, 
+    public @ResponseBody CourseSearchResponse searchCourse(@RequestParam(required=false) String search,
             @RequestParam(required=false) String start, 
             @RequestParam(required=false) String numRequested) throws Exception {
         
-        logger.debug("Course search initiated with search param of: " + search);
+        logger.info("Course search initiated with");
 
-        if (StringUtils.isEmpty(search)) {
-            logger.error("Search string not provided");
-            throw new NotFoundException("Search string not provided");
+        if (!StringUtils.isEmpty(search)) {
+            //this is a course search
+            return courseSearchService.searchCourses(search, 
+                    NumberUtils.toInt(start, 0), 
+                    NumberUtils.toInt(numRequested, 100));
+        }
+        else {
+            if (StringUtils.isNotEmpty(start) || StringUtils.isNoneEmpty(numRequested)) {
+                logger.error("Parameter 'start' and 'numRequest' not supported with this request");
+                throw new Exception("Parameter 'start' and 'numRequest' not supported with this request");
+            }
+            //this is a lookup of all courses
+           List<Course> courses = courseDetailService.getCourses();
+           CourseSearchResponse response = new CourseSearchResponse();
+           if (null != courses) {
+               response.setCourses(courses.toArray(new Course[courses.size()]));
+               response.setNumFound(courses.size());
+           }
+           return response;
         }
         
-        return courseSearchService.searchCourses(search, 
-                NumberUtils.toInt(start, 0), 
-                NumberUtils.toInt(numRequested, 100));
     }
     
     /**

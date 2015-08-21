@@ -36,7 +36,7 @@ import com.gs.api.domain.Course;
 import com.gs.api.domain.CourseSearchResponse;
 import com.gs.api.domain.Location;
 import com.gs.api.helper.CourseTestHelper;
-import com.gs.api.service.CourseDetailService;
+import com.gs.api.service.CourseService;
 import com.gs.api.service.CourseSearchService;
 import com.gs.api.service.LocationService;
 
@@ -59,7 +59,7 @@ public class CourseControllerTest {
     private CourseSearchService courseSearchService;
     
     @Mock
-    private CourseDetailService courseDetailService;
+    private CourseService courseDetailService;
     
     @Mock
     private LocationService locationService;
@@ -92,11 +92,11 @@ public class CourseControllerTest {
     }
 
     @Test
-    public void testCourseSearch_MissingParam() throws Exception {
-        mockMvc.perform(get("/courses?search=").accept(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isNotFound())
+    public void testCourseSearch_InvalidArgs() throws Exception {
+        mockMvc.perform(get("/courses?start=1").accept(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isInternalServerError())
                 .andExpect(content().contentType("application/json"))
-                .andExpect(jsonPath("$.message").value(is("Search string not provided")));
+                .andExpect(jsonPath("$.message").value(is("Parameter 'start' and 'numRequest' not supported with this request")));
         verify(courseSearchService, times(0)).searchCourses(anyString(), anyInt(), anyInt());
     }
 
@@ -109,10 +109,10 @@ public class CourseControllerTest {
     
     @Test
     public void testGetCourse() throws Exception {
-        when(courseDetailService.getCourse(anyString())).thenReturn(CourseTestHelper.createCourse());
+        when(courseDetailService.getCourse(anyString())).thenReturn(CourseTestHelper.createCourse("12345"));
         mockMvc.perform(get("/courses/12345").accept(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(is("12345")))
+                .andExpect(jsonPath("$.id").value(is("12345001")))
                 .andExpect(jsonPath("$.code").value(is("12345")))
                 .andExpect(jsonPath("$.title").value(is("This is the title of a Course")));
         verify(courseDetailService, times(1)).getCourse(anyString());
@@ -173,6 +173,17 @@ public class CourseControllerTest {
                 .andExpect(jsonPath("$[0].city").value(is("Washington")))
                 .andExpect(jsonPath("$[0].state").value(is("DC")));
         verify(locationService, times(1)).getLocations();
+    }
+    
+    @Test
+    public void testCourseGetActive() throws Exception {
+        when(courseDetailService.getCourses()).thenReturn(CourseTestHelper.createCourseList());
+        mockMvc.perform(get("/courses").accept(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.exactMatch").value(is(false)))
+                .andExpect(jsonPath("$.numFound").value(is(2)))
+                .andExpect(jsonPath("$.courses[0].code").value(is("12345")));
+        verify(courseDetailService, times(1)).getCourses();
     }
     
     //create object for mocks
