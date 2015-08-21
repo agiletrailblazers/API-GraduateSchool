@@ -70,7 +70,7 @@ public class CourseController {
             @RequestParam(required=false) String start, 
             @RequestParam(required=false) String numRequested) throws Exception {
         
-        logger.info("Course search initiated with");
+        logger.info("Course API initiated");
 
         if (!StringUtils.isEmpty(search)) {
             //this is a course search
