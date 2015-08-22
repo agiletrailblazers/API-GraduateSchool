@@ -21,6 +21,7 @@ import com.gs.api.domain.Course;
 import com.gs.api.domain.CourseCredit;
 import com.gs.api.domain.CourseCreditType;
 import com.gs.api.domain.CourseDescription;
+import com.gs.api.domain.CourseInterval;
 import com.gs.api.domain.CourseLength;
 
 @Repository
@@ -115,26 +116,28 @@ public class CourseDAO {
         protected Integer calculateCourseDuration(String interval, Integer duration) {
             Integer finaDuration = null;
             if (null != interval) {
-                switch (interval) {
-                case "Yr":
-                    finaDuration = duration / 525600;
-                    break;
-                case "Hr":
-                    finaDuration = duration / 60;
-                    break;
-                case "Wk":
-                    finaDuration = duration / 10080;
-                    break;
-                case "Mth":
-                    finaDuration = duration / 43200;
-                    break;
-                case "Day":
-                    finaDuration = duration / 1440;
-                    break;
-                default:
-                    finaDuration = duration;
-                    break;
-                }
+                CourseInterval ci = CourseInterval.valueFor(interval);
+                finaDuration = ci.getDuration(duration);
+//                switch (interval) {
+//                case "Yr":
+//                    finaDuration = duration / 525600;
+//                    break;
+//                case "Hr":
+//                    finaDuration = duration / 60;
+//                    break;
+//                case "Wk":
+//                    finaDuration = duration / 10080;
+//                    break;
+//                case "Mth":
+//                    finaDuration = duration / 43200;
+//                    break;
+//                case "Day":
+//                    finaDuration = duration / 1440;
+//                    break;
+//                default:
+//                    finaDuration = duration;
+//                    break;
+//                }
             }
             return finaDuration;
         }

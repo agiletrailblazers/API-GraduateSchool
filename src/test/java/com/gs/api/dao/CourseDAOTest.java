@@ -166,6 +166,16 @@ public class CourseDAOTest {
     }
     
     @Test
+    public void testCourseDAO_RowMapper_TypeCPE_Null() throws Exception {
+        ResultSet rs = prepareResultSet(CourseCreditType.CPE, false);
+        when(rs.getString("CEU_CREDIT")).thenReturn(null);
+        when(rs.getString("CPE_CREDIT")).thenReturn(null);
+        when(rs.getString("ACE_CREDIT")).thenReturn(null);
+        Course course = courseDetailRowMapper.mapRow(rs, 0);
+        assertResultSet(course, CourseCreditType.CPE, false);
+    }
+    
+    @Test
     public void testCourseDAO_RowMapper_TypeNone_DefaultInterval() throws Exception {
         ResultSet rs = prepareResultSet(null, true);     
         Course course = courseDetailRowMapper.mapRow(rs, 0);
@@ -201,6 +211,12 @@ public class CourseDAOTest {
         Integer duration = courseDetailRowMapper.calculateCourseDuration("Hr", 60);
         assertEquals(new Integer(1), duration);
     }
+    
+    @Test
+    public void testCalculateDuration_Null() throws Exception {
+        Integer duration = courseDetailRowMapper.calculateCourseDuration(null, 60);
+        assertEquals(null, duration);
+    }
 
     //make it easier to test assertions on a course result for multiple cases
     private void assertResultSet(Course course, 
@@ -214,7 +230,7 @@ public class CourseDAOTest {
         assertEquals("type", course.getType());
         assertEquals(new Integer((expectDefaultInterval ? 4320 : 3)), course.getLength().getValue());
         assertEquals((expectDefaultInterval ? "Variable" : "Day"), course.getLength().getInterval());
-        if (null != expectedCreditType) {
+        if (null != expectedCreditType && null != course.getCredit()) {
             assertEquals("3", course.getCredit().getValue());
             assertEquals(expectedCreditType, course.getCredit().getType());
         } else {

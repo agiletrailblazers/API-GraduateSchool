@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.junit.Assert.assertNotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +26,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -94,6 +96,15 @@ public class CourseControllerTest {
     @Test
     public void testCourseSearch_InvalidArgs() throws Exception {
         mockMvc.perform(get("/courses?start=1").accept(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(jsonPath("$.message").value(is("Parameter 'start' and 'numRequest' not supported with this request")));
+        verify(courseSearchService, times(0)).searchCourses(anyString(), anyInt(), anyInt());
+    }
+    
+    @Test
+    public void testCourseSearch_InvalidArgs2() throws Exception {
+        mockMvc.perform(get("/courses?numRequested=1").accept(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isInternalServerError())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$.message").value(is("Parameter 'start' and 'numRequest' not supported with this request")));
@@ -184,6 +195,13 @@ public class CourseControllerTest {
                 .andExpect(jsonPath("$.numFound").value(is(2)))
                 .andExpect(jsonPath("$.courses[0].code").value(is("12345")));
         verify(courseDetailService, times(1)).getCourses();
+    }
+    
+    @Test
+    public void testValidationException() throws Exception {
+        String result = courseController.handleValidationException(new HttpMessageNotReadableException(""));
+        assertNotNull(result);
+        assertEquals("{\"message\": \"Invalid Request \"}", result);
     }
     
     //create object for mocks
