@@ -61,7 +61,7 @@ public class CourseControllerTest {
     private CourseSearchService courseSearchService;
     
     @Mock
-    private CourseService courseDetailService;
+    private CourseService courseService;
     
     @Mock
     private LocationService locationService;
@@ -120,53 +120,53 @@ public class CourseControllerTest {
     
     @Test
     public void testGetCourse() throws Exception {
-        when(courseDetailService.getCourse(anyString())).thenReturn(CourseTestHelper.createCourse("12345"));
+        when(courseService.getCourse(anyString())).thenReturn(CourseTestHelper.createCourse("12345"));
         mockMvc.perform(get("/courses/12345").accept(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(is("12345001")))
                 .andExpect(jsonPath("$.code").value(is("12345")))
                 .andExpect(jsonPath("$.title").value(is("This is the title of a Course")));
-        verify(courseDetailService, times(1)).getCourse(anyString());
+        verify(courseService, times(1)).getCourse(anyString());
     }
     
     @Test
     public void testGetCourse_NullCourse() throws Exception {
-        when(courseDetailService.getCourse(anyString())).thenReturn(null);
+        when(courseService.getCourse(anyString())).thenReturn(null);
         mockMvc.perform(get("/courses/1").accept(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$.message").value(is("No course found for course id 1")));
-        verify(courseDetailService, times(1)).getCourse(anyString());
+        verify(courseService, times(1)).getCourse(anyString());
     }
     
     @Test
     public void testGetCourse_MissingCourseCode() throws Exception {
-        when(courseDetailService.getCourse(anyString())).thenReturn(new Course());
+        when(courseService.getCourse(anyString())).thenReturn(new Course());
         mockMvc.perform(get("/courses/1").accept(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$.message").value(is("No course found for course id 1")));
-        verify(courseDetailService, times(1)).getCourse(anyString());
+        verify(courseService, times(1)).getCourse(anyString());
     }
     
     @Test
     public void testGetSessions() throws Exception {
-        when(courseDetailService.getSessions(anyString())).thenReturn(CourseTestHelper.createSessions());
+        when(courseService.getSessions(anyString())).thenReturn(CourseTestHelper.createSessions());
         mockMvc.perform(get("/courses/1/sessions").accept(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$[0].classNumber").value(is("1")))
                 .andExpect(jsonPath("$[1].classNumber").value(is("2")));
-        verify(courseDetailService, times(1)).getSessions(anyString());
+        verify(courseService, times(1)).getSessions(anyString());
     }
     
     @Test
     public void testGetSessions_NotFound() throws Exception {
-        when(courseDetailService.getSessions(anyString())).thenReturn(null);
+        when(courseService.getSessions(anyString())).thenReturn(null);
         mockMvc.perform(get("/courses/1/sessions").accept(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentType("application/json"));
-        verify(courseDetailService, times(1)).getSessions(anyString());
+        verify(courseService, times(1)).getSessions(anyString());
     }
     
     @Test
@@ -188,13 +188,13 @@ public class CourseControllerTest {
     
     @Test
     public void testCourseGetActive() throws Exception {
-        when(courseDetailService.getCourses()).thenReturn(CourseTestHelper.createCourseList());
+        when(courseService.getCourses()).thenReturn(CourseTestHelper.createCourseList());
         mockMvc.perform(get("/courses").accept(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.exactMatch").value(is(false)))
                 .andExpect(jsonPath("$.numFound").value(is(2)))
                 .andExpect(jsonPath("$.courses[0].code").value(is("12345")));
-        verify(courseDetailService, times(1)).getCourses();
+        verify(courseService, times(1)).getCourses();
     }
     
     @Test

@@ -29,7 +29,7 @@ public class CourseServiceImpl implements CourseService {
     
     /*
      * (non-Javadoc)
-     * @see com.gs.api.service.CourseDetailService#getCourse(java.lang.String)
+     * @see com.gs.api.service.CourseService#getCourse(java.lang.String)
      */
     @Override
     public Course getCourse(String id) throws Exception {
@@ -43,7 +43,7 @@ public class CourseServiceImpl implements CourseService {
 
     /*
      * (non-Javadoc)
-     * @see com.gs.api.service.CourseDetailService#getSessions(java.lang.String)
+     * @see com.gs.api.service.CourseService#getSessions(java.lang.String)
      */
     @Override
     public List<CourseSession> getSessions(String id) throws Exception {
@@ -52,7 +52,7 @@ public class CourseServiceImpl implements CourseService {
 
     /*
      * (non-Javadoc)
-     * @see com.gs.api.service.CourseDetailService#getCourses(java.lang.String)
+     * @see com.gs.api.service.CourseService#getCourses()
      */
     @Override
     public List<Course> getCourses() throws Exception {
