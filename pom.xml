@@ -289,13 +289,77 @@
 				</configuration>
 			</plugin>
 			<plugin>
-    		<artifactId>maven-war-plugin</artifactId>
-    		<version>2.1.1</version>
-		    <configuration>
-		        <packagingExcludes>WEB-INF/web.xml</packagingExcludes>
-		        <warName>api</warName>
-		    </configuration>
-</plugin>
+	    		<artifactId>maven-war-plugin</artifactId>
+	    		<version>2.1.1</version>
+			    <configuration>
+			        <packagingExcludes>WEB-INF/web.xml</packagingExcludes>
+			        <warName>api</warName>
+			    </configuration>
+			</plugin>
+			<plugin>
+		        <groupId>org.jacoco</groupId>
+		        <artifactId>jacoco-maven-plugin</artifactId>
+		        <version>0.7.2.201409121644</version>		        
+		         <executions>
+		          <!--  (1)  Prepare agent runs in the init phase, it setups the jacocoProperty,  so we can insert this to the maven sure fire argLine and get to run jacoco as agent -->
+		          <execution>
+		            <id>prepare-agent</id>
+		            <goals>
+		              <goal>prepare-agent</goal>
+		            </goals>
+		            <configuration>
+		              <propertyName>jacocoArgLine</propertyName>
+		              <includes>
+		                <include>com.gs.*</include>
+		              </includes>
+		            </configuration>
+		          </execution>
+		          <execution>
+			         <id>default-report</id>
+			         <phase>prepare-package</phase>
+			         <goals>
+			            <goal>report</goal>
+			         </goals>
+			      </execution>
+		          <execution>
+		            <id>check</id>
+		            <goals>
+		              <goal>check</goal>
+		            </goals>
+		            <configuration>
+		              <rules>
+		                <rule >
+		                  <element>CLASS</element>
+		                  <limits>
+		                    <limit >
+		                      <counter>LINE</counter>
+		                      <value>COVEREDRATIO</value>
+		                      <minimum>0.95</minimum>
+		                    </limit>
+		                    <limit >
+		                      <counter>BRANCH</counter>
+		                      <value>COVEREDRATIO</value>
+		                      <minimum>0.90</minimum>
+		                    </limit>
+		                  </limits>
+		                  <excludes>
+		                    <exclude>com.gs.api.rest.object.*</exclude>
+		                    <exclude>com.gs.api.domain.*</exclude>
+		                  </excludes>
+		                </rule>
+		              </rules>
+		            </configuration>
+		          </execution>
+		      </executions>
+		   </plugin>
+		   <plugin>
+		        <groupId>org.apache.maven.plugins</groupId>
+		        <artifactId>maven-surefire-plugin</artifactId>
+		        <version>2.18.1</version>
+		        <configuration>
+		            <argLine>${jacocoArgLine} -Xmx256m</argLine>
+		        </configuration>
+		     </plugin>
 		</plugins>
 	</build>
 </project>

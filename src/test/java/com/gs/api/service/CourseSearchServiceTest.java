@@ -112,6 +112,23 @@ public class CourseSearchServiceTest {
         verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class));
 
     }
+    
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testSearch_MultipleResults() throws Exception {
+
+        ResponseEntity<CourseSearchContainer> responseEntity = new ResponseEntity<CourseSearchContainer>(
+                createCourseContainer("XYZ", 0, 2), HttpStatus.OK);
+        when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
+            .thenReturn(responseEntity);
+        CourseSearchResponse response = courseSearchService.searchCourses("ABC123", 0, 100);
+        assertNotNull(response);
+        assertEquals(2, response.getNumFound());
+        assertEquals("XYZ", response.getCourses()[0].getId());
+        assertFalse(response.isExactMatch());
+        verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class));
+
+    }
 
     @SuppressWarnings("unchecked")
     @Test
@@ -223,10 +240,12 @@ public class CourseSearchServiceTest {
         final CourseSearchContainer container = new CourseSearchContainer();
         final CourseSearchRestResponse response = new CourseSearchRestResponse();
         List<CourseSearchDoc> docs = new ArrayList<CourseSearchDoc>();
-        CourseSearchDoc doc = new CourseSearchDoc();
-        doc.setCourse_id(id);
-        doc.setCourse_name("Course Name for " + id);
-        docs.add(doc);
+        for (int i = 0; i < numFound; i++) {
+            CourseSearchDoc doc = new CourseSearchDoc();
+            doc.setCourse_id(id);
+            doc.setCourse_name("Course Name for " + id);
+            docs.add(doc);            
+        }
         response.setDocs(docs);
         response.setNumFound(numFound);
         response.setStart(start);
