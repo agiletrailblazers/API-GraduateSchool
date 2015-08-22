@@ -118,26 +118,6 @@ public class CourseDAO {
             if (null != interval) {
                 CourseInterval ci = CourseInterval.valueFor(interval);
                 finaDuration = ci.getDuration(duration);
-//                switch (interval) {
-//                case "Yr":
-//                    finaDuration = duration / 525600;
-//                    break;
-//                case "Hr":
-//                    finaDuration = duration / 60;
-//                    break;
-//                case "Wk":
-//                    finaDuration = duration / 10080;
-//                    break;
-//                case "Mth":
-//                    finaDuration = duration / 43200;
-//                    break;
-//                case "Day":
-//                    finaDuration = duration / 1440;
-//                    break;
-//                default:
-//                    finaDuration = duration;
-//                    break;
-//                }
             }
             return finaDuration;
         }
