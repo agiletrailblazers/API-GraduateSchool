@@ -246,7 +246,7 @@ public class CourseDAOTest {
         when(rs.getString("NM_CRS")).thenReturn("title");
         when(rs.getString("DESC_TEXT")).thenReturn("text-description");
         when(rs.getString("DESC_FORMAT")).thenReturn("formatted-description");
-        when(rs.getString("COURSE_TYPE")).thenReturn("type");
+        when(rs.getString("TYPE")).thenReturn("type");
         when(rs.getInt("TM_CD_DUR")).thenReturn(4320);
         when(rs.getString("TX_CRS_INTERVAL")).thenReturn(expectDefaultInterval ? null : "Day");
         when(rs.getString("CEU_CREDIT")).thenReturn(creditType==CourseCreditType.CEU ? "3":"0");
