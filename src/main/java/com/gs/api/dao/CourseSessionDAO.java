@@ -43,7 +43,7 @@ public class CourseSessionDAO {
         logger.debug("Getting course competency from database for course id {}", id);
         logger.debug(sql);
         try {
-            final List<CourseSession> sessions = this.jdbcTemplate.query(sql, new Object[] { id }, 
+            final List<CourseSession> sessions = this.jdbcTemplate.query(sql, new Object[] { id, id }, 
                     new SessionsRowMapper());
             logger.debug("Found {} session matchs for {}", sessions.size(), id);
             return sessions;
