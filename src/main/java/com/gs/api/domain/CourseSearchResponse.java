@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 public class CourseSearchResponse {
 
     private int start = 1;
+    private int pageSize = 0;
     private int numFound = 0;
     private int startNext = -1;
     private boolean exactMatch = false;
@@ -51,6 +52,13 @@ public class CourseSearchResponse {
     public void setStartNext(int startNext) {
         this.startNext = startNext;
     }
-    
+
+    public int getPageSize() {
+        return pageSize;
+    }
+
+    public void setPageSize(int pageSize) {
+        this.pageSize = pageSize;
+    }
 
 }

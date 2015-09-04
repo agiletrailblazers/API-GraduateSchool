@@ -35,7 +35,9 @@ import com.gs.api.domain.CourseSearchResponse;
 import com.gs.api.exception.NotFoundException;
 import com.gs.api.rest.object.CourseSearchContainer;
 import com.gs.api.rest.object.CourseSearchDoc;
-import com.gs.api.rest.object.CourseSearchRestResponse;
+import com.gs.api.rest.object.CourseSearchDocList;
+import com.gs.api.rest.object.CourseSearchGroup;
+import com.gs.api.rest.object.CourseSearchGrouped;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "classpath:spring/test-root-context.xml" })
@@ -157,7 +159,7 @@ public class CourseSearchServiceTest {
             .thenReturn(responseEntity);
         CourseSearchResponse response = courseSearchService.searchCourses("find-nothing", 0, 100);
         assertNotNull(response);
-        assertEquals(1, response.getNumFound());
+        assertEquals(0, response.getNumFound());
         assertEquals(0, response.getStart());
         assertEquals(-1, response.getStartNext());
         assertNull(response.getCourses());
@@ -208,14 +210,12 @@ public class CourseSearchServiceTest {
         final String SINGLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:8983/solr/courses/select?q=(course_name:(*fraud*))^3 OR (course_id:(*fraud*))^9 OR (course_code:(*fraud*))^6 OR (course_description:(*fraud*)) OR (course_abstract:(*fraud*)) OR (course_prerequisites:(*fraud*))&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true";
         
     	String endpoint = courseSearchService.buildSearchString("fraud", 0, 100);
-    System.out.println(endpoint);
         assertEquals(SINGLE_TERM_RESULT, endpoint);
     
         //two terms
         final String DOUBLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:8983/solr/courses/select?q=(course_name:(*Project Management*))^3 OR (course_id:(*Project Management*))^9 OR (course_code:(*Project Management*))^6 OR (course_description:(*Project Management*)) OR (course_abstract:(*Project Management*)) OR (course_prerequisites:(*Project Management*))&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true";
 
         endpoint = courseSearchService.buildSearchString("Project Management", 0, 100);
-       System.out.println(endpoint);
         assertEquals(DOUBLE_TERM_RESULT, endpoint);
 
     }
@@ -230,17 +230,24 @@ public class CourseSearchServiceTest {
 
     private CourseSearchContainer createCourseContainerNothing() {
         final CourseSearchContainer container = new CourseSearchContainer();
-        final CourseSearchRestResponse response = new CourseSearchRestResponse();
-        response.setDocs(null);
-        response.setNumFound(1);
-        response.setStart(0);
-        container.setResponse(response);
+        final CourseSearchGrouped grouped = new CourseSearchGrouped();
+        final CourseSearchGroup group = new CourseSearchGroup();
+        final CourseSearchDocList docList = new CourseSearchDocList();
+        docList.setNumFound(0);
+        docList.setStart(0);
+        group.setDoclist(docList);
+        group.setMatches(0);
+        group.setNgroups(0);
+        grouped.setGroup(group);
+        container.setGrouped(grouped);
         return container;
     }
 
     private CourseSearchContainer createCourseContainer(String id, int start, int numFound) {
         final CourseSearchContainer container = new CourseSearchContainer();
-        final CourseSearchRestResponse response = new CourseSearchRestResponse();
+        final CourseSearchGrouped grouped = new CourseSearchGrouped();
+        final CourseSearchGroup group = new CourseSearchGroup();
+        final CourseSearchDocList docList = new CourseSearchDocList();
         List<CourseSearchDoc> docs = new ArrayList<CourseSearchDoc>();
         for (int i = 0; i < numFound; i++) {
             CourseSearchDoc doc = new CourseSearchDoc();
@@ -248,10 +255,14 @@ public class CourseSearchServiceTest {
             doc.setCourse_name("Course Name for " + id);
             docs.add(doc);            
         }
-        response.setDocs(docs);
-        response.setNumFound(numFound);
-        response.setStart(start);
-        container.setResponse(response);
+        docList.setDocs(docs);
+        docList.setNumFound(numFound);
+        docList.setStart(start);
+        group.setDoclist(docList);
+        group.setMatches(numFound);
+        group.setNgroups(numFound);
+        grouped.setGroup(group);
+        container.setGrouped(grouped);
         return container;
     }
 
