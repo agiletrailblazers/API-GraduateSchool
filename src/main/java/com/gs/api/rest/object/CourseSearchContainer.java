@@ -9,6 +9,9 @@ public class CourseSearchContainer {
     @JsonProperty("response")
     private CourseSearchRestResponse response;
 
+    @JsonProperty("facet_counts")
+    private CourseSearchRestFacetCount restFacetCount;
+
     public CourseSearchRestResponse getResponse() {
         return response;
     }
@@ -16,6 +19,13 @@ public class CourseSearchContainer {
     public void setResponse(CourseSearchRestResponse response) {
         this.response = response;
     }
-    
+
+    public CourseSearchRestFacetCount getRestFacetCount() {
+        return restFacetCount;
+    }
+
+    public void setCourseRestFacetCount(CourseSearchRestFacetCount restFacetCount) {
+        this.restFacetCount = restFacetCount;
+    }
     
 }

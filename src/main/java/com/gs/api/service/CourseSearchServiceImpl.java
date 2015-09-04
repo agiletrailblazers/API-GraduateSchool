@@ -1,7 +1,6 @@
 package com.gs.api.service;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -105,8 +104,26 @@ public class CourseSearchServiceImpl implements CourseSearchService {
             response.setStartNext(nextStart);
         }
         response.setExactMatch(exactMatch);
+        // Add a set facets (create method to populate facets, take response and iterate through... build and populate.
+        response.setFacets(arrayToMap(container.getRestFacetCount().getRestFacetFields().getCityState()));
+//        System.out.println(container.getRestFacetCount().getRestFacetFields().getCityState());
+//        Create the method
+//        System.out.println(arrayToMap(container.getRestFacetCount().getRestFacetFields().getCityState()).keySet().toArray());
         return response;
     }
+
+    /**
+     *
+     */
+//    @Override
+    public Map<Object, Object> arrayToMap(List list) {
+        Map<Object, Object> locations = new HashMap<>();
+        for (int i = 0; i < list.size(); i++) {
+            locations.put(list.get(i), list.get(i+1));
+        }
+        return locations;
+    }
+
 
     /**
      * Break apart each work (separated by spaces) in the search string and format into
