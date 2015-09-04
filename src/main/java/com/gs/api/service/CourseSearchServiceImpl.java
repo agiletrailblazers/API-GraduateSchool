@@ -1,6 +1,7 @@
 package com.gs.api.service;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -22,6 +23,7 @@ import com.gs.api.domain.CourseSearchResponse;
 import com.gs.api.exception.NotFoundException;
 import com.gs.api.rest.object.CourseSearchContainer;
 import com.gs.api.rest.object.CourseSearchDoc;
+import com.gs.api.rest.object.CourseSearchGroup;
 
 @Service
 public class CourseSearchServiceImpl implements CourseSearchService {
@@ -50,6 +52,7 @@ public class CourseSearchServiceImpl implements CourseSearchService {
 
         boolean exactMatch = false;
         int numFound = 0;
+        int pageSize = 0;
         
         //get search string
         final String searchString = buildSearchString(search, start, numRequested);
@@ -74,17 +77,22 @@ public class CourseSearchServiceImpl implements CourseSearchService {
         }
         CourseSearchContainer container = responseEntity.getBody();
         
+        //get docs from withing the grouped response
+        CourseSearchGroup group = container.getGrouped().getGroup();
+        Collection<CourseSearchDoc> docs = container.getGrouped().getGroup().getDoclist().getDocs();
+        
         //log results
-        if (CollectionUtils.isNotEmpty(container.getResponse().getDocs())) {
-            numFound = container.getResponse().getDocs().size();
+        if (CollectionUtils.isNotEmpty(docs)) {
+            numFound = group.getNgroups();
+            pageSize = docs.size();
         }
-        logger.info("Found " + numFound + " matches for search " + search);
+        logger.info("Found " + numFound + " matches for search " + search + " page size " + pageSize);
 
         // loop through responses
         final CourseSearchResponse response = new CourseSearchResponse();
         List<Course> courses = new ArrayList<Course>();
-        if (CollectionUtils.isNotEmpty(container.getResponse().getDocs())) {
-            for (CourseSearchDoc doc : container.getResponse().getDocs()) {
+        if (CollectionUtils.isNotEmpty(docs)) {
+            for (CourseSearchDoc doc : docs) {
                 String courseId = doc.getCourse_id();
                 Course newCourse = new Course(courseId, doc.getCourse_code(), 
                         doc.getCourse_name(), doc.getCourse_description());
@@ -98,10 +106,11 @@ public class CourseSearchServiceImpl implements CourseSearchService {
             }
             response.setCourses(courses.toArray(new Course[courses.size()]));
         }
-        response.setStart(container.getResponse().getStart());
-        response.setNumFound(container.getResponse().getNumFound());
+        response.setStart(group.getDoclist().getStart());
+        response.setPageSize(pageSize);
+        response.setNumFound(numFound);
         int nextStart = start + numRequested; 
-        if (nextStart <= container.getResponse().getNumFound()) {
+        if (nextStart <= numFound) {
             response.setStartNext(nextStart);
         }
         response.setExactMatch(exactMatch);
