@@ -109,9 +109,13 @@ public class CourseSearchServiceImpl implements CourseSearchService {
         response.setStart(group.getDoclist().getStart());
         response.setPageSize(pageSize);
         response.setNumFound(numFound);
+        response.setNumRequested(numRequested);
         int nextStart = start + numRequested; 
         if (nextStart <= numFound) {
             response.setStartNext(nextStart);
+        }
+        if (pageSize > 0) {
+            response.setTotalPages((int) Math.ceil((double)numFound / pageSize));
         }
         response.setExactMatch(exactMatch);
         return response;
