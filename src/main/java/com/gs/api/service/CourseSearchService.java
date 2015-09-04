@@ -5,10 +5,13 @@ import com.gs.api.exception.NotFoundException;
 
 public interface CourseSearchService {
 
-    public CourseSearchResponse searchCourses(String search, int start, int numRequested) throws NotFoundException;
+    public CourseSearchResponse searchCourses(String search, int start, int numRequested,String requestFilters) throws NotFoundException;
     
-    public String buildSearchString(String search, int start, int numRequested);
+
+    public String buildSearchString(String search, int start, int numRequested,String requestFilters);
+
     
     public String stripAndEncode(String search);
+
 
 }
