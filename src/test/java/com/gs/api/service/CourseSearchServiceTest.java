@@ -205,15 +205,17 @@ public class CourseSearchServiceTest {
     public void buildSearchString() {
 
         //single term
-        final String SINGLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:8983/solr/collection1/select?q=(course_name:(fraud))^5 OR (course_id:(fraud)) OR (course_description:(fraud)) OR (course_desc_obj:(fraud))&start=0&rows=100&wt=json&indent=true";
-
-    	String endpoint = courseSearchService.buildSearchString(courseSearchSolrEndpoint, "fraud", 0, 100);
+        final String SINGLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:8983/solr/courses/select?q=(course_name:(*fraud*))^3 OR (course_id:(*fraud*))^9 OR (course_code:(*fraud*))^6 OR (course_description:(*fraud*)) OR (course_abstract:(*fraud*)) OR (course_prerequisites:(*fraud*))&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true";
+        
+    	String endpoint = courseSearchService.buildSearchString("fraud", 0, 100);
+    System.out.println(endpoint);
         assertEquals(SINGLE_TERM_RESULT, endpoint);
     
         //two terms
-        final String DOUBLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:8983/solr/collection1/select?q=(course_name:(Project Management))^5 OR (course_id:(Project Management)) OR (course_description:(Project Management)) OR (course_desc_obj:(Project Management))&start=0&rows=100&wt=json&indent=true";
+        final String DOUBLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:8983/solr/courses/select?q=(course_name:(*Project Management*))^3 OR (course_id:(*Project Management*))^9 OR (course_code:(*Project Management*))^6 OR (course_description:(*Project Management*)) OR (course_abstract:(*Project Management*)) OR (course_prerequisites:(*Project Management*))&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true";
 
-        endpoint = courseSearchService.buildSearchString(courseSearchSolrEndpoint, "Project Management", 0, 100);
+        endpoint = courseSearchService.buildSearchString("Project Management", 0, 100);
+       System.out.println(endpoint);
         assertEquals(DOUBLE_TERM_RESULT, endpoint);
 
     }
