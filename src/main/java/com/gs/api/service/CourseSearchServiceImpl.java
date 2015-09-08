@@ -137,11 +137,12 @@ public class CourseSearchServiceImpl implements CourseSearchService {
      *
      */
 //    @Override
-    public Map<Object, Object> arrayToMap(List list) {
-        Map<Object, Object> locations = new HashMap<>();
+    public Map<String, String> arrayToMap(List list) {
+        Map<String, String> locations = new HashMap<>();
         for (int i = 0; i < list.size(); i++) {
-            locations.put(list.get(i), list.get(i+1));
+            locations.put(String.valueOf(list.get(i)), String.valueOf(list.get(i + 1)));
         }
+        System.out.println(locations.keySet());
         return locations;
     }
 
