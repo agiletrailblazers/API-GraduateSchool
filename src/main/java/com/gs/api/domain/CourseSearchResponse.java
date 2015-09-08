@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.gs.api.rest.object.CourseSearchFacetFields;
 
 import java.util.HashMap;
+import java.util.Map;
 
 // Kai create HashMap object that has city state.
 @JsonInclude(Include.ALWAYS)
@@ -15,7 +16,7 @@ public class CourseSearchResponse {
     private int startNext = -1;
     private boolean exactMatch = false;
     private Course[] courses;
-    private Facet[] facets;
+    private Map<String, String> facets;
 //    Create facet object that will contain map for city state.
 
     public boolean isExactMatch() {
@@ -58,11 +59,11 @@ public class CourseSearchResponse {
         this.startNext = startNext;
     }
 
-    public Facet[] getFacets() {
+    public Map<String, String> getFacets() {
         return facets;
     }
 
-    public void setFacets(Facet[] facets) {
+    public void setFacets(Map<String, String> facets) {
         this.facets = facets;
     }
 }
