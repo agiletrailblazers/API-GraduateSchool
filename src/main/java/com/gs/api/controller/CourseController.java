@@ -67,17 +67,11 @@ public class CourseController {
               @RequestParam(required=false) String[] filter)
             throws Exception {
         logger.info("Course API initiated");
-        String groupFacetParamString ="";
-        if (null!=filter) {
-            for (String groupFacetParam : filter) {
-                groupFacetParamString = groupFacetParamString + "&fq=" + groupFacetParam;
-            }
-        }
         if (!StringUtils.isEmpty(search)) {
             //this is a course search
             return courseSearchService.searchCourses(search, 
                     NumberUtils.toInt(start, 0), 
-                    NumberUtils.toInt(numRequested, 100),groupFacetParamString);
+                    NumberUtils.toInt(numRequested, 100),filter);
         }
         else {
             if (StringUtils.isNotEmpty(start) || StringUtils.isNoneEmpty(numRequested)) {
@@ -186,13 +180,4 @@ public class CourseController {
         // method called when a input validation failure occurs
         return "{\"message\": \"Invalid Request \"}";
     }
-
-
-    @InitBinder
-    public void initBinder(WebDataBinder binder) {
-        binder.registerCustomEditor(
-                String[].class,
-                new StringArrayPropertyEditor(null));
-    }
-
 }
