@@ -55,14 +55,14 @@ public class CourseSearchServiceImpl implements CourseSearchService {
         boolean exactMatch = false;
         int numFound = 0;
         int pageSize = 0;
-        String groupFacetParamString ="";
+        final StringBuffer groupFacetParamString = new StringBuffer();
         if (null!=filter) {
             for (String groupFacetParam : filter) {
-                groupFacetParamString = groupFacetParamString + "&fq=" + groupFacetParam;
+               groupFacetParamString.append( "&fq=" + groupFacetParam);
             }
         }
         //get search string
-        final String searchString = buildSearchString( search, start, numRequested,groupFacetParamString);
+        final String searchString = buildSearchString( search, start, numRequested,groupFacetParamString.toString());
         logger.info(searchString);
 
         //create request header contain basic auth credentials
