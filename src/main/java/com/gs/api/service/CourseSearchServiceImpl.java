@@ -50,13 +50,19 @@ public class CourseSearchServiceImpl implements CourseSearchService {
      * @param request
      * @return SearchResponse
      */
-    public CourseSearchResponse searchCourses(String search, int start, int numRequested,String requestFilters) throws NotFoundException {
+    public CourseSearchResponse searchCourses(String search, int start, int numRequested,String[] filter) throws NotFoundException {
 
         boolean exactMatch = false;
         int numFound = 0;
         int pageSize = 0;
+        String groupFacetParamString ="";
+        if (null!=filter) {
+            for (String groupFacetParam : filter) {
+                groupFacetParamString = groupFacetParamString + "&fq=" + groupFacetParam;
+            }
+        }
         //get search string
-        final String searchString = buildSearchString( search, start, numRequested,requestFilters);
+        final String searchString = buildSearchString( search, start, numRequested,groupFacetParamString);
         logger.info(searchString);
 
         //create request header contain basic auth credentials
@@ -126,7 +132,7 @@ public class CourseSearchServiceImpl implements CourseSearchService {
      * the proper SOLR search format for multiple words.  Example: *Word1* AND *Word2*
      */
     @Override
-    public String buildSearchString(String search, int start, int numRequested,String requestFilters) {
+    public String buildSearchString(String search, int start, int numRequested,String filter) {
 
         String solrQuery = courseSearchSolrEndpoint.concat(courseSearchSolrQuery);
 
@@ -136,7 +142,7 @@ public class CourseSearchServiceImpl implements CourseSearchService {
         // update start and num requested
         solrQuery = StringUtils.replace(solrQuery, "{start}", Integer.toString(start));
         solrQuery = StringUtils.replace(solrQuery, "{numRequested}", Integer.toString(numRequested));
-        solrQuery = solrQuery.concat(requestFilters);
+        solrQuery = StringUtils.replace(solrQuery, "{filter}",filter);
         return solrQuery;
     }
 
