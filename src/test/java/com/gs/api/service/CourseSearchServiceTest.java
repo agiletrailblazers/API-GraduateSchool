@@ -14,6 +14,7 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.gs.api.rest.object.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,9 +34,6 @@ import org.springframework.web.client.RestOperations;
 
 import com.gs.api.domain.CourseSearchResponse;
 import com.gs.api.exception.NotFoundException;
-import com.gs.api.rest.object.CourseSearchContainer;
-import com.gs.api.rest.object.CourseSearchDoc;
-import com.gs.api.rest.object.CourseSearchRestResponse;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "classpath:spring/test-root-context.xml" })
@@ -71,7 +69,7 @@ public class CourseSearchServiceTest {
         CourseSearchResponse response = courseSearchService.searchCourses("stuff", 0, 100);
         assertNotNull(response);
         assertEquals(224, response.getNumFound());
-        assertEquals(0,  response.getStart());
+        assertEquals(0, response.getStart());
         assertEquals(100,  response.getStartNext());
         assertEquals("ABC123", response.getCourses()[0].getId());
         assertFalse(response.isExactMatch());
@@ -227,7 +225,21 @@ public class CourseSearchServiceTest {
         assertEquals("\\+\\-\\||\\!\\(\\)\\{\\}\\[\\]\\\"\\~\\*\\?\\:\\\\", result);
 
     }
+    @Test
+    public void testSearch_ExactMatchWithFacetParam() throws Exception {
 
+        ResponseEntity<CourseSearchContainer> responseEntity = new ResponseEntity<CourseSearchContainer>(
+                createCourseContainerwithCityStateFacet("government", 0, 1), HttpStatus.OK);
+        when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
+                .thenReturn(responseEntity);
+        CourseSearchResponse response = courseSearchService.searchCourses("government", 0, 100);
+        assertNotNull(response);
+        assertEquals(1, response.getNumFound());
+        assertEquals("government", response.getCourses()[0].getId());
+        assertTrue(response.isExactMatch());
+       verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class));
+
+    }
     private CourseSearchContainer createCourseContainerNothing() {
         final CourseSearchContainer container = new CourseSearchContainer();
         final CourseSearchRestResponse response = new CourseSearchRestResponse();
@@ -252,6 +264,33 @@ public class CourseSearchServiceTest {
         response.setNumFound(numFound);
         response.setStart(start);
         container.setResponse(response);
+        return container;
+    }
+
+    private CourseSearchContainer createCourseContainerwithCityStateFacet(String id, int start, int numFound) {
+        final CourseSearchContainer container = new CourseSearchContainer();
+        final CourseSearchRestResponse response = new CourseSearchRestResponse();
+        final CourseSearchRestFacetCount restFacetCount = new CourseSearchRestFacetCount();
+        CourseSearchFacetFields   restFacetFields= new CourseSearchFacetFields();
+        List list = new ArrayList();
+        list.add("Philadelphia,PA");
+        list.add("1");
+        list.add("Washington,DC");
+        list.add("2");
+        restFacetFields.setCityState(list);
+        restFacetCount.setCourseRestFacetFields(restFacetFields);
+        List<CourseSearchDoc> docs = new ArrayList<CourseSearchDoc>();
+        for (int i = 0; i < numFound; i++) {
+            CourseSearchDoc doc = new CourseSearchDoc();
+            doc.setCourse_id(id);
+            doc.setCourse_name("Course Name for " + id);
+            docs.add(doc);
+        }
+        response.setDocs(docs);
+        response.setNumFound(numFound);
+        response.setStart(start);
+        container.setResponse(response);
+        container.setCourseRestFacetCount(restFacetCount);
         return container;
     }
 

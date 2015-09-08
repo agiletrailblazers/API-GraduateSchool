@@ -105,10 +105,9 @@ public class CourseSearchServiceImpl implements CourseSearchService {
         }
         response.setExactMatch(exactMatch);
         // Add a set facets (create method to populate facets, take response and iterate through... build and populate.
-        response.setFacets(arrayToMap(container.getRestFacetCount().getRestFacetFields().getCityState()));
-//        System.out.println(container.getRestFacetCount().getRestFacetFields().getCityState());
-//        Create the method
-//        System.out.println(arrayToMap(container.getRestFacetCount().getRestFacetFields().getCityState()).keySet().toArray());
+       if(null !=container.getRestFacetCount()) {
+           response.setFacets(arrayToMap(container.getRestFacetCount().getRestFacetFields().getCityState()));
+       }
         return response;
     }
 
@@ -118,8 +117,8 @@ public class CourseSearchServiceImpl implements CourseSearchService {
 //    @Override
     public Map<String, String> arrayToMap(List list) {
         Map<String, String> locations = new HashMap<>();
-        for (int i = 0; i < list.size(); i++) {
-            locations.put(String.valueOf(list.get(i)), String.valueOf(list.get(i + 1)));
+        for (int i = 0; i <list.size(); i=i+2) {
+           locations.put(String.valueOf(list.get(i)), String.valueOf(list.get(i + 1)));
         }
         System.out.println(locations.keySet());
         return locations;
@@ -141,7 +140,6 @@ public class CourseSearchServiceImpl implements CourseSearchService {
         // update start and num requested
         solrQuery = StringUtils.replace(solrQuery, "{start}", Integer.toString(start));
         solrQuery = StringUtils.replace(solrQuery, "{numRequested}", Integer.toString(numRequested));
-
         return solrQuery;
     }
 
