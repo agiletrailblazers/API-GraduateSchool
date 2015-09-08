@@ -9,6 +9,7 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.propertyeditors.StringArrayPropertyEditor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.WebDataBinder;
 
 import com.gs.api.domain.Course;
 import com.gs.api.domain.CourseSearchResponse;
@@ -68,15 +70,15 @@ public class CourseController {
     @RequestMapping(value = "/courses", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody CourseSearchResponse searchCourse(@RequestParam(required=false) String search,
             @RequestParam(required=false) String start, 
-            @RequestParam(required=false) String numRequested) throws Exception {
-        
+            @RequestParam(required=false) String numRequested,
+              @RequestParam(required=false) String[] filter)
+            throws Exception {
         logger.info("Course API initiated");
-
         if (!StringUtils.isEmpty(search)) {
             //this is a course search
             return courseSearchService.searchCourses(search, 
                     NumberUtils.toInt(start, 0), 
-                    NumberUtils.toInt(numRequested, 100));
+                    NumberUtils.toInt(numRequested, 100),filter);
         }
         else {
             if (StringUtils.isNotEmpty(start) || StringUtils.isNoneEmpty(numRequested)) {
@@ -185,5 +187,4 @@ public class CourseController {
         // method called when a input validation failure occurs
         return "{\"message\": \"Invalid Request \"}";
     }
-
 }

@@ -70,11 +70,11 @@ public class CourseSearchServiceTest {
                 createCourseContainer("ABC123", 0, 224, 100), HttpStatus.OK);
         when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
             .thenReturn(responseEntity);
-        CourseSearchResponse response = courseSearchService.searchCourses("stuff", 0, 100);
+        CourseSearchResponse response = courseSearchService.searchCourses("stuff", 0, 100,new String[0]);
         assertNotNull(response);
         assertEquals(224, response.getNumFound());
-        assertEquals(0,  response.getStart());
-        assertEquals(100,  response.getStartNext());
+        assertEquals(0, response.getStart());
+        assertEquals(100, response.getStartNext());
         assertEquals("ABC123", response.getCourses()[0].getId());
         assertFalse(response.isExactMatch());
         assertEquals(3, response.getTotalPages());
@@ -90,7 +90,7 @@ public class CourseSearchServiceTest {
                 createCourseContainer("ABC123", 0, 1, 1), HttpStatus.OK);
         when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
             .thenReturn(responseEntity);
-        CourseSearchResponse response = courseSearchService.searchCourses("ABC123", 0, 100);
+        CourseSearchResponse response = courseSearchService.searchCourses("ABC123", 0, 100,new String[0]);
         assertNotNull(response);
         assertEquals(1, response.getNumFound());
         assertEquals("ABC123", response.getCourses()[0].getId());
@@ -106,8 +106,8 @@ public class CourseSearchServiceTest {
         ResponseEntity<CourseSearchContainer> responseEntity = new ResponseEntity<CourseSearchContainer>(
                 createCourseContainer("ABC123001", 0, 1, 1), HttpStatus.OK);
         when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
-            .thenReturn(responseEntity);
-        CourseSearchResponse response = courseSearchService.searchCourses("ABC123", 0, 100);
+                .thenReturn(responseEntity);
+        CourseSearchResponse response = courseSearchService.searchCourses("ABC123", 0, 100,new String[0]);
         assertNotNull(response);
         assertEquals(1, response.getNumFound());
         assertEquals("ABC123001", response.getCourses()[0].getId());
@@ -124,7 +124,7 @@ public class CourseSearchServiceTest {
                 createCourseContainer("XYZ", 0, 2, 2), HttpStatus.OK);
         when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
             .thenReturn(responseEntity);
-        CourseSearchResponse response = courseSearchService.searchCourses("ABC123", 0, 100);
+        CourseSearchResponse response = courseSearchService.searchCourses("ABC123", 0, 100,new String[0]);
         assertNotNull(response);
         assertEquals(2, response.getNumFound());
         assertEquals("XYZ", response.getCourses()[0].getId());
@@ -141,7 +141,7 @@ public class CourseSearchServiceTest {
                 createCourseContainer("ABC123001", 0, 1, 1), HttpStatus.OK);
         when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
             .thenReturn(responseEntity);
-        CourseSearchResponse response = courseSearchService.searchCourses("abc123", 0, 100);
+        CourseSearchResponse response = courseSearchService.searchCourses("abc123", 0, 100,new String[0]);
         assertNotNull(response);
         assertEquals(1, response.getNumFound());
         assertEquals("ABC123001", response.getCourses()[0].getId());
@@ -158,7 +158,7 @@ public class CourseSearchServiceTest {
                 createCourseContainerNothing(), HttpStatus.OK);
         when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
             .thenReturn(responseEntity);
-        CourseSearchResponse response = courseSearchService.searchCourses("find-nothing", 0, 100);
+        CourseSearchResponse response = courseSearchService.searchCourses("find-nothing", 0, 100,new String[0]);
         assertNotNull(response);
         assertEquals(0, response.getNumFound());
         assertEquals(0, response.getStart());
@@ -175,7 +175,7 @@ public class CourseSearchServiceTest {
         when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
             .thenThrow(new RuntimeException("I didn't expect this to happen"));
         try {
-            courseSearchService.searchCourses("find-nothing", 0, 100);
+            courseSearchService.searchCourses("find-nothing", 0, 100,new String[0]);
             assertTrue(false);   //fail test as we should not get here
         } catch (Exception e) {
             assertTrue(e instanceof NotFoundException);
@@ -193,7 +193,7 @@ public class CourseSearchServiceTest {
                 createCourseContainer("ABC123", 100, 162, 100), HttpStatus.OK);
         when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
             .thenReturn(responseEntity);
-        CourseSearchResponse response = courseSearchService.searchCourses("stuff", 100, 100);
+        CourseSearchResponse response = courseSearchService.searchCourses("stuff", 100, 100,new String[0]);
         assertNotNull(response);
         assertEquals(162, response.getNumFound());
         assertEquals(100, response.getStart());
@@ -210,13 +210,14 @@ public class CourseSearchServiceTest {
         //single term
         final String SINGLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:8983/solr/courses/select?q=(course_name:(*fraud*))^3 OR (course_id:(*fraud*))^9 OR (course_code:(*fraud*))^6 OR (course_description:(*fraud*)) OR (course_abstract:(*fraud*)) OR (course_prerequisites:(*fraud*))&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true";
         
-    	String endpoint = courseSearchService.buildSearchString("fraud", 0, 100);
+    	String endpoint = courseSearchService.buildSearchString("fraud", 0, 100,"");
         assertEquals(SINGLE_TERM_RESULT, endpoint);
     
         //two terms
         final String DOUBLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:8983/solr/courses/select?q=(course_name:(*Project Management*))^3 OR (course_id:(*Project Management*))^9 OR (course_code:(*Project Management*))^6 OR (course_description:(*Project Management*)) OR (course_abstract:(*Project Management*)) OR (course_prerequisites:(*Project Management*))&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true";
 
-        endpoint = courseSearchService.buildSearchString("Project Management", 0, 100);
+        endpoint = courseSearchService.buildSearchString("Project Management",0, 100,"");
+
         assertEquals(DOUBLE_TERM_RESULT, endpoint);
 
     }
@@ -226,6 +227,59 @@ public class CourseSearchServiceTest {
 
         String result = courseSearchService.stripAndEncode("#&^%+-||!(){}[]\"~*?:\\");
         assertEquals("\\+\\-\\||\\!\\(\\)\\{\\}\\[\\]\\\"\\~\\*\\?\\:\\\\", result);
+
+    }
+
+    @Test
+    public void testSearch_WithFacetParams() throws Exception {
+
+        ResponseEntity<CourseSearchContainer> responseEntity = new ResponseEntity<CourseSearchContainer>(
+                createCourseContainer("ABC123001", 0, 1, 1), HttpStatus.OK);
+        String[] facetParams = {"city_state:Washington"};
+        when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
+                .thenReturn(responseEntity);
+        CourseSearchResponse response = courseSearchService.searchCourses("ABC123", 0, 100,facetParams);
+        assertNotNull(response);
+        assertEquals(1, response.getNumFound());
+        assertEquals("ABC123001", response.getCourses()[0].getId());
+        assertTrue(response.isExactMatch());
+        verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class));
+
+    }
+
+    @Test
+    public void testSearch_WithFacetNullParams() throws Exception {
+
+        ResponseEntity<CourseSearchContainer> responseEntity = new ResponseEntity<CourseSearchContainer>(
+                createCourseContainer("ABC123001", 0, 1, 1), HttpStatus.OK);
+        String[] facetParams = {"city_state:Washington"};
+        when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
+                .thenReturn(responseEntity);
+        CourseSearchResponse response = courseSearchService.searchCourses("ABC123", 0, 100,null);
+        assertNotNull(response);
+        assertEquals(1, response.getNumFound());
+        assertEquals("ABC123001", response.getCourses()[0].getId());
+        assertTrue(response.isExactMatch());
+        verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class));
+
+    }
+
+
+    @Test
+    public void buildSearchStringWithFacetParam() {
+
+        //single term
+        final String SINGLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:8983/solr/courses/select?q=(course_name:(*fraud*))^3 OR (course_id:(*fraud*))^9 OR (course_code:(*fraud*))^6 OR (course_description:(*fraud*)) OR (course_abstract:(*fraud*)) OR (course_prerequisites:(*fraud*))&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true&fq=city_state:Washington";
+        String facetParamsString = "&fq=city_state:Washington";
+        String endpoint = courseSearchService.buildSearchString("fraud", 0, 100, facetParamsString);
+        assertEquals(SINGLE_TERM_RESULT, endpoint);
+
+        //two terms
+        final String DOUBLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:8983/solr/courses/select?q=(course_name:(*Project Management*))^3 OR (course_id:(*Project Management*))^9 OR (course_code:(*Project Management*))^6 OR (course_description:(*Project Management*)) OR (course_abstract:(*Project Management*)) OR (course_prerequisites:(*Project Management*))&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true&fq=city_state:Washington&fq=status:S";
+        facetParamsString = "&fq=city_state:Washington&fq=status:S";
+        endpoint = courseSearchService.buildSearchString("Project Management",0, 100,facetParamsString);
+
+        assertEquals(DOUBLE_TERM_RESULT, endpoint);
 
     }
 

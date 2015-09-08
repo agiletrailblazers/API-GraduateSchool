@@ -29,33 +29,40 @@ import com.gs.api.rest.object.CourseSearchGroup;
 public class CourseSearchServiceImpl implements CourseSearchService {
 
     private static final Logger logger = LoggerFactory.getLogger(CourseSearchServiceImpl.class);
-    
+
     @Value("${course.search.solr.endpoint}")
     private String courseSearchSolrEndpoint;
+
     
     @Value("${course.search.solr.query}")
     private String courseSearchSolrQuery;
     
+
     @Value("${course.search.solr.credentials}")
     private String solrCredentials;
 
-    @Autowired(required=true)
+    @Autowired(required = true)
     private RestOperations restTemplate;
-    
+
     /**
      * Perform a search for courses
-     * 
+     *
      * @param request
      * @return SearchResponse
      */
-    public CourseSearchResponse searchCourses(String search, int start, int numRequested) throws NotFoundException {
+    public CourseSearchResponse searchCourses(String search, int start, int numRequested,String[] filter) throws NotFoundException {
 
         boolean exactMatch = false;
         int numFound = 0;
         int pageSize = 0;
-        
+        final StringBuffer groupFacetParamString = new StringBuffer();
+        if (null!=filter) {
+            for (String groupFacetParam : filter) {
+               groupFacetParamString.append( "&fq=" + groupFacetParam);
+            }
+        }
         //get search string
-        final String searchString = buildSearchString(search, start, numRequested);
+        final String searchString = buildSearchString( search, start, numRequested,groupFacetParamString.toString());
         logger.info(searchString);
 
         //create request header contain basic auth credentials
@@ -65,22 +72,21 @@ public class CourseSearchServiceImpl implements CourseSearchService {
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "Basic " + base64Creds);
         HttpEntity<String> request = new HttpEntity<String>(headers);
-        
+
         //perform search
         ResponseEntity<CourseSearchContainer> responseEntity = null;
         try {
-            responseEntity = restTemplate.exchange(searchString, HttpMethod.GET, 
+            responseEntity = restTemplate.exchange(searchString, HttpMethod.GET,
                     request, CourseSearchContainer.class);
         } catch (Exception e) {
             logger.error("Failed to get search results from SOLR", e);
             throw new NotFoundException("No search results found");
         }
         CourseSearchContainer container = responseEntity.getBody();
-        
+
         //get docs from withing the grouped response
         CourseSearchGroup group = container.getGrouped().getGroup();
         Collection<CourseSearchDoc> docs = container.getGrouped().getGroup().getDoclist().getDocs();
-        
         //log results
         if (CollectionUtils.isNotEmpty(docs)) {
             numFound = group.getNgroups();
@@ -94,7 +100,7 @@ public class CourseSearchServiceImpl implements CourseSearchService {
         if (CollectionUtils.isNotEmpty(docs)) {
             for (CourseSearchDoc doc : docs) {
                 String courseId = doc.getCourse_id();
-                Course newCourse = new Course(courseId, doc.getCourse_code(), 
+                Course newCourse = new Course(courseId, doc.getCourse_code(),
                         doc.getCourse_name(), doc.getCourse_description());
                 courses.add(newCourse);
 
@@ -126,36 +132,37 @@ public class CourseSearchServiceImpl implements CourseSearchService {
      * the proper SOLR search format for multiple words.  Example: *Word1* AND *Word2*
      */
     @Override
-    public String buildSearchString(String search, int start, int numRequested) {
-        
+    public String buildSearchString(String search, int start, int numRequested,String filter) {
+
         String solrQuery = courseSearchSolrEndpoint.concat(courseSearchSolrQuery);
-        
+
         // build search criteria
         solrQuery = StringUtils.replace(solrQuery, "{search}", stripAndEncode(search));
-        
+
         // update start and num requested
         solrQuery = StringUtils.replace(solrQuery, "{start}", Integer.toString(start));
         solrQuery = StringUtils.replace(solrQuery, "{numRequested}", Integer.toString(numRequested));
-
+        solrQuery = StringUtils.replace(solrQuery, "{filter}",filter);
         return solrQuery;
     }
 
     /**
      * Strip characters considered invalid to SOLR.  Encode other characters which are
-     * supported by SOLR but need to be SOLR encoded (add "\" before character). 
-     * 
+     * supported by SOLR but need to be SOLR encoded (add "\" before character).
+     * <p>
      * SOLR Invalid: #, %, ^, &
      * SOLR Encoded: + - || ! ( ) { } [ ] " ~ * ? : \
      * Useless: Remove AND or OR from search string as these only confuse the situation
-     * 
+     *
      * @param search
      * @return string
      */
     @Override
     public String stripAndEncode(String search) {
-        String[] searchList = {"#", "%", "^", "&", "+", "-", "||", "!", "(", ")", "{", "}", "[", "]", "\"", "~", "*", "?", ":", "\\"};        
+        String[] searchList = {"#", "%", "^", "&", "+", "-", "||", "!", "(", ")", "{", "}", "[", "]", "\"", "~", "*", "?", ":", "\\"};
         String[] replaceList = {"", "", "", "", "\\+", "\\-", "\\||", "\\!", "\\(", "\\)", "\\{", "\\}", "\\[", "\\]", "\\\"", "\\~", "\\*", "\\?", "\\:", "\\\\"};
         return StringUtils.replaceEach(search, searchList, replaceList);
     }
+
 
 }

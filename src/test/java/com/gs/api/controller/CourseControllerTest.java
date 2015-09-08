@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -84,13 +85,13 @@ public class CourseControllerTest {
 
     @Test
     public void testCourseSearch() throws Exception {
-        when(courseSearchService.searchCourses(anyString(), anyInt(), anyInt()))
+        when(courseSearchService.searchCourses(anyString(), anyInt(), anyInt(),any(String[].class)))
             .thenReturn(createSearchResponse());
         mockMvc.perform(get("/courses?search=training").accept(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.exactMatch").value(is(false)))
                 .andExpect(jsonPath("$.numFound").value(is(1)));
-        verify(courseSearchService, times(1)).searchCourses(anyString(), anyInt(), anyInt());
+        verify(courseSearchService, times(1)).searchCourses(anyString(), anyInt(), anyInt(), any(String[].class));
     }
 
     @Test
@@ -99,23 +100,23 @@ public class CourseControllerTest {
                 .andExpect(status().isInternalServerError())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$.message").value(is("Parameter 'start' and 'numRequest' not supported with this request")));
-        verify(courseSearchService, times(0)).searchCourses(anyString(), anyInt(), anyInt());
+        verify(courseSearchService, times(0)).searchCourses(anyString(), anyInt(), anyInt(),any(String[].class));
     }
-    
+
     @Test
     public void testCourseSearch_InvalidArgs2() throws Exception {
         mockMvc.perform(get("/courses?numRequested=1").accept(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isInternalServerError())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$.message").value(is("Parameter 'start' and 'numRequest' not supported with this request")));
-        verify(courseSearchService, times(0)).searchCourses(anyString(), anyInt(), anyInt());
+        verify(courseSearchService, times(0)).searchCourses(anyString(), anyInt(), anyInt(),any(String[].class));
     }
 
     @Test
     public void testCourseSearch_BadRequest() throws Exception {
         mockMvc.perform(get("/bad=").accept(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(status().isNotFound());
-        verify(courseSearchService, times(0)).searchCourses(anyString(), anyInt(), anyInt());
+        verify(courseSearchService, times(0)).searchCourses(anyString(), anyInt(), anyInt(),any(String[].class));
     }
     
     @Test
@@ -185,7 +186,7 @@ public class CourseControllerTest {
                 .andExpect(jsonPath("$[0].state").value(is("DC")));
         verify(locationService, times(1)).getLocations();
     }
-    
+
     @Test
     public void testCourseGetActive() throws Exception {
         when(courseService.getCourses()).thenReturn(CourseTestHelper.createCourseList());
@@ -202,6 +203,28 @@ public class CourseControllerTest {
         String result = courseController.handleValidationException(new HttpMessageNotReadableException(""));
         assertNotNull(result);
         assertEquals("{\"message\": \"Invalid Request \"}", result);
+    }
+
+    @Test
+    public void testCourseSearchWithcityStateFilter() throws Exception {
+        when(courseSearchService.searchCourses(anyString(), anyInt(), anyInt(),any(String[].class)))
+                .thenReturn(createSearchResponse());
+        mockMvc.perform(get("/courses?search=training&&filter=city_state:Washington,DC").accept(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.exactMatch").value(is(false)))
+                .andExpect(jsonPath("$.numFound").value(is(1)));
+        verify(courseSearchService, times(1)).searchCourses(anyString(), anyInt(), anyInt(), any(String[].class));
+    }
+
+    @Test
+    public void testCourseSearchWithCityStateAndStatusFilter() throws Exception {
+        when(courseSearchService.searchCourses(anyString(), anyInt(), anyInt(),any(String[].class)))
+                .thenReturn(createSearchResponse());
+        mockMvc.perform(get("/courses?search=training&&filter=city_state:Washington,DC&&filter=status:S").accept(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.exactMatch").value(is(false)))
+                .andExpect(jsonPath("$.numFound").value(is(1)));
+        verify(courseSearchService, times(1)).searchCourses(anyString(), anyInt(), anyInt(), any(String[].class));
     }
     
     //create object for mocks
