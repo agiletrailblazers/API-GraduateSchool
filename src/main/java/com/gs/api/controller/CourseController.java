@@ -140,8 +140,7 @@ public class CourseController {
      * @throws Exception
      */
     @RequestMapping(value = "/locations", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody
-    List<Location> getLocations() throws Exception {
+    public @ResponseBody List<Location> getLocations() throws Exception {
         logger.debug("Location search initiated");        
         return locationService.getLocations();
     }
