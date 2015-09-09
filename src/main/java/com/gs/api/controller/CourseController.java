@@ -9,12 +9,14 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.propertyeditors.StringArrayPropertyEditor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.WebDataBinder;
 
 import com.gs.api.domain.Course;
 import com.gs.api.domain.CourseSearchResponse;
@@ -137,7 +140,8 @@ public class CourseController {
      * @throws Exception
      */
     @RequestMapping(value = "/locations", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody List<Location> getLocations() throws Exception {
+    public @ResponseBody
+    List<Location> getLocations() throws Exception {
         logger.debug("Location search initiated");        
         return locationService.getLocations();
     }
@@ -185,5 +189,11 @@ public class CourseController {
     public String handleValidationException(HttpMessageNotReadableException ex) throws IOException {
         // method called when a input validation failure occurs
         return "{\"message\": \"Invalid Request \"}";
+    }
+
+    @InitBinder
+    public void initBinder(WebDataBinder binder) {
+        binder.registerCustomEditor(
+            String[].class, new StringArrayPropertyEditor(null));
     }
 }

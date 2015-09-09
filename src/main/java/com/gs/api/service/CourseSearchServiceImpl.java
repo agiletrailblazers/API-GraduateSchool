@@ -59,7 +59,8 @@ public class CourseSearchServiceImpl implements CourseSearchService {
         StringBuffer groupFacetParamString = new StringBuffer();
         if (null != filter) {
             for (String groupFacetParam : filter) {
-                groupFacetParamString.append("&fq=").append(groupFacetParam);
+                groupFacetParam = StringUtils.replace(groupFacetParam,":",":\"");
+                groupFacetParamString.append("&fq=").append(groupFacetParam).append("\"");
             }
         }
         // get search string
