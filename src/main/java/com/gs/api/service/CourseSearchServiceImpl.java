@@ -129,7 +129,7 @@ public class CourseSearchServiceImpl implements CourseSearchService {
         // Add a set facets (create method to populate facets, take response and
         // iterate through... build and populate.
         if (null != container.getRestFacetCount()) {
-            response.setFacets(arrayToMap(container.getRestFacetCount().getRestFacetFields().getCityState()));
+            response.setLocationFacets(arrayToMap(container.getRestFacetCount().getRestFacetFields().getCityState()));
         }
         return response;
     }
