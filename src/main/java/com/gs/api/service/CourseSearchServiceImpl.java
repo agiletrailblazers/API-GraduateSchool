@@ -3,6 +3,7 @@ package com.gs.api.service;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.*;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -124,8 +125,26 @@ public class CourseSearchServiceImpl implements CourseSearchService {
             response.setTotalPages((int) Math.ceil((double)numFound / pageSize));
         }
         response.setExactMatch(exactMatch);
+        // Add a set facets (create method to populate facets, take response and iterate through... build and populate.
+       if(null !=container.getRestFacetCount()) {
+           response.setFacets(arrayToMap(container.getRestFacetCount().getRestFacetFields().getCityState()));
+       }
         return response;
     }
+
+    /**
+     *
+     */
+//    @Override
+    public Map<String, String> arrayToMap(List list) {
+        Map<String, String> locations = new HashMap<>();
+        for (int i = 0; i <list.size(); i=i+2) {
+           locations.put(String.valueOf(list.get(i)), String.valueOf(list.get(i + 1)));
+        }
+        System.out.println(locations.keySet());
+        return locations;
+    }
+
 
     /**
      * Break apart each work (separated by spaces) in the search string and format into

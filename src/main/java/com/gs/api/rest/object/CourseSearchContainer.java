@@ -13,8 +13,19 @@ public class CourseSearchContainer {
         return grouped;
     }
 
+    @JsonProperty("facet_counts")
+    private CourseSearchRestFacetCount restFacetCount;
+
     public void setGrouped(CourseSearchGrouped grouped) {
         this.grouped = grouped;
+    }
+
+    public CourseSearchRestFacetCount getRestFacetCount() {
+        return restFacetCount;
+    }
+
+    public void setCourseRestFacetCount(CourseSearchRestFacetCount restFacetCount) {
+        this.restFacetCount = restFacetCount;
     }
     
 }

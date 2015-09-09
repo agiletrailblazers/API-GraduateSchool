@@ -14,6 +14,7 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.gs.api.rest.object.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -231,6 +232,21 @@ public class CourseSearchServiceTest {
     }
 
     @Test
+    public void testSearch_ExactMatchWithFacetParam() throws Exception {
+
+        ResponseEntity<CourseSearchContainer> responseEntity = new ResponseEntity<CourseSearchContainer>(
+                createCourseContainerwithCityStateFacet("government", 0, 1), HttpStatus.OK);
+        when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
+                .thenReturn(responseEntity);
+        CourseSearchResponse response = courseSearchService.searchCourses("government", 0, 100, new String[] {});
+        assertNotNull(response);
+        assertEquals(1, response.getNumFound());
+        assertEquals("government", response.getCourses()[0].getId());
+        assertTrue(response.isExactMatch());
+       verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class));
+    }
+    
+    @Test
     public void testSearch_WithFacetParams() throws Exception {
 
         ResponseEntity<CourseSearchContainer> responseEntity = new ResponseEntity<CourseSearchContainer>(
@@ -263,7 +279,6 @@ public class CourseSearchServiceTest {
         verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class));
 
     }
-
 
     @Test
     public void buildSearchStringWithFacetParam() {
@@ -318,6 +333,39 @@ public class CourseSearchServiceTest {
         group.setNgroups(numFound);
         grouped.setGroup(group);
         container.setGrouped(grouped);
+        return container;
+    }
+
+    private CourseSearchContainer createCourseContainerwithCityStateFacet(String id, int start, int numFound) {
+        final CourseSearchContainer container = new CourseSearchContainer();
+        final CourseSearchGrouped grouped = new CourseSearchGrouped();
+        final CourseSearchGroup group = new CourseSearchGroup();
+        final CourseSearchDocList docList = new CourseSearchDocList();
+        final CourseSearchRestFacetCount restFacetCount = new CourseSearchRestFacetCount();
+        CourseSearchFacetFields   restFacetFields= new CourseSearchFacetFields();
+        List list = new ArrayList();
+        list.add("Philadelphia,PA");
+        list.add("1");
+        list.add("Washington,DC");
+        list.add("2");
+        restFacetFields.setCityState(list);
+        restFacetCount.setCourseRestFacetFields(restFacetFields);
+        List<CourseSearchDoc> docs = new ArrayList<CourseSearchDoc>();
+        for (int i = 0; i < numFound; i++) {
+            CourseSearchDoc doc = new CourseSearchDoc();
+            doc.setCourse_id(id);
+            doc.setCourse_name("Course Name for " + id);
+            docs.add(doc);
+        }
+        docList.setDocs(docs);
+        docList.setNumFound(numFound);
+        docList.setStart(start);
+        group.setDoclist(docList);
+        group.setMatches(numFound);
+        group.setNgroups(numFound);
+        grouped.setGroup(group);
+        container.setGrouped(grouped);
+        container.setCourseRestFacetCount(restFacetCount);
         return container;
     }
 
