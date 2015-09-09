@@ -16,7 +16,8 @@ public class CourseSearchResponse {
     private int totalPages = 0;
     private boolean exactMatch = false;
     private Course[] courses;
-    private Map<String, Integer> locationfacets;
+    private Map<String, Integer> locationFacets;
+    private Map<String, Integer> statusFacets;
 
     public boolean isExactMatch() {
         return exactMatch;
@@ -83,10 +84,19 @@ public class CourseSearchResponse {
     }
 
     public Map<String, Integer> getLocationFacets() {
-        return locationfacets;
+        return locationFacets;
     }
 
-    public void setLocationFacets(Map<String, Integer> facets) {
-        this.locationfacets = facets;
+    public void setLocationFacets(Map<String, Integer> locationFacets) {
+        this.locationFacets = locationFacets;
     }
+
+    public Map<String, Integer> getStatusFacets() {
+        return statusFacets;
+    }
+
+    public void setStatusFacets(Map<String, Integer> statusFacets) {
+        this.statusFacets = statusFacets;
+    }
+    
 }
