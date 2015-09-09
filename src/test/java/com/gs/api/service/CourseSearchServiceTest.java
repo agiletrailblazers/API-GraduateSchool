@@ -14,7 +14,6 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.gs.api.rest.object.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,8 +36,10 @@ import com.gs.api.exception.NotFoundException;
 import com.gs.api.rest.object.CourseSearchContainer;
 import com.gs.api.rest.object.CourseSearchDoc;
 import com.gs.api.rest.object.CourseSearchDocList;
+import com.gs.api.rest.object.CourseSearchFacetFields;
 import com.gs.api.rest.object.CourseSearchGroup;
 import com.gs.api.rest.object.CourseSearchGrouped;
+import com.gs.api.rest.object.CourseSearchRestFacetCount;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "classpath:spring/test-root-context.xml" })
@@ -231,6 +232,7 @@ public class CourseSearchServiceTest {
 
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testSearch_ExactMatchWithFacetParam() throws Exception {
 
@@ -246,6 +248,7 @@ public class CourseSearchServiceTest {
        verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class));
     }
     
+    @SuppressWarnings("unchecked")
     @Test
     public void testSearch_WithFacetParams() throws Exception {
 
@@ -263,12 +266,12 @@ public class CourseSearchServiceTest {
 
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testSearch_WithFacetNullParams() throws Exception {
 
         ResponseEntity<CourseSearchContainer> responseEntity = new ResponseEntity<CourseSearchContainer>(
                 createCourseContainer("ABC123001", 0, 1, 1), HttpStatus.OK);
-        String[] facetParams = {"city_state:Washington"};
         when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
                 .thenReturn(responseEntity);
         CourseSearchResponse response = courseSearchService.searchCourses("ABC123", 0, 100,null);
@@ -343,7 +346,7 @@ public class CourseSearchServiceTest {
         final CourseSearchDocList docList = new CourseSearchDocList();
         final CourseSearchRestFacetCount restFacetCount = new CourseSearchRestFacetCount();
         CourseSearchFacetFields   restFacetFields= new CourseSearchFacetFields();
-        List list = new ArrayList();
+        List<String> list = new ArrayList<String>();
         list.add("Philadelphia,PA");
         list.add("1");
         list.add("Washington,DC");
