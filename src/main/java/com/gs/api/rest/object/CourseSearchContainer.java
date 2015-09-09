@@ -6,16 +6,26 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CourseSearchContainer {
 
-    @JsonProperty("response")
-    private CourseSearchRestResponse response;
-
-    public CourseSearchRestResponse getResponse() {
-        return response;
-    }
-
-    public void setResponse(CourseSearchRestResponse response) {
-        this.response = response;
-    }
+    @JsonProperty("grouped")
+    private CourseSearchGrouped grouped;
     
+    public CourseSearchGrouped getGrouped() {
+        return grouped;
+    }
+
+    @JsonProperty("facet_counts")
+    private CourseSearchRestFacetCount restFacetCount;
+
+    public void setGrouped(CourseSearchGrouped grouped) {
+        this.grouped = grouped;
+    }
+
+    public CourseSearchRestFacetCount getRestFacetCount() {
+        return restFacetCount;
+    }
+
+    public void setCourseRestFacetCount(CourseSearchRestFacetCount restFacetCount) {
+        this.restFacetCount = restFacetCount;
+    }
     
 }

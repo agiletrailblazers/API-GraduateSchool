@@ -28,8 +28,8 @@ import com.gs.api.domain.CourseSearchResponse;
 import com.gs.api.domain.CourseSession;
 import com.gs.api.domain.Location;
 import com.gs.api.exception.NotFoundException;
-import com.gs.api.service.CourseService;
 import com.gs.api.service.CourseSearchService;
+import com.gs.api.service.CourseService;
 import com.gs.api.service.LocationService;
 
 @Configuration
@@ -66,17 +66,18 @@ public class CourseController {
      * @throws Exception
      */
     @RequestMapping(value = "/courses", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody CourseSearchResponse searchCourse(@RequestParam(required=false) String search,
-            @RequestParam(required=false) String start, 
-            @RequestParam(required=false) String numRequested) throws Exception {
-        
+    public @ResponseBody CourseSearchResponse searchCourse(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String start, 
+            @RequestParam(required = false) String numRequested,
+            @RequestParam(required = false) String[] filter) throws Exception {
         logger.info("Course API initiated");
-
+        
         if (!StringUtils.isEmpty(search)) {
             //this is a course search
             return courseSearchService.searchCourses(search, 
                     NumberUtils.toInt(start, 0), 
-                    NumberUtils.toInt(numRequested, 100));
+                    NumberUtils.toInt(numRequested, 100),filter);
         }
         else {
             if (StringUtils.isNotEmpty(start) || StringUtils.isNoneEmpty(numRequested)) {
@@ -185,5 +186,4 @@ public class CourseController {
         // method called when a input validation failure occurs
         return "{\"message\": \"Invalid Request \"}";
     }
-
 }

@@ -1,5 +1,7 @@
 package com.gs.api.domain;
 
+import java.util.Map;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
@@ -7,10 +9,14 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 public class CourseSearchResponse {
 
     private int start = 1;
+    private int pageSize = 0;
+    private int numRequested = 0;
     private int numFound = 0;
     private int startNext = -1;
+    private int totalPages = 0;
     private boolean exactMatch = false;
     private Course[] courses;
+    private Map<String, Integer> facets;
 
     public boolean isExactMatch() {
         return exactMatch;
@@ -51,6 +57,36 @@ public class CourseSearchResponse {
     public void setStartNext(int startNext) {
         this.startNext = startNext;
     }
-    
 
+    public int getPageSize() {
+        return pageSize;
+    }
+
+    public void setPageSize(int pageSize) {
+        this.pageSize = pageSize;
+    }
+
+    public int getTotalPages() {
+        return totalPages;
+    }
+
+    public void setTotalPages(int totalPages) {
+        this.totalPages = totalPages;
+    }
+
+    public int getNumRequested() {
+        return numRequested;
+    }
+
+    public void setNumRequested(int numRequested) {
+        this.numRequested = numRequested;
+    }
+
+    public Map<String, Integer> getFacets() {
+        return facets;
+    }
+
+    public void setFacets(Map<String, Integer> facets) {
+        this.facets = facets;
+    }
 }
