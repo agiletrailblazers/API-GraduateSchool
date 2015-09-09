@@ -131,6 +131,7 @@ public class CourseSearchServiceImpl implements CourseSearchService {
         // iterate through... build and populate.
         if (null != container.getRestFacetCount()) {
             response.setLocationFacets(arrayToMap(container.getRestFacetCount().getRestFacetFields().getCityState()));
+            response.setStatusFacets(arrayToMap(container.getRestFacetCount().getRestFacetFields().getStatus()));
         }
         return response;
     }
@@ -144,8 +145,10 @@ public class CourseSearchServiceImpl implements CourseSearchService {
      */
     public Map<String, Integer> arrayToMap(List<String> list) {
         Map<String, Integer> locations = new HashMap<>();
-        for (int i = 0; i < list.size(); i = i + 2) {
-            locations.put(String.valueOf(list.get(i)), Integer.valueOf(list.get(i + 1)));
+        if (list != null) {
+            for (int i = 0; i < list.size(); i = i + 2) {
+                locations.put(String.valueOf(list.get(i)), Integer.valueOf(list.get(i + 1)));
+            }
         }
         return locations;
     }

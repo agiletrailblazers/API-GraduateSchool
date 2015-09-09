@@ -8,6 +8,8 @@ public class CourseSearchFacetFields {
 
     @JsonProperty("city_state")
     private List<String> cityState;
+    @JsonProperty("status")
+    private List<String> status;
 
     public List<String> getCityState() {
         return cityState;
@@ -15,6 +17,14 @@ public class CourseSearchFacetFields {
 
     public void setCityState(List<String> cityState) {
         this.cityState = cityState;
+    }
+
+    public List<String> getStatus() {
+        return status;
+    }
+
+    public void setStatus(List<String> status) {
+        this.status = status;
     }
     
 }
