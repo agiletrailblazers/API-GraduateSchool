@@ -20,7 +20,6 @@ public class CourseSearchResponse {
     private boolean exactMatch = false;
     private Course[] courses;
     private Map<String, String> facets;
-//    Create facet object that will contain map for city state.
 
     public boolean isExactMatch() {
         return exactMatch;
@@ -93,5 +92,4 @@ public class CourseSearchResponse {
     public void setFacets(Map<String, String> facets) {
         this.facets = facets;
     }
-
 }

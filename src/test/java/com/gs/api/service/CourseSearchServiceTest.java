@@ -230,7 +230,7 @@ public class CourseSearchServiceTest {
         assertEquals("\\+\\-\\||\\!\\(\\)\\{\\}\\[\\]\\\"\\~\\*\\?\\:\\\\", result);
 
     }
-    
+
     @Test
     public void testSearch_ExactMatchWithFacetParam() throws Exception {
 
