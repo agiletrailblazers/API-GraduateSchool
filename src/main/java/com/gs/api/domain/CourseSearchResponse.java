@@ -8,12 +8,17 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 @JsonInclude(Include.ALWAYS)
 public class CourseSearchResponse {
 
-    private int start = 1;
+    //page navigators
+    private int currentPage = 0;
+    private int totalPages = 0;
+    private int nextPage = 0;
+    private int previousPage = 0;
+    private int[] pageNavRange;
+    //results and page size
     private int pageSize = 0;
     private int numRequested = 0;
     private int numFound = 0;
-    private int startNext = -1;
-    private int totalPages = 0;
+    //other stuff
     private boolean exactMatch = false;
     private Course[] courses;
     private Map<String, Integer> locationFacets;
@@ -41,22 +46,6 @@ public class CourseSearchResponse {
 
     public void setNumFound(int numFound) {
         this.numFound = numFound;
-    }
-
-    public int getStart() {
-        return start;
-    }
-
-    public void setStart(int start) {
-        this.start = start;
-    }
-
-    public int getStartNext() {
-        return startNext;
-    }
-
-    public void setStartNext(int startNext) {
-        this.startNext = startNext;
     }
 
     public int getPageSize() {
@@ -97,6 +86,38 @@ public class CourseSearchResponse {
 
     public void setStatusFacets(Map<String, Integer> statusFacets) {
         this.statusFacets = statusFacets;
+    }
+
+    public int getCurrentPage() {
+        return currentPage;
+    }
+
+    public void setCurrentPage(int currentPage) {
+        this.currentPage = currentPage;
+    }
+
+    public int getNextPage() {
+        return nextPage;
+    }
+
+    public void setNextPage(int nextPage) {
+        this.nextPage = nextPage;
+    }
+
+    public int getPreviousPage() {
+        return previousPage;
+    }
+
+    public void setPreviousPage(int previousPage) {
+        this.previousPage = previousPage;
+    }
+
+    public int[] getPageNavRange() {
+        return pageNavRange;
+    }
+
+    public void setPageNavRange(int[] pageNavRange) {
+        this.pageNavRange = pageNavRange;
     }
     
 }
