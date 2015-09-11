@@ -72,11 +72,11 @@ public class CourseSearchServiceTest {
                 createCourseContainer("ABC123", 0, 224, 100), HttpStatus.OK);
         when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
             .thenReturn(responseEntity);
-        CourseSearchResponse response = courseSearchService.searchCourses("stuff", 0, 100,new String[0]);
+        CourseSearchResponse response = courseSearchService.searchCourses("stuff", 1, 100,new String[0]);
         assertNotNull(response);
         assertEquals(224, response.getNumFound());
-        assertEquals(0, response.getStart());
-        assertEquals(100, response.getStartNext());
+        assertEquals(1, response.getCurrentPage());
+        assertEquals(2, response.getNextPage());
         assertEquals("ABC123", response.getCourses()[0].getId());
         assertFalse(response.isExactMatch());
         assertEquals(3, response.getTotalPages());
@@ -160,11 +160,11 @@ public class CourseSearchServiceTest {
                 createCourseContainerNothing(), HttpStatus.OK);
         when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
             .thenReturn(responseEntity);
-        CourseSearchResponse response = courseSearchService.searchCourses("find-nothing", 0, 100,new String[0]);
+        CourseSearchResponse response = courseSearchService.searchCourses("find-nothing", 1, 100,new String[0]);
         assertNotNull(response);
         assertEquals(0, response.getNumFound());
-        assertEquals(0, response.getStart());
-        assertEquals(-1, response.getStartNext());
+        assertEquals(0, response.getCurrentPage());
+        assertEquals(0, response.getNextPage());
         assertNull(response.getCourses());
         assertFalse(response.isExactMatch());
         verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class));
@@ -195,11 +195,11 @@ public class CourseSearchServiceTest {
                 createCourseContainer("ABC123", 100, 162, 100), HttpStatus.OK);
         when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
             .thenReturn(responseEntity);
-        CourseSearchResponse response = courseSearchService.searchCourses("stuff", 100, 100,new String[0]);
+        CourseSearchResponse response = courseSearchService.searchCourses("stuff", 2, 100,new String[0]);
         assertNotNull(response);
         assertEquals(162, response.getNumFound());
-        assertEquals(100, response.getStart());
-        assertEquals(-1, response.getStartNext());
+        assertEquals(2, response.getCurrentPage());
+        assertEquals(0, response.getNextPage());
         assertEquals("ABC123", response.getCourses()[0].getId());
         assertFalse(response.isExactMatch());
         verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class));
@@ -212,13 +212,13 @@ public class CourseSearchServiceTest {
         //single term
         final String SINGLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:8983/solr/courses/select?q=(course_name:(*fraud*))^3 OR (course_id:(*fraud*))^9 OR (course_code:(*fraud*))^6 OR (course_description:(*fraud*)) OR (course_abstract:(*fraud*)) OR (course_prerequisites:(*fraud*))&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true";
         
-    	String endpoint = courseSearchService.buildSearchString("fraud", 0, 100,"");
+    	String endpoint = courseSearchService.buildSearchString("fraud", 1, 100,"");
         assertEquals(SINGLE_TERM_RESULT, endpoint);
     
         //two terms
         final String DOUBLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:8983/solr/courses/select?q=(course_name:(*Project Management*))^3 OR (course_id:(*Project Management*))^9 OR (course_code:(*Project Management*))^6 OR (course_description:(*Project Management*)) OR (course_abstract:(*Project Management*)) OR (course_prerequisites:(*Project Management*))&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true";
 
-        endpoint = courseSearchService.buildSearchString("Project Management",0, 100,"");
+        endpoint = courseSearchService.buildSearchString("Project Management",1, 100,"");
 
         assertEquals(DOUBLE_TERM_RESULT, endpoint);
 
@@ -289,16 +289,54 @@ public class CourseSearchServiceTest {
         //single term
         final String SINGLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:8983/solr/courses/select?q=(course_name:(*fraud*))^3 OR (course_id:(*fraud*))^9 OR (course_code:(*fraud*))^6 OR (course_description:(*fraud*)) OR (course_abstract:(*fraud*)) OR (course_prerequisites:(*fraud*))&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true&fq=city_state:Washington";
         String facetParamsString = "&fq=city_state:Washington";
-        String endpoint = courseSearchService.buildSearchString("fraud", 0, 100, facetParamsString);
+        String endpoint = courseSearchService.buildSearchString("fraud", 1, 100, facetParamsString);
         assertEquals(SINGLE_TERM_RESULT, endpoint);
 
         //two terms
         final String DOUBLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:8983/solr/courses/select?q=(course_name:(*Project Management*))^3 OR (course_id:(*Project Management*))^9 OR (course_code:(*Project Management*))^6 OR (course_description:(*Project Management*)) OR (course_abstract:(*Project Management*)) OR (course_prerequisites:(*Project Management*))&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true&fq=city_state:Washington&fq=status:S";
         facetParamsString = "&fq=city_state:Washington&fq=status:S";
-        endpoint = courseSearchService.buildSearchString("Project Management",0, 100,facetParamsString);
+        endpoint = courseSearchService.buildSearchString("Project Management",1, 100,facetParamsString);
 
         assertEquals(DOUBLE_TERM_RESULT, endpoint);
 
+    }
+    
+    @Test
+    public void createNavRange_LessThanFive() {
+        int[] out = courseSearchService.createNavRange(2, 3);
+        assertEquals(1, out[0]);
+        assertEquals(2, out[1]);
+        assertEquals(3, out[2]);
+    }
+    
+    @Test
+    public void createNavRange_MoreThanFive_BeginRange() {
+        int[] out = courseSearchService.createNavRange(2, 10);
+        assertEquals(1, out[0]);
+        assertEquals(2, out[1]);
+        assertEquals(3, out[2]);
+        assertEquals(4, out[3]);
+        assertEquals(5, out[4]);
+    }
+    
+    @Test
+    public void createNavRange_MoreThanFive_MidRange() {
+        int[] out = courseSearchService.createNavRange(5, 10);
+        assertEquals(3, out[0]);
+        assertEquals(4, out[1]);
+        assertEquals(5, out[2]);
+        assertEquals(6, out[3]);
+        assertEquals(7, out[4]);
+    }
+    
+    @Test
+    public void createNavRange_MoreThanFive_EndRange() {
+        int[] out = courseSearchService.createNavRange(9, 10);
+        assertEquals(6, out[0]);
+        assertEquals(7, out[1]);
+        assertEquals(8, out[2]);
+        assertEquals(9, out[3]);
+        assertEquals(10, out[4]);
     }
 
     private CourseSearchContainer createCourseContainerNothing() {

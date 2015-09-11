@@ -71,7 +71,7 @@ public class CourseController {
     @RequestMapping(value = "/courses", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody CourseSearchResponse searchCourse(
             @RequestParam(required = false) String search,
-            @RequestParam(required = false) String start, 
+            @RequestParam(required = false) String page, 
             @RequestParam(required = false) String numRequested,
             @RequestParam(required = false) String[] filter) throws Exception {
         logger.info("Course API initiated");
@@ -79,13 +79,13 @@ public class CourseController {
         if (!StringUtils.isEmpty(search)) {
             //this is a course search
             return courseSearchService.searchCourses(search, 
-                    NumberUtils.toInt(start, 0), 
+                    NumberUtils.toInt(page, 1), 
                     NumberUtils.toInt(numRequested, 100),filter);
         }
         else {
-            if (StringUtils.isNotEmpty(start) || StringUtils.isNoneEmpty(numRequested)) {
-                logger.error("Parameter 'start' and 'numRequest' not supported with this request");
-                throw new Exception("Parameter 'start' and 'numRequest' not supported with this request");
+            if (StringUtils.isNotEmpty(page) || StringUtils.isNoneEmpty(numRequested)) {
+                logger.error("Parameter 'page' and 'numRequest' not supported with this request");
+                throw new Exception("Parameter 'page' and 'numRequest' not supported with this request");
             }
             //this is a lookup of all courses
            List<Course> courses = courseService.getCourses();

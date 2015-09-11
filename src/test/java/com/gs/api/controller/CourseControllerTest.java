@@ -96,10 +96,10 @@ public class CourseControllerTest {
 
     @Test
     public void testCourseSearch_InvalidArgs() throws Exception {
-        mockMvc.perform(get("/courses?start=1").accept(MediaType.APPLICATION_JSON_VALUE))
+        mockMvc.perform(get("/courses?page=1").accept(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isInternalServerError())
                 .andExpect(content().contentType("application/json"))
-                .andExpect(jsonPath("$.message").value(is("Parameter 'start' and 'numRequest' not supported with this request")));
+                .andExpect(jsonPath("$.message").value(is("Parameter 'page' and 'numRequest' not supported with this request")));
         verify(courseSearchService, times(0)).searchCourses(anyString(), anyInt(), anyInt(),any(String[].class));
     }
 
@@ -108,7 +108,7 @@ public class CourseControllerTest {
         mockMvc.perform(get("/courses?numRequested=1").accept(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isInternalServerError())
                 .andExpect(content().contentType("application/json"))
-                .andExpect(jsonPath("$.message").value(is("Parameter 'start' and 'numRequest' not supported with this request")));
+                .andExpect(jsonPath("$.message").value(is("Parameter 'page' and 'numRequest' not supported with this request")));
         verify(courseSearchService, times(0)).searchCourses(anyString(), anyInt(), anyInt(),any(String[].class));
     }
 

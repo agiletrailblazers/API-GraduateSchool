@@ -50,7 +50,7 @@ public class CourseSearchServiceImpl implements CourseSearchService {
      * @param request
      * @return SearchResponse
      */
-    public CourseSearchResponse searchCourses(String search, int start, int numRequested, String[] filter)
+    public CourseSearchResponse searchCourses(String search, int currentPage, int numRequested, String[] filter)
             throws NotFoundException {
 
         boolean exactMatch = false;
@@ -64,7 +64,7 @@ public class CourseSearchServiceImpl implements CourseSearchService {
             }
         }
         // get search string
-        String searchString = buildSearchString(search, start, numRequested, groupFacetParamString.toString());
+        String searchString = buildSearchString(search, currentPage, numRequested, groupFacetParamString.toString());
         logger.info(searchString);
 
         // create request header contain basic auth credentials
@@ -115,16 +115,18 @@ public class CourseSearchServiceImpl implements CourseSearchService {
             }
             response.setCourses(courses.toArray(new Course[courses.size()]));
         }
-        response.setStart(group.getDoclist().getStart());
-        response.setPageSize(pageSize);
-        response.setNumFound(numFound);
-        response.setNumRequested(numRequested);
-        int nextStart = start + numRequested;
-        if (nextStart <= numFound) {
-            response.setStartNext(nextStart);
-        }
         if (pageSize > 0) {
-            response.setTotalPages((int) Math.ceil((double) numFound / pageSize));
+            if ((currentPage+1) * numRequested <= numFound) {
+                response.setNextPage(currentPage+1);
+            }
+            response.setPreviousPage(currentPage-1);
+            response.setCurrentPage(currentPage);
+            response.setPageSize(pageSize);
+            response.setNumFound(numFound);
+            response.setNumRequested(numRequested);
+            int totalPages = ((int) Math.ceil((double) numFound / numRequested));
+            response.setTotalPages(totalPages);
+            response.setPageNavRange(createNavRange(currentPage, totalPages));
         }
         response.setExactMatch(exactMatch);
         // Add a set facets (create method to populate facets, take response and
@@ -159,7 +161,7 @@ public class CourseSearchServiceImpl implements CourseSearchService {
      * *Word1* AND *Word2*
      */
     @Override
-    public String buildSearchString(String search, int start, int numRequested, String filter) {
+    public String buildSearchString(String search, int currentPage, int numRequested, String filter) {
 
         String solrQuery = courseSearchSolrEndpoint.concat(courseSearchSolrQuery);
 
@@ -167,7 +169,7 @@ public class CourseSearchServiceImpl implements CourseSearchService {
         solrQuery = StringUtils.replace(solrQuery, "{search}", stripAndEncode(search));
 
         // update start and num requested
-        solrQuery = StringUtils.replace(solrQuery, "{start}", Integer.toString(start));
+        solrQuery = StringUtils.replace(solrQuery, "{start}", Integer.toString((currentPage - 1) * numRequested));
         solrQuery = StringUtils.replace(solrQuery, "{numRequested}", Integer.toString(numRequested));
         solrQuery = StringUtils.replace(solrQuery, "{filter}", filter);
         return solrQuery;
@@ -192,6 +194,52 @@ public class CourseSearchServiceImpl implements CourseSearchService {
         String[] replaceList = { "", "", "", "", "\\+", "\\-", "\\||", "\\!", "\\(", "\\)", "\\{", "\\}", "\\[", "\\]",
                 "\\\"", "\\~", "\\*", "\\?", "\\:", "\\\\" };
         return StringUtils.replaceEach(search, searchList, replaceList);
+    }
+    
+    /**
+     * Generate the page range to display for navigation. Show always display only 5 pages max attempting
+     * to keep the current page in the "middle" of the range.
+     * For example:
+     *   - if current page is 3 of 10 show: 1,2,3,4,5
+     *   - if current page is 7 of 10 show: 5,6,7,8,9
+     *   - if current page is 10 of 10 show: 6,7,8,9,10 
+     * @param currentPage
+     * @param totalPages
+     * @return int[]
+     */
+    public int[] createNavRange(int currentPage, int totalPages) {
+        int[] pageNavRange = new int[(totalPages > 5) ? 5 : totalPages];
+        if (totalPages > 5) {
+            if (currentPage - 2 <= 0) {
+                //begin range
+                for (int i=0; i<5; i++) {
+                    pageNavRange[i] = i+1;
+                }
+            }
+            else if (currentPage + 2 >= totalPages) {
+                //end range
+                int j = totalPages - 4;
+                for (int i=0; i<5; i++) {
+                    pageNavRange[i] = j;
+                    j++;
+                }
+            }
+            else {
+                //mid range
+                int j = currentPage - 2;
+                for (int i=0; i<5; i++) {
+                    pageNavRange[i] = j;
+                    j++;
+                }
+            }
+        }
+        else {
+            //range is less than 5
+            for (int i=0; i<totalPages; i++) {
+                pageNavRange[i] = i+1;
+            }
+        }
+        return pageNavRange;
     }
 
 }
