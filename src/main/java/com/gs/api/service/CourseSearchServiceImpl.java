@@ -65,7 +65,6 @@ public class CourseSearchServiceImpl implements CourseSearchService {
         }
         // get search string
         String searchString = buildSearchString(search, currentPage, numRequested, groupFacetParamString.toString());
-        logger.info(searchString);
 
         // create request header contain basic auth credentials
         byte[] plainCredsBytes = solrCredentials.getBytes();
@@ -75,10 +74,16 @@ public class CourseSearchServiceImpl implements CourseSearchService {
         headers.add("Authorization", "Basic " + base64Creds);
         HttpEntity<String> request = new HttpEntity<String>(headers);
 
+        // due to a quirk in rest template these facet filters need to be injected as params
+        Map<String, String> uriParams = new HashMap<String, String>();
+        uriParams.put("facet-exclude", "{!ex=dt}");
+        uriParams.put("facet-countall", "{!tag=dt}");
+        logger.info(searchString);
+        
         // perform search
         ResponseEntity<CourseSearchContainer> responseEntity = null;
         try {
-            responseEntity = restTemplate.exchange(searchString, HttpMethod.GET, request, CourseSearchContainer.class);
+           responseEntity = restTemplate.exchange(searchString, HttpMethod.POST, request, CourseSearchContainer.class, uriParams);
         } catch (Exception e) {
             logger.error("Failed to get search results from SOLR", e);
             throw new NotFoundException("No search results found");

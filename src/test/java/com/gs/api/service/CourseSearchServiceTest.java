@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.After;
 import org.junit.Before;
@@ -70,7 +71,7 @@ public class CourseSearchServiceTest {
 
         ResponseEntity<CourseSearchContainer> responseEntity = new ResponseEntity<CourseSearchContainer>(
                 createCourseContainer("ABC123", 0, 224, 100), HttpStatus.OK);
-        when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
+        when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class), any(Map.class)))
             .thenReturn(responseEntity);
         CourseSearchResponse response = courseSearchService.searchCourses("stuff", 1, 100,new String[0]);
         assertNotNull(response);
@@ -80,7 +81,7 @@ public class CourseSearchServiceTest {
         assertEquals("ABC123", response.getCourses()[0].getId());
         assertFalse(response.isExactMatch());
         assertEquals(3, response.getTotalPages());
-        verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class));
+        verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class), any(Map.class));
 
     }
 
@@ -90,14 +91,14 @@ public class CourseSearchServiceTest {
 
         ResponseEntity<CourseSearchContainer> responseEntity = new ResponseEntity<CourseSearchContainer>(
                 createCourseContainer("ABC123", 0, 1, 1), HttpStatus.OK);
-        when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
+        when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class), any(Map.class)))
             .thenReturn(responseEntity);
         CourseSearchResponse response = courseSearchService.searchCourses("ABC123", 0, 100,new String[0]);
         assertNotNull(response);
         assertEquals(1, response.getNumFound());
         assertEquals("ABC123", response.getCourses()[0].getId());
         assertTrue(response.isExactMatch());
-        verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class));
+        verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class), any(Map.class));
 
     }
 
@@ -107,14 +108,14 @@ public class CourseSearchServiceTest {
 
         ResponseEntity<CourseSearchContainer> responseEntity = new ResponseEntity<CourseSearchContainer>(
                 createCourseContainer("ABC123001", 0, 1, 1), HttpStatus.OK);
-        when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
+        when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class), any(Map.class)))
                 .thenReturn(responseEntity);
         CourseSearchResponse response = courseSearchService.searchCourses("ABC123", 0, 100,new String[0]);
         assertNotNull(response);
         assertEquals(1, response.getNumFound());
         assertEquals("ABC123001", response.getCourses()[0].getId());
         assertTrue(response.isExactMatch());
-        verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class));
+        verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class), any(Map.class));
 
     }
     
@@ -124,14 +125,14 @@ public class CourseSearchServiceTest {
 
         ResponseEntity<CourseSearchContainer> responseEntity = new ResponseEntity<CourseSearchContainer>(
                 createCourseContainer("XYZ", 0, 2, 2), HttpStatus.OK);
-        when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
+        when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class), any(Map.class)))
             .thenReturn(responseEntity);
         CourseSearchResponse response = courseSearchService.searchCourses("ABC123", 0, 100,new String[0]);
         assertNotNull(response);
         assertEquals(2, response.getNumFound());
         assertEquals("XYZ", response.getCourses()[0].getId());
         assertFalse(response.isExactMatch());
-        verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class));
+        verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class), any(Map.class));
 
     }
 
@@ -141,14 +142,14 @@ public class CourseSearchServiceTest {
 
         ResponseEntity<CourseSearchContainer> responseEntity = new ResponseEntity<CourseSearchContainer>(
                 createCourseContainer("ABC123001", 0, 1, 1), HttpStatus.OK);
-        when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
+        when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class), any(Map.class)))
             .thenReturn(responseEntity);
         CourseSearchResponse response = courseSearchService.searchCourses("abc123", 0, 100,new String[0]);
         assertNotNull(response);
         assertEquals(1, response.getNumFound());
         assertEquals("ABC123001", response.getCourses()[0].getId());
         assertTrue(response.isExactMatch());
-        verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class));
+        verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class), any(Map.class));
 
     }
 
@@ -158,7 +159,7 @@ public class CourseSearchServiceTest {
 
         ResponseEntity<CourseSearchContainer> responseEntity = new ResponseEntity<CourseSearchContainer>(
                 createCourseContainerNothing(), HttpStatus.OK);
-        when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
+        when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class), any(Map.class)))
             .thenReturn(responseEntity);
         CourseSearchResponse response = courseSearchService.searchCourses("find-nothing", 1, 100,new String[0]);
         assertNotNull(response);
@@ -167,14 +168,14 @@ public class CourseSearchServiceTest {
         assertEquals(0, response.getNextPage());
         assertNull(response.getCourses());
         assertFalse(response.isExactMatch());
-        verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class));
+        verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class), any(Map.class));
 
     }
 
     @SuppressWarnings("unchecked")
     @Test
     public void testSearch_Exception() throws Exception {
-        when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
+        when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class), any(Map.class)))
             .thenThrow(new RuntimeException("I didn't expect this to happen"));
         try {
             courseSearchService.searchCourses("find-nothing", 0, 100,new String[0]);
@@ -184,7 +185,7 @@ public class CourseSearchServiceTest {
             NotFoundException nfe = (NotFoundException) e;
             assertEquals("No search results found", nfe.getMessage());
         }
-        verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class));
+        verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class), any(Map.class));
     }
 
     @SuppressWarnings("unchecked")
@@ -193,7 +194,7 @@ public class CourseSearchServiceTest {
 
         ResponseEntity<CourseSearchContainer> responseEntity = new ResponseEntity<CourseSearchContainer>(
                 createCourseContainer("ABC123", 100, 162, 100), HttpStatus.OK);
-        when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
+        when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class), any(Map.class)))
             .thenReturn(responseEntity);
         CourseSearchResponse response = courseSearchService.searchCourses("stuff", 2, 100,new String[0]);
         assertNotNull(response);
@@ -202,7 +203,7 @@ public class CourseSearchServiceTest {
         assertEquals(0, response.getNextPage());
         assertEquals("ABC123", response.getCourses()[0].getId());
         assertFalse(response.isExactMatch());
-        verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class));
+        verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class), any(Map.class));
 
     }
 
@@ -238,14 +239,14 @@ public class CourseSearchServiceTest {
 
         ResponseEntity<CourseSearchContainer> responseEntity = new ResponseEntity<CourseSearchContainer>(
                 createCourseContainerwithCityStateFacet("government", 0, 1), HttpStatus.OK);
-        when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
+        when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class), any(Map.class)))
                 .thenReturn(responseEntity);
         CourseSearchResponse response = courseSearchService.searchCourses("government", 0, 100, new String[] {});
         assertNotNull(response);
         assertEquals(1, response.getNumFound());
         assertEquals("government", response.getCourses()[0].getId());
         assertTrue(response.isExactMatch());
-       verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class));
+       verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class), any(Map.class));
     }
     
     @SuppressWarnings("unchecked")
@@ -255,14 +256,14 @@ public class CourseSearchServiceTest {
         ResponseEntity<CourseSearchContainer> responseEntity = new ResponseEntity<CourseSearchContainer>(
                 createCourseContainer("ABC123001", 0, 1, 1), HttpStatus.OK);
         String[] facetParams = {"city_state:Washington"};
-        when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
+        when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class), any(Map.class)))
                 .thenReturn(responseEntity);
         CourseSearchResponse response = courseSearchService.searchCourses("ABC123", 0, 100,facetParams);
         assertNotNull(response);
         assertEquals(1, response.getNumFound());
         assertEquals("ABC123001", response.getCourses()[0].getId());
         assertTrue(response.isExactMatch());
-        verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class));
+        verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class), any(Map.class));
 
     }
 
@@ -272,14 +273,14 @@ public class CourseSearchServiceTest {
 
         ResponseEntity<CourseSearchContainer> responseEntity = new ResponseEntity<CourseSearchContainer>(
                 createCourseContainer("ABC123001", 0, 1, 1), HttpStatus.OK);
-        when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
+        when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class), any(Map.class)))
                 .thenReturn(responseEntity);
         CourseSearchResponse response = courseSearchService.searchCourses("ABC123", 0, 100,null);
         assertNotNull(response);
         assertEquals(1, response.getNumFound());
         assertEquals("ABC123001", response.getCourses()[0].getId());
         assertTrue(response.isExactMatch());
-        verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class));
+        verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class), any(Map.class));
 
     }
 
