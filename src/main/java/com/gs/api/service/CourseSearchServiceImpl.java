@@ -125,9 +125,6 @@ public class CourseSearchServiceImpl implements CourseSearchService {
             response.setCourses(courses.toArray(new Course[courses.size()]));
         }
         if (pageSize > 0) {
-            if ((currentPage+1) * numRequested <= numFound) {
-                response.setNextPage(currentPage+1);
-            }
             response.setPreviousPage(currentPage-1);
             response.setCurrentPage(currentPage);
             response.setPageSize(pageSize);
@@ -135,6 +132,9 @@ public class CourseSearchServiceImpl implements CourseSearchService {
             response.setNumRequested(numRequested);
             int totalPages = ((int) Math.ceil((double) numFound / numRequested));
             response.setTotalPages(totalPages);
+            if (currentPage+1 <= totalPages) {
+                response.setNextPage(currentPage+1);
+            }
             response.setPageNavRange(createNavRange(currentPage, totalPages));
         }
         response.setExactMatch(exactMatch);
