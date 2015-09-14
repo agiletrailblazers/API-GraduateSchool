@@ -1,6 +1,7 @@
 package com.gs.api.service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -41,6 +42,9 @@ public class CourseSearchServiceImpl implements CourseSearchService {
     @Value("${course.search.solr.credentials}")
     private String solrCredentials;
 
+    @Value("#{'${course.search.facet.location.exclude}'.split(';')}")
+    private String[] locationFacetExclude;
+    
     @Autowired(required = true)
     private RestOperations restTemplate;
 
@@ -132,10 +136,29 @@ public class CourseSearchServiceImpl implements CourseSearchService {
         // Add a set facets (create method to populate facets, take response and
         // iterate through... build and populate.
         if (null != container.getRestFacetCount()) {
-            response.setLocationFacets(arrayToMap(container.getRestFacetCount().getRestFacetFields().getCityState()));
-            response.setStatusFacets(arrayToMap(container.getRestFacetCount().getRestFacetFields().getStatus()));
+            response.setLocationFacets(cleanLocationFacetMap(
+                    arrayToMap(container.getRestFacetCount().getRestFacetFields().getCityState())));
+            response.setStatusFacets(
+                    arrayToMap(container.getRestFacetCount().getRestFacetFields().getStatus()));
         }
         return response;
+    }
+
+    /**
+     * Clean up the location facet map
+     * @param map
+     * @param facet
+     * @return Map
+     */
+    private Map<String, Integer> cleanLocationFacetMap(Map<String, Integer> map) {
+        Map<String, Integer> out = new HashMap<String, Integer>();
+        for (String key : map.keySet()) {
+            if (!Arrays.asList(locationFacetExclude).contains(key)
+                    && map.get(key) > 0) {
+                out.put(key, map.get(key));
+            }
+        }
+        return out;
     }
 
     /**
