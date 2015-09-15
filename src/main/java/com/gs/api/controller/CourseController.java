@@ -9,6 +9,7 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.propertyeditors.StringArrayPropertyEditor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -49,6 +50,9 @@ public class CourseController {
     
     @Autowired
     private LocationService locationService;
+    
+    @Value("${course.search.page.size}")
+    private int courseSearchPageSize;
 
     /**
      * A simple "is alive" API.
@@ -80,7 +84,7 @@ public class CourseController {
             //this is a course search
             return courseSearchService.searchCourses(search, 
                     NumberUtils.toInt(page, 1), 
-                    NumberUtils.toInt(numRequested, 100),filter);
+                    NumberUtils.toInt(numRequested, courseSearchPageSize),filter);
         }
         else {
             if (StringUtils.isNotEmpty(page) || StringUtils.isNoneEmpty(numRequested)) {
