@@ -95,6 +95,18 @@ public class CourseControllerTest {
     }
 
     @Test
+    public void testCourseSearch_SearchForAll() throws Exception {
+        when(courseSearchService.searchCourses(anyString(), anyInt(), anyInt(),any(String[].class)))
+            .thenReturn(createSearchResponse());
+        mockMvc.perform(get("/courses?search=").accept(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.exactMatch").value(is(false)))
+                .andExpect(jsonPath("$.numFound").value(is(1)));
+        verify(courseSearchService, times(1)).searchCourses(anyString(), anyInt(), anyInt(), any(String[].class));
+    }
+
+    
+    @Test
     public void testCourseSearch_InvalidArgs() throws Exception {
         mockMvc.perform(get("/courses?page=1").accept(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isInternalServerError())

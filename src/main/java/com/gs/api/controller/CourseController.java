@@ -2,6 +2,7 @@ package com.gs.api.controller;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -16,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,7 +27,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.WebDataBinder;
 
 import com.gs.api.domain.Course;
 import com.gs.api.domain.CourseSearchResponse;
@@ -53,6 +54,9 @@ public class CourseController {
     
     @Value("${course.search.page.size}")
     private int courseSearchPageSize;
+    
+    //@Autowired(required=true)
+    //private HttpServletRequest request;
 
     /**
      * A simple "is alive" API.
@@ -74,13 +78,14 @@ public class CourseController {
      */
     @RequestMapping(value = "/courses", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody CourseSearchResponse searchCourse(
+            @RequestParam Map<String,String> allRequestParams,
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String page, 
             @RequestParam(required = false) String numRequested,
             @RequestParam(required = false) String[] filter) throws Exception {
-        logger.info("Course API initiated");
+        logger.info("Course Search API initiated");
         
-        if (!StringUtils.isEmpty(search)) {
+        if (!StringUtils.isEmpty(search) || allRequestParams.containsKey("search")) {
             //this is a course search
             return courseSearchService.searchCourses(search, 
                     NumberUtils.toInt(page, 1), 
