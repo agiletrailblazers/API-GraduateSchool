@@ -38,10 +38,12 @@ import org.springframework.web.context.WebApplicationContext;
 import com.gs.api.domain.Course;
 import com.gs.api.domain.CourseSearchResponse;
 import com.gs.api.domain.Location;
+import com.gs.api.domain.SiteSearchResponse;
 import com.gs.api.helper.CourseTestHelper;
 import com.gs.api.service.CourseService;
 import com.gs.api.service.CourseSearchService;
 import com.gs.api.service.LocationService;
+import com.gs.api.service.SiteSearchService;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
@@ -66,6 +68,9 @@ public class CourseControllerTest {
     
     @Mock
     private LocationService locationService;
+    
+    @Mock
+    private SiteSearchService siteSearchService;
     
     @Before
     public void setUp() throws Exception {
@@ -237,6 +242,15 @@ public class CourseControllerTest {
                 .andExpect(jsonPath("$.exactMatch").value(is(false)))
                 .andExpect(jsonPath("$.numFound").value(is(1)));
         verify(courseSearchService, times(1)).searchCourses(anyString(), anyInt(), anyInt(), any(String[].class));
+    }
+    
+    @Test
+    public void testSiteSearch() throws Exception {
+        when(siteSearchService.searchSite(anyString(), anyInt(), anyInt())).thenReturn(new SiteSearchResponse());
+        mockMvc.perform(get("/site?search=xxx").accept(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/json"));
+        verify(siteSearchService, times(1)).searchSite(anyString(), anyInt(), anyInt());
     }
     
     //create object for mocks
