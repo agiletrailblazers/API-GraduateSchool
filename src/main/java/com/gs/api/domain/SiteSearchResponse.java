@@ -19,6 +19,7 @@ public class SiteSearchResponse {
     //results
     private Page[] pages;
 
+    private Site[] sites;
     public int getCurrentPage() {
         return currentPage;
     }
@@ -90,5 +91,15 @@ public class SiteSearchResponse {
     public void setPages(Page[] pages) {
         this.pages = pages;
     }
-    
+
+    public Site[] getSites() {
+        return sites;
+    }
+
+    public void setSites(Site[] sites) {
+        this.sites = sites;
+    }
+
+
+
 }
