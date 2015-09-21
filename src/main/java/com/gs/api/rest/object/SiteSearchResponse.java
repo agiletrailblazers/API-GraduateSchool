@@ -2,7 +2,10 @@ package com.gs.api.rest.object;
 
 import java.util.Collection;
 
-public class SiteSearchResponses {
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class SiteSearchResponse {
 
     private int numFound;
     private int start;

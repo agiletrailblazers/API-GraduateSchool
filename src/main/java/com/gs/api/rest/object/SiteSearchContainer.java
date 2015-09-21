@@ -7,16 +7,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class SiteSearchContainer {
 
     @JsonProperty("response")
-    private SiteSearchResponses siteSearchresponse;
+    private SiteSearchResponse response;
 
-    public SiteSearchResponses getResponse() {
-        return siteSearchresponse;
+    public SiteSearchResponse getResponse() {
+        return response;
     }
 
-    public void setResponse(SiteSearchResponses siteSearchresponse) {
-        this.siteSearchresponse = siteSearchresponse;
+    public void setResponse(SiteSearchResponse response) {
+        this.response = response;
     }
-
 
 
 }
