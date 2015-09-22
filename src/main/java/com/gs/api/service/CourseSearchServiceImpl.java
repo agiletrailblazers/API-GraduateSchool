@@ -7,16 +7,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.gs.api.search.helper.SearchServiceHelper;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.jasypt.contrib.org.apache.commons.codec_1_3.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -28,6 +25,7 @@ import com.gs.api.exception.NotFoundException;
 import com.gs.api.rest.object.CourseSearchContainer;
 import com.gs.api.rest.object.CourseSearchDoc;
 import com.gs.api.rest.object.CourseSearchGroup;
+import com.gs.api.search.helper.SearchServiceHelper;
 
 @Service
 public class CourseSearchServiceImpl implements CourseSearchService {
@@ -108,7 +106,8 @@ public class CourseSearchServiceImpl implements CourseSearchService {
                 // string is contained in the course id then this is almost
                 // and search string has something in it
                 // certainly an exact match
-                if (numFound == 1 && StringUtils.containsIgnoreCase(courseId, search) 
+                if (numFound == 1 
+                        && StringUtils.containsIgnoreCase(courseId, search) 
                         && StringUtils.length(search) > 0) {
                     exactMatch = true;
                 }

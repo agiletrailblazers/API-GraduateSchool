@@ -4,26 +4,23 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import com.gs.api.domain.Page;
-import com.gs.api.search.helper.SearchServiceHelper;
 import org.apache.commons.collections.CollectionUtils;
-import org.jasypt.contrib.org.apache.commons.codec_1_3.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestOperations;
+
+import com.gs.api.domain.Page;
 import com.gs.api.domain.SitePagesSearchResponse;
 import com.gs.api.exception.NotFoundException;
 import com.gs.api.rest.object.SiteSearchContainer;
 import com.gs.api.rest.object.SiteSearchDoc;
-
-
+import com.gs.api.search.helper.SearchServiceHelper;
 
 @Service
 public class SiteSearchServiceImpl implements SiteSearchService {

@@ -2,8 +2,6 @@ package com.gs.api.search.helper;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jasypt.contrib.org.apache.commons.codec_1_3.binary.Base64;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -11,7 +9,6 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class SearchServiceHelper {
-    private static final Logger logger = LoggerFactory.getLogger(SearchServiceHelper.class);
 
     @Value("${search.solr.credentials}")
     private String solrCredentials;
