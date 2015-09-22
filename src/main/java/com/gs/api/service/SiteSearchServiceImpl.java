@@ -1,5 +1,10 @@
 package com.gs.api.service;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+
 import com.gs.api.domain.Site;
 import com.gs.api.rest.object.SiteSearchContainer;
 import com.gs.api.rest.object.SiteSearchDoc;
@@ -20,7 +25,7 @@ import com.gs.api.domain.SiteSearchResponse;
 import com.gs.api.exception.NotFoundException;
 import org.springframework.web.client.RestOperations;
 
-import java.util.*;
+
 
 @Service
 public class SiteSearchServiceImpl implements SiteSearchService {
