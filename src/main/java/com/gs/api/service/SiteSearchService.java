@@ -8,4 +8,5 @@ public interface SiteSearchService {
     public SiteSearchResponse searchSite(String search, int currentPage, int numRequested) throws NotFoundException;
     public String stripAndEncode(String search);
     public String buildSearchString(String search, int start, int numRequested);
+    public int[] createNavRange(int currentPage, int totalPages);
 }

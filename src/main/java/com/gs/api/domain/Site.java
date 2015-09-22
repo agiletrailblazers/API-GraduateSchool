@@ -12,9 +12,6 @@ public class Site {
     private String title;
     private String url;
     private String content;
-    private String segment;
-    private String digest;
-    private String _version_;
 
     
     public Site() {
@@ -51,31 +48,6 @@ public class Site {
     public void setContent(String content) {
         this.content = content;
     }
-
-    public String getSegment() {
-        return segment;
-    }
-
-    public void setSegment(String segment) {
-        this.segment = segment;
-    }
-
-    public String getDigest() {
-        return digest;
-    }
-
-    public void setDigest(String digest) {
-        this.digest = digest;
-    }
-
-    public String get_version_() {
-        return _version_;
-    }
-
-    public void set_version_(String _version_) {
-        this._version_ = _version_;
-    }
-
     /**
      * Constructor
      * 
@@ -85,7 +57,6 @@ public class Site {
      */
     public Site(String id, String title, String url, String content) {
         this.id = id;
-
         this.title = title;
         this.url = url;
         this.content = content;

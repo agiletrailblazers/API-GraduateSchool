@@ -10,7 +10,6 @@ public class SiteSearchDoc {
     private String url;
     private String content;
 
-    
     public String getId() {
         return id;
     }
