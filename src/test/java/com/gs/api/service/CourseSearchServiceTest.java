@@ -23,7 +23,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -145,6 +144,23 @@ public class CourseSearchServiceTest {
         assertEquals(1, response.getNumFound());
         assertEquals("ABC123001", response.getCourses()[0].getId());
         assertTrue(response.isExactMatch());
+        verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class), any(Map.class));
+
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testSearch_ContainsSearchEmpty() throws Exception {
+
+        ResponseEntity<CourseSearchContainer> responseEntity = new ResponseEntity<CourseSearchContainer>(
+                createCourseContainer("ABC123001", 0, 1, 1), HttpStatus.OK);
+        when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class), any(Map.class)))
+            .thenReturn(responseEntity);
+        CourseSearchResponse response = courseSearchService.searchCourses("", 0, 100,new String[0]);
+        assertNotNull(response);
+        assertEquals(1, response.getNumFound());
+        assertEquals("ABC123001", response.getCourses()[0].getId());
+        assertFalse(response.isExactMatch());
         verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class), any(Map.class));
 
     }
