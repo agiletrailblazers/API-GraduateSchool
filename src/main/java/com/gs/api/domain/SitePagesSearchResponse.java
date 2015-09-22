@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 @JsonInclude(Include.ALWAYS)
-public class SiteSearchResponse {
+public class SitePagesSearchResponse {
 
     //page navigators
     private int currentPage = 0;
@@ -19,7 +19,6 @@ public class SiteSearchResponse {
     //results
     private Page[] pages;
 
-    private Site[] sites;
     public int getCurrentPage() {
         return currentPage;
     }
@@ -84,21 +83,11 @@ public class SiteSearchResponse {
         this.numFound = numFound;
     }
 
-    public Page[] getPages() {
-        return pages;
-    }
+    public Page[] getPages() { return pages; }
 
-    public void setPages(Page[] pages) {
-        this.pages = pages;
-    }
+    public void setPages(Page[] pages) { this.pages = pages; }
 
-    public Site[] getSites() {
-        return sites;
-    }
 
-    public void setSites(Site[] sites) {
-        this.sites = sites;
-    }
 
 
 
