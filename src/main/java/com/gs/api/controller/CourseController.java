@@ -32,10 +32,12 @@ import com.gs.api.domain.Course;
 import com.gs.api.domain.CourseSearchResponse;
 import com.gs.api.domain.CourseSession;
 import com.gs.api.domain.Location;
+import com.gs.api.domain.SitePagesSearchResponse;
 import com.gs.api.exception.NotFoundException;
 import com.gs.api.service.CourseSearchService;
 import com.gs.api.service.CourseService;
 import com.gs.api.service.LocationService;
+import com.gs.api.service.SiteSearchService;
 
 @Configuration
 @RestController
@@ -52,8 +54,11 @@ public class CourseController {
     @Autowired
     private LocationService locationService;
     
+    @Autowired
+    private SiteSearchService siteSearchService;
+    
     @Value("${course.search.page.size}")
-    private int courseSearchPageSize;
+    private int searchPageSize;
     
     //@Autowired(required=true)
     //private HttpServletRequest request;
@@ -89,7 +94,7 @@ public class CourseController {
             //this is a course search
             return courseSearchService.searchCourses(search, 
                     NumberUtils.toInt(page, 1), 
-                    NumberUtils.toInt(numRequested, courseSearchPageSize),filter);
+                    NumberUtils.toInt(numRequested, searchPageSize),filter);
         }
         else {
             if (StringUtils.isNotEmpty(page) || StringUtils.isNoneEmpty(numRequested)) {
@@ -152,6 +157,25 @@ public class CourseController {
     public @ResponseBody List<Location> getLocations() throws Exception {
         logger.debug("Location search initiated");        
         return locationService.getLocations();
+    }
+    
+    /**
+     * Search site by keyword
+     * @param search
+     * @param page
+     * @param numRequested
+     * @return Site Search Response
+     * @throws Exception
+     */
+    @RequestMapping(value = "/site", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody SitePagesSearchResponse searchSite(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String page, 
+            @RequestParam(required = false) String numRequested) throws Exception {
+        logger.info("Site Search API initiated");
+        return siteSearchService.searchSite(search, 
+                NumberUtils.toInt(page, 1), 
+                NumberUtils.toInt(numRequested, searchPageSize));
     }
     
     /**

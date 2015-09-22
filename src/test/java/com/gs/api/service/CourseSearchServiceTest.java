@@ -46,9 +46,6 @@ import com.gs.api.rest.object.CourseSearchRestFacetCount;
 @ContextConfiguration(locations = { "classpath:spring/test-root-context.xml" })
 public class CourseSearchServiceTest {
 
-    @Value("${course.search.solr.endpoint}")
-    private String courseSearchSolrEndpoint;
-
     @InjectMocks
     @Autowired
     private CourseSearchService courseSearchService;
@@ -99,7 +96,6 @@ public class CourseSearchServiceTest {
         assertEquals("ABC123", response.getCourses()[0].getId());
         assertTrue(response.isExactMatch());
         verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class), any(Map.class));
-
     }
 
     @SuppressWarnings("unchecked")
@@ -207,32 +203,6 @@ public class CourseSearchServiceTest {
 
     }
 
-    @Test
-    public void buildSearchString() {
-
-        //single term
-        final String SINGLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:8983/solr/courses/select?q=(course_name:(*fraud*))^3 OR (course_id:(*fraud*))^9 OR (course_code:(*fraud*))^6 OR (course_description:(*fraud*)) OR (course_abstract:(*fraud*)) OR (course_prerequisites:(*fraud*))&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true";
-        
-    	String endpoint = courseSearchService.buildSearchString("fraud", 1, 100,"");
-        assertEquals(SINGLE_TERM_RESULT, endpoint);
-    
-        //two terms
-        final String DOUBLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:8983/solr/courses/select?q=(course_name:(*Project Management*))^3 OR (course_id:(*Project Management*))^9 OR (course_code:(*Project Management*))^6 OR (course_description:(*Project Management*)) OR (course_abstract:(*Project Management*)) OR (course_prerequisites:(*Project Management*))&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true";
-
-        endpoint = courseSearchService.buildSearchString("Project Management",1, 100,"");
-
-        assertEquals(DOUBLE_TERM_RESULT, endpoint);
-
-    }
-
-    @Test
-    public void testStripAndEncode() {
-
-        String result = courseSearchService.stripAndEncode("#&^%+-||!(){}[]\"~*?:\\");
-        assertEquals("\\+\\-\\||\\!\\(\\)\\{\\}\\[\\]\\\"\\~\\*\\?\\:\\\\", result);
-
-    }
-
     @SuppressWarnings("unchecked")
     @Test
     public void testSearch_ExactMatchWithFacetParam() throws Exception {
@@ -282,62 +252,6 @@ public class CourseSearchServiceTest {
         assertTrue(response.isExactMatch());
         verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class), any(Map.class));
 
-    }
-
-    @Test
-    public void buildSearchStringWithFacetParam() {
-
-        //single term
-        final String SINGLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:8983/solr/courses/select?q=(course_name:(*fraud*))^3 OR (course_id:(*fraud*))^9 OR (course_code:(*fraud*))^6 OR (course_description:(*fraud*)) OR (course_abstract:(*fraud*)) OR (course_prerequisites:(*fraud*))&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true&fq=city_state:Washington";
-        String facetParamsString = "&fq=city_state:Washington";
-        String endpoint = courseSearchService.buildSearchString("fraud", 1, 100, facetParamsString);
-        assertEquals(SINGLE_TERM_RESULT, endpoint);
-
-        //two terms
-        final String DOUBLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:8983/solr/courses/select?q=(course_name:(*Project Management*))^3 OR (course_id:(*Project Management*))^9 OR (course_code:(*Project Management*))^6 OR (course_description:(*Project Management*)) OR (course_abstract:(*Project Management*)) OR (course_prerequisites:(*Project Management*))&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true&fq=city_state:Washington&fq=status:S";
-        facetParamsString = "&fq=city_state:Washington&fq=status:S";
-        endpoint = courseSearchService.buildSearchString("Project Management",1, 100,facetParamsString);
-
-        assertEquals(DOUBLE_TERM_RESULT, endpoint);
-
-    }
-    
-    @Test
-    public void createNavRange_LessThanFive() {
-        int[] out = courseSearchService.createNavRange(2, 3);
-        assertEquals(1, out[0]);
-        assertEquals(2, out[1]);
-        assertEquals(3, out[2]);
-    }
-    
-    @Test
-    public void createNavRange_MoreThanFive_BeginRange() {
-        int[] out = courseSearchService.createNavRange(2, 10);
-        assertEquals(1, out[0]);
-        assertEquals(2, out[1]);
-        assertEquals(3, out[2]);
-        assertEquals(4, out[3]);
-        assertEquals(5, out[4]);
-    }
-    
-    @Test
-    public void createNavRange_MoreThanFive_MidRange() {
-        int[] out = courseSearchService.createNavRange(5, 10);
-        assertEquals(3, out[0]);
-        assertEquals(4, out[1]);
-        assertEquals(5, out[2]);
-        assertEquals(6, out[3]);
-        assertEquals(7, out[4]);
-    }
-    
-    @Test
-    public void createNavRange_MoreThanFive_EndRange() {
-        int[] out = courseSearchService.createNavRange(9, 10);
-        assertEquals(6, out[0]);
-        assertEquals(7, out[1]);
-        assertEquals(8, out[2]);
-        assertEquals(9, out[3]);
-        assertEquals(10, out[4]);
     }
 
     private CourseSearchContainer createCourseContainerNothing() {

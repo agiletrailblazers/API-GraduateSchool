@@ -14,7 +14,8 @@
 		"3d124d8a-1e19-da13-ee71-968c39c1c059",
 		"99ef9243-5523-4f47-91ee-de13c64f0d0a",
 		"3b928acb-359d-1da5-e9a6-d17be521b3cf",
-		"2cf2ae69-b37b-f0d5-eae6-15150da64721"
+		"2cf2ae69-b37b-f0d5-eae6-15150da64721",
+		"43b8aad3-2b4b-4b39-f467-42f379a7022d"
 	],
 	"folders": [],
 	"timestamp": 1436731751085,
@@ -137,6 +138,26 @@
 			"description": "Search for a course by a description or course code",
 			"collectionId": "38570063-4c0a-6867-1b2d-180f77ec1606",
 			"responses": []
+		},
+		{
+			"id": "43b8aad3-2b4b-4b39-f467-42f379a7022d",
+			"headers": "",
+			"url": "http://{{url}}:8080/api/site?search=government",
+			"pathVariables": {},
+			"preRequestScript": "",
+			"method": "GET",
+			"collectionId": "38570063-4c0a-6867-1b2d-180f77ec1606",
+			"data": [],
+			"dataMode": "params",
+			"name": "Site - Search",
+			"description": "Search the site by a keyword",
+			"descriptionFormat": "html",
+			"time": 1442848850749,
+			"version": 2,
+			"responses": [],
+			"tests": "",
+			"currentHelper": "normal",
+			"helperAttributes": {}
 		},
 		{
 			"id": "8cdb6bb0-8c60-aee0-8ade-8f80cf3467d2",
