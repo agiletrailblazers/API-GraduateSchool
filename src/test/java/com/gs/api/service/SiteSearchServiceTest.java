@@ -41,8 +41,6 @@ import com.gs.api.rest.object.SiteSearchResponse;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "classpath:spring/test-root-context.xml" })
 public class SiteSearchServiceTest {
-    @Value("${course.search.solr.endpoint}")
-    private String courseSearchSolrEndpoint;
 
     @Mock
     private RestOperations restTemplate;
@@ -132,6 +130,7 @@ public class SiteSearchServiceTest {
         when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
                 .thenThrow(new RuntimeException("I didn't expect this to happen"));
         try {
+            siteSearchService.searchSite("find-nothing", 0, 100);
             assertTrue(false);   //fail test as we should not get here
         } catch (Exception e) {
             assertTrue(e instanceof NotFoundException);

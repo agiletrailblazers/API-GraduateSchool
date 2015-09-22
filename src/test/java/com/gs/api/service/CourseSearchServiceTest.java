@@ -46,9 +46,6 @@ import com.gs.api.rest.object.CourseSearchRestFacetCount;
 @ContextConfiguration(locations = { "classpath:spring/test-root-context.xml" })
 public class CourseSearchServiceTest {
 
-    @Value("${course.search.solr.endpoint}")
-    private String courseSearchSolrEndpoint;
-
     @InjectMocks
     @Autowired
     private CourseSearchService courseSearchService;

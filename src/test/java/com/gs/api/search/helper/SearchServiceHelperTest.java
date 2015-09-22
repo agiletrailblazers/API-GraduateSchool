@@ -19,8 +19,8 @@ import static org.junit.Assert.assertEquals;
 @ContextConfiguration(locations = { "classpath:spring/test-root-context.xml" })
 
 public class SearchServiceHelperTest {
-    @Value("${course.search.solr.endpoint}")
-    private String courseSearchSolrEndpoint;
+    @Value("${search.solr.endpoint}")
+    private String searchSolrEndpoint;
 
     @Value("${site.search.solr.query}")
     private String siteSearchSolrQuery;

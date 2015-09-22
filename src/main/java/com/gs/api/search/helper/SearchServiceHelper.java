@@ -1,26 +1,31 @@
 package com.gs.api.search.helper;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jasypt.contrib.org.apache.commons.codec_1_3.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
 @Service
 public class SearchServiceHelper {
     private static final Logger logger = LoggerFactory.getLogger(SearchServiceHelper.class);
 
-    @Value("${course.search.solr.endpoint}")
-    private String courseSearchSolrEndpoint;
+    @Value("${search.solr.credentials}")
+    private String solrCredentials;
+
+    @Value("${search.solr.endpoint}")
+    private String searchSolrEndpoint;
 
     /**
      * Break apart each work (separated by spaces) in the search string and
      * format into the proper SOLR search format for multiple words. Example:
      * *Word1* AND *Word2*
     */
-
     public String buildSearchString(String searchSolrQuery,String search, int currentPage, int numRequested, String filter) {
-        String solrQuery = courseSearchSolrEndpoint.concat(searchSolrQuery);
+        String solrQuery = searchSolrEndpoint.concat(searchSolrQuery);
 
         // build search criteria
         solrQuery = StringUtils.replace(solrQuery, "{search}", stripAndEncode(search));
@@ -44,7 +49,6 @@ public class SearchServiceHelper {
      * @param search
      * @return string
      */
-
     public String stripAndEncode(String search) {
         String[] searchList = { "#", "%", "^", "&", "+", "-", "||", "!", "(", ")", "{", "}", "[", "]", "\"", "~", "*",
                 "?", ":", "\\" };
@@ -99,6 +103,18 @@ public class SearchServiceHelper {
         return pageNavRange;
     }
 
-
+    /**
+     * Create the Request Header for the Solr using the solr credentials
+     */
+    public  HttpEntity<String> createRequestHeader() {
+        // create request header contain basic auth credentials
+        byte[] plainCredsBytes = solrCredentials.getBytes();
+        byte[] base64CredsBytes = Base64.encodeBase64(plainCredsBytes);
+        String base64Creds = new String(base64CredsBytes);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization", "Basic " + base64Creds);
+        HttpEntity<String> request = new HttpEntity<String>(headers);
+        return request;
+    }
 
 }
