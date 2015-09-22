@@ -46,70 +46,62 @@ public class SiteSearchServiceImpl implements SiteSearchService {
     public SiteSearchResponse searchSite(String search, int currentPage, int numRequested)
             throws NotFoundException {
         boolean exactMatch = false;
-            int numFound = 0;
-            int pageSize = 0;
-                        // get search string
-            String searchString = buildSearchString(search, currentPage, numRequested);
+        int numFound = 0;
+        int pageSize = 0;
+        String searchString = buildSearchString(search, currentPage, numRequested);
             // create request header contain basic auth credentials
-            byte[] plainCredsBytes = solrCredentials.getBytes();
-            byte[] base64CredsBytes = Base64.encodeBase64(plainCredsBytes);
-            String base64Creds = new String(base64CredsBytes);
-            HttpHeaders headers = new HttpHeaders();
-            headers.add("Authorization", "Basic " + base64Creds);
-            HttpEntity<String> request = new HttpEntity<String>(headers);
+        byte[] plainCredsBytes = solrCredentials.getBytes();
+        byte[] base64CredsBytes = Base64.encodeBase64(plainCredsBytes);
+        String base64Creds = new String(base64CredsBytes);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization", "Basic " + base64Creds);
+        HttpEntity<String> request = new HttpEntity<String>(headers);
+        // due to a quirk in rest template these facet filters need to be injected as params
+        logger.info(searchString);
+        // perform search
+        ResponseEntity<SiteSearchContainer> responseEntity = null;
+        try {
+            responseEntity = restTemplate.exchange(searchString, HttpMethod.POST, request, SiteSearchContainer.class);
 
-            // due to a quirk in rest template these facet filters need to be injected as params
-            logger.info(searchString);
-
-            // perform search
-            ResponseEntity<SiteSearchContainer> responseEntity = null;
-            try {
-                responseEntity = restTemplate.exchange(searchString, HttpMethod.POST, request, SiteSearchContainer.class);
-
-            } catch (Exception e) {
-                logger.error("Failed to get search results from SOLR", e);
-                throw new NotFoundException("No search results found");
-            }
+        } catch (Exception e) {
+            logger.error("Failed to get search results from SOLR", e);
+            throw new NotFoundException("No search results found");
+        }
         SiteSearchContainer container = responseEntity.getBody();
-        logger.info("Num Found" + container.getResponse().getNumFound());
-
-        // get docs from withing the grouped response
         Collection<SiteSearchDoc> docs  = container.getResponse().getDocs();
-        logger.info("documentSize" + docs.size());
-        // log results
         if (CollectionUtils.isNotEmpty(docs)) {
-            numFound = 25;
+            numFound =  container.getResponse().getNumFound();
             pageSize = docs.size();
         }
-            // loop through responses
+        // loop through responses
         SiteSearchResponse response = new SiteSearchResponse();
-            List<Site> sites = new ArrayList<Site>();
-            if (CollectionUtils.isNotEmpty(docs)) {
-                for (SiteSearchDoc doc : docs) {
-                    Site newSite = new Site(doc.getId(), doc.getTitle(), doc.getUrl(),
-                            doc.getContent());
-                    sites.add(newSite);
-                }
-                response.setSites(sites.toArray(new Site[sites.size()]));
+        List<Site> sites = new ArrayList<Site>();
+        if (CollectionUtils.isNotEmpty(docs)) {
+            for (SiteSearchDoc doc : docs) {
+                Site newSite = new Site(doc.getId(), doc.getTitle(), doc.getUrl(),
+                        doc.getContent());
+                sites.add(newSite);
             }
-            if (pageSize > 0) {
-                response.setPreviousPage(currentPage-1);
-                response.setCurrentPage(currentPage);
-                response.setPageSize(pageSize);
-                response.setNumFound(numFound);
-                response.setNumRequested(numRequested);
-                int totalPages = ((int) Math.ceil((double) numFound / numRequested));
-                response.setTotalPages(totalPages);
-                if (currentPage+1 <= totalPages) {
-                    response.setNextPage(currentPage+1);
-                }
-                response.setPageNavRange(createNavRange(currentPage, totalPages));
-            }
-         //   response.setExactMatch(exactMatch);
-            // Add a set facets (create method to populate facets, take response and
-            // iterate through... build and populate.
-            return response;
+            response.setSites(sites.toArray(new Site[sites.size()]));
         }
+        if (pageSize > 0) {
+            response.setPreviousPage(currentPage-1);
+            response.setCurrentPage(currentPage);
+            response.setPageSize(pageSize);
+            response.setNumFound(numFound);
+            response.setNumRequested(numRequested);
+            int totalPages = ((int) Math.ceil((double) numFound / numRequested));
+            response.setTotalPages(totalPages);
+            if (currentPage+1 <= totalPages) {
+                response.setNextPage(currentPage+1);
+            }
+            response.setPageNavRange(createNavRange(currentPage, totalPages));
+        }
+     //   response.setExactMatch(exactMatch);
+        // Add a set facets (create method to populate facets, take response and
+        // iterate through... build and populate.
+        return response;
+    }
 
     public int[] createNavRange(int currentPage, int totalPages) {
         int[] pageNavRange = new int[(totalPages > 5) ? 5 : totalPages];
@@ -160,18 +152,6 @@ public class SiteSearchServiceImpl implements SiteSearchService {
         return solrQuery;
         }
 
-/**
- * Strip characters considered invalid to SOLR. Encode other characters
- * which are supported by SOLR but need to be SOLR encoded (add "\" before
- * character).
- * <p>
- * SOLR Invalid: #, %, ^, & SOLR Encoded: + - || ! ( ) { } [ ] " ~ * ? : \
- * Useless: Remove AND or OR from search string as these only confuse the
- * situation
- *
- * @param search
- * @return string
- */
 @Override
 public String stripAndEncode(String search) {
         String[] searchList = { "#", "%", "^", "&", "+", "-", "||", "!", "(", ")", "{", "}", "[", "]", "\"", "~", "*",
