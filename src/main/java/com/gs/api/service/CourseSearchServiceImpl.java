@@ -34,14 +34,8 @@ public class CourseSearchServiceImpl implements CourseSearchService {
 
     private static final Logger logger = LoggerFactory.getLogger(CourseSearchServiceImpl.class);
 
-    @Value("${course.search.solr.endpoint}")
-    private String courseSearchSolrEndpoint;
-
     @Value("${course.search.solr.query}")
     private String courseSearchSolrQuery;
-
-    @Value("${course.search.solr.credentials}")
-    private String solrCredentials;
 
     @Value("#{'${course.search.facet.location.exclude}'.split(';')}")
     private String[] locationFacetExclude;
@@ -74,21 +68,13 @@ public class CourseSearchServiceImpl implements CourseSearchService {
         // get search string
         String searchString = searchServiceHelper.buildSearchString(courseSearchSolrQuery,search, currentPage,
                 numRequested, groupFacetParamString.toString());
-
         // create request header contain basic auth credentials
-        byte[] plainCredsBytes = solrCredentials.getBytes();
-        byte[] base64CredsBytes = Base64.encodeBase64(plainCredsBytes);
-        String base64Creds = new String(base64CredsBytes);
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Authorization", "Basic " + base64Creds);
-        HttpEntity<String> request = new HttpEntity<String>(headers);
-
+        HttpEntity<String> request = searchServiceHelper.createRequestHeader();
         // due to a quirk in rest template these facet filters need to be injected as params
         Map<String, String> uriParams = new HashMap<String, String>();
         uriParams.put("facet-exclude", "{!ex=dt}");
         uriParams.put("facet-countall", "{!tag=dt}");
         logger.info(searchString);
-        
         // perform search
         ResponseEntity<CourseSearchContainer> responseEntity = null;
         try {
@@ -98,7 +84,6 @@ public class CourseSearchServiceImpl implements CourseSearchService {
             throw new NotFoundException("No search results found");
         }
         CourseSearchContainer container = responseEntity.getBody();
-
         // get docs from withing the grouped response
         CourseSearchGroup group = container.getGrouped().getGroup();
         Collection<CourseSearchDoc> docs = container.getGrouped().getGroup().getDoclist().getDocs();
@@ -108,7 +93,6 @@ public class CourseSearchServiceImpl implements CourseSearchService {
             pageSize = docs.size();
         }
         logger.info("Found " + numFound + " matches for search " + search + " page size " + pageSize);
-
         // loop through responses
         CourseSearchResponse response = new CourseSearchResponse();
         List<Course> courses = new ArrayList<Course>();

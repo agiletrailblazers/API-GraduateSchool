@@ -33,9 +33,6 @@ public class SiteSearchServiceImpl implements SiteSearchService {
     @Value("${site.search.solr.query}")
     private String siteSearchSolrQuery;
 
-    @Value("${course.search.solr.credentials}")
-    private String solrCredentials;
-
     @Autowired(required = true)
     private RestOperations restTemplate;
 
@@ -47,21 +44,14 @@ public class SiteSearchServiceImpl implements SiteSearchService {
      *
      * @param request
      * @return SearchResponse
-     */
-
+    */
     public SitePagesSearchResponse searchSite(String search, int currentPage, int numRequested)
             throws NotFoundException {
         int numFound = 0;
         int pageSize = 0;
         String searchString = searchServiceHelper.buildSearchString(siteSearchSolrQuery,search, currentPage, numRequested,"");
-            // create request header contain basic auth credentials
-        byte[] plainCredsBytes = solrCredentials.getBytes();
-        byte[] base64CredsBytes = Base64.encodeBase64(plainCredsBytes);
-        String base64Creds = new String(base64CredsBytes);
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Authorization", "Basic " + base64Creds);
-        HttpEntity<String> request = new HttpEntity<String>(headers);
         logger.info(searchString);
+        HttpEntity<String> request = searchServiceHelper.createRequestHeader();
         ResponseEntity<SiteSearchContainer> responseEntity = null;
         try {
             responseEntity = restTemplate.exchange(searchString, HttpMethod.POST, request, SiteSearchContainer.class);
