@@ -9,7 +9,19 @@ public class Page {
     private String title;
     private String url;
     private String content;
-    
+    /**
+     * Constructor
+     *
+     * @param title
+     * @param url
+     * @param content
+     */
+    public Page(String title, String url, String content) {
+        this.title = title;
+        this.url = url;
+        this.content = content;
+    }
+
     public String getUrl() {
         return url;
     }

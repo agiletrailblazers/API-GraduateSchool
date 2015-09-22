@@ -4,12 +4,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-
-import com.gs.api.domain.Site;
-import com.gs.api.rest.object.SiteSearchContainer;
-import com.gs.api.rest.object.SiteSearchDoc;
+import com.gs.api.domain.Page;
+import com.gs.api.search.helper.SearchServiceHelper;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.jasypt.contrib.org.apache.commons.codec_1_3.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,40 +17,43 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
-import com.gs.api.domain.SiteSearchResponse;
-import com.gs.api.exception.NotFoundException;
 import org.springframework.web.client.RestOperations;
+import com.gs.api.domain.SitePagesSearchResponse;
+import com.gs.api.exception.NotFoundException;
+import com.gs.api.rest.object.SiteSearchContainer;
+import com.gs.api.rest.object.SiteSearchDoc;
 
 
 
 @Service
 public class SiteSearchServiceImpl implements SiteSearchService {
 
-    /*
-     * (non-Javadoc)
-     * @see com.gs.api.service.SiteSearchService#searchSite(java.lang.String, int, int)
-     */
     private static final Logger logger = LoggerFactory.getLogger(SiteSearchServiceImpl.class);
 
-    @Value("${course.search.solr.endpoint}")
-    private String courseSearchSolrEndpoint;
-
-    @Value("${course.nutchsearch.solr.query}")
-    private String courseSearchSolrQuery;
+    @Value("${site.search.solr.query}")
+    private String siteSearchSolrQuery;
 
     @Value("${course.search.solr.credentials}")
     private String solrCredentials;
 
-
     @Autowired(required = true)
     private RestOperations restTemplate;
-    public SiteSearchResponse searchSite(String search, int currentPage, int numRequested)
+
+    @Autowired
+    private SearchServiceHelper searchServiceHelper;
+
+    /**
+     * Perform a search for Site
+     *
+     * @param request
+     * @return SearchResponse
+     */
+
+    public SitePagesSearchResponse searchSite(String search, int currentPage, int numRequested)
             throws NotFoundException {
-        boolean exactMatch = false;
         int numFound = 0;
         int pageSize = 0;
-        String searchString = buildSearchString(search, currentPage, numRequested);
+        String searchString = searchServiceHelper.buildSearchString(siteSearchSolrQuery,search, currentPage, numRequested,"");
             // create request header contain basic auth credentials
         byte[] plainCredsBytes = solrCredentials.getBytes();
         byte[] base64CredsBytes = Base64.encodeBase64(plainCredsBytes);
@@ -61,9 +61,7 @@ public class SiteSearchServiceImpl implements SiteSearchService {
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "Basic " + base64Creds);
         HttpEntity<String> request = new HttpEntity<String>(headers);
-        // due to a quirk in rest template these facet filters need to be injected as params
         logger.info(searchString);
-        // perform search
         ResponseEntity<SiteSearchContainer> responseEntity = null;
         try {
             responseEntity = restTemplate.exchange(searchString, HttpMethod.POST, request, SiteSearchContainer.class);
@@ -79,15 +77,14 @@ public class SiteSearchServiceImpl implements SiteSearchService {
             pageSize = docs.size();
         }
         // loop through responses
-        SiteSearchResponse response = new SiteSearchResponse();
-        List<Site> sites = new ArrayList<Site>();
+        SitePagesSearchResponse response = new SitePagesSearchResponse();
+        List<Page> pages = new ArrayList<Page>();
         if (CollectionUtils.isNotEmpty(docs)) {
             for (SiteSearchDoc doc : docs) {
-                Site newSite = new Site(doc.getId(), doc.getTitle(), doc.getUrl(),
-                        doc.getContent());
-                sites.add(newSite);
+                Page newPage = new Page(doc.getTitle(), doc.getUrl(),doc.getContent());
+                pages.add(newPage);
             }
-            response.setSites(sites.toArray(new Site[sites.size()]));
+            response.setPages(pages.toArray(new Page[pages.size()]));
         }
         if (pageSize > 0) {
             response.setPreviousPage(currentPage-1);
@@ -100,71 +97,9 @@ public class SiteSearchServiceImpl implements SiteSearchService {
             if (currentPage+1 <= totalPages) {
                 response.setNextPage(currentPage+1);
             }
-            response.setPageNavRange(createNavRange(currentPage, totalPages));
+            response.setPageNavRange(searchServiceHelper.createNavRange(currentPage, totalPages));
         }
-     //   response.setExactMatch(exactMatch);
-        // Add a set facets (create method to populate facets, take response and
-        // iterate through... build and populate.
         return response;
     }
 
-    public int[] createNavRange(int currentPage, int totalPages) {
-        int[] pageNavRange = new int[(totalPages > 5) ? 5 : totalPages];
-        if (totalPages > 5) {
-            if (currentPage - 2 <= 0) {
-                //begin range
-                for (int i=0; i<5; i++) {
-                    pageNavRange[i] = i+1;
-                }
-            }
-            else if (currentPage + 2 >= totalPages) {
-                //end range
-                int j = totalPages - 4;
-                for (int i=0; i<5; i++) {
-                    pageNavRange[i] = j;
-                    j++;
-                }
-            }
-            else {
-                //mid range
-                int j = currentPage - 2;
-                for (int i=0; i<5; i++) {
-                    pageNavRange[i] = j;
-                    j++;
-                }
-            }
-        }
-        else {
-            //range is less than 5
-            for (int i=0; i<totalPages; i++) {
-                pageNavRange[i] = i+1;
-            }
-        }
-        return pageNavRange;
-    }
-
-
-    @Override
-    public String buildSearchString(String search, int currentPage, int numRequested) {
-        String solrQuery = courseSearchSolrEndpoint.concat(courseSearchSolrQuery);
-
-        // build search criteria
-        solrQuery = StringUtils.replace(solrQuery, "{search}", stripAndEncode(search));
-
-        // update start and num requested
-        solrQuery = StringUtils.replace(solrQuery, "{start}", Integer.toString((currentPage - 1) * numRequested));
-        solrQuery = StringUtils.replace(solrQuery, "{numRequested}", Integer.toString(numRequested));
-        return solrQuery;
-        }
-
-@Override
-public String stripAndEncode(String search) {
-        String[] searchList = { "#", "%", "^", "&", "+", "-", "||", "!", "(", ")", "{", "}", "[", "]", "\"", "~", "*",
-        "?", ":", "\\" };
-        String[] replaceList = { "", "", "", "", "\\+", "\\-", "\\||", "\\!", "\\(", "\\)", "\\{", "\\}", "\\[", "\\]",
-        "\\\"", "\\~", "\\*", "\\?", "\\:", "\\\\" };
-        return StringUtils.replaceEach(search, searchList, replaceList);
-        }
-
-
-        }
+}

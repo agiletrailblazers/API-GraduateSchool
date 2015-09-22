@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.gs.api.search.helper.SearchServiceHelper;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jasypt.contrib.org.apache.commons.codec_1_3.binary.Base64;
@@ -44,6 +45,9 @@ public class CourseSearchServiceImpl implements CourseSearchService {
 
     @Value("#{'${course.search.facet.location.exclude}'.split(';')}")
     private String[] locationFacetExclude;
+
+    @Autowired
+    private SearchServiceHelper searchServiceHelper;
     
     @Autowired(required = true)
     private RestOperations restTemplate;
@@ -68,7 +72,8 @@ public class CourseSearchServiceImpl implements CourseSearchService {
             }
         }
         // get search string
-        String searchString = buildSearchString(search, currentPage, numRequested, groupFacetParamString.toString());
+        String searchString = searchServiceHelper.buildSearchString(courseSearchSolrQuery,search, currentPage,
+                numRequested, groupFacetParamString.toString());
 
         // create request header contain basic auth credentials
         byte[] plainCredsBytes = solrCredentials.getBytes();
@@ -137,7 +142,7 @@ public class CourseSearchServiceImpl implements CourseSearchService {
             if (currentPage+1 <= totalPages) {
                 response.setNextPage(currentPage+1);
             }
-            response.setPageNavRange(createNavRange(currentPage, totalPages));
+            response.setPageNavRange(searchServiceHelper.createNavRange(currentPage, totalPages));
         }
         response.setExactMatch(exactMatch);
         // Add a set facets (create method to populate facets, take response and
@@ -185,91 +190,6 @@ public class CourseSearchServiceImpl implements CourseSearchService {
         return locations;
     }
 
-    /**
-     * Break apart each work (separated by spaces) in the search string and
-     * format into the proper SOLR search format for multiple words. Example:
-     * *Word1* AND *Word2*
-     */
-    @Override
-    public String buildSearchString(String search, int currentPage, int numRequested, String filter) {
 
-        String solrQuery = courseSearchSolrEndpoint.concat(courseSearchSolrQuery);
-
-        // build search criteria
-        solrQuery = StringUtils.replace(solrQuery, "{search}", stripAndEncode(search));
-
-        // update start and num requested
-        solrQuery = StringUtils.replace(solrQuery, "{start}", Integer.toString((currentPage - 1) * numRequested));
-        solrQuery = StringUtils.replace(solrQuery, "{numRequested}", Integer.toString(numRequested));
-        solrQuery = StringUtils.replace(solrQuery, "{filter}", filter);
-        return solrQuery;
-    }
-
-    /**
-     * Strip characters considered invalid to SOLR. Encode other characters
-     * which are supported by SOLR but need to be SOLR encoded (add "\" before
-     * character).
-     * <p>
-     * SOLR Invalid: #, %, ^, & SOLR Encoded: + - || ! ( ) { } [ ] " ~ * ? : \
-     * Useless: Remove AND or OR from search string as these only confuse the
-     * situation
-     *
-     * @param search
-     * @return string
-     */
-    @Override
-    public String stripAndEncode(String search) {
-        String[] searchList = { "#", "%", "^", "&", "+", "-", "||", "!", "(", ")", "{", "}", "[", "]", "\"", "~", "*",
-                "?", ":", "\\" };
-        String[] replaceList = { "", "", "", "", "\\+", "\\-", "\\||", "\\!", "\\(", "\\)", "\\{", "\\}", "\\[", "\\]",
-                "\\\"", "\\~", "\\*", "\\?", "\\:", "\\\\" };
-        return StringUtils.replaceEach(search, searchList, replaceList);
-    }
-    
-    /**
-     * Generate the page range to display for navigation. Show always display only 5 pages max attempting
-     * to keep the current page in the "middle" of the range.
-     * For example:
-     *   - if current page is 3 of 10 show: 1,2,3,4,5
-     *   - if current page is 7 of 10 show: 5,6,7,8,9
-     *   - if current page is 10 of 10 show: 6,7,8,9,10 
-     * @param currentPage
-     * @param totalPages
-     * @return int[]
-     */
-    public int[] createNavRange(int currentPage, int totalPages) {
-        int[] pageNavRange = new int[(totalPages > 5) ? 5 : totalPages];
-        if (totalPages > 5) {
-            if (currentPage - 2 <= 0) {
-                //begin range
-                for (int i=0; i<5; i++) {
-                    pageNavRange[i] = i+1;
-                }
-            }
-            else if (currentPage + 2 >= totalPages) {
-                //end range
-                int j = totalPages - 4;
-                for (int i=0; i<5; i++) {
-                    pageNavRange[i] = j;
-                    j++;
-                }
-            }
-            else {
-                //mid range
-                int j = currentPage - 2;
-                for (int i=0; i<5; i++) {
-                    pageNavRange[i] = j;
-                    j++;
-                }
-            }
-        }
-        else {
-            //range is less than 5
-            for (int i=0; i<totalPages; i++) {
-                pageNavRange[i] = i+1;
-            }
-        }
-        return pageNavRange;
-    }
 
 }

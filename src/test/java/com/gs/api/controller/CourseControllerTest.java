@@ -38,7 +38,7 @@ import org.springframework.web.context.WebApplicationContext;
 import com.gs.api.domain.Course;
 import com.gs.api.domain.CourseSearchResponse;
 import com.gs.api.domain.Location;
-import com.gs.api.domain.SiteSearchResponse;
+import com.gs.api.domain.SitePagesSearchResponse;
 import com.gs.api.helper.CourseTestHelper;
 import com.gs.api.service.CourseService;
 import com.gs.api.service.CourseSearchService;
@@ -246,7 +246,7 @@ public class CourseControllerTest {
     
     @Test
     public void testSiteSearch() throws Exception {
-        when(siteSearchService.searchSite(anyString(), anyInt(), anyInt())).thenReturn(new SiteSearchResponse());
+        when(siteSearchService.searchSite(anyString(), anyInt(), anyInt())).thenReturn(new SitePagesSearchResponse());
         mockMvc.perform(get("/site?search=xxx").accept(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/json"));
