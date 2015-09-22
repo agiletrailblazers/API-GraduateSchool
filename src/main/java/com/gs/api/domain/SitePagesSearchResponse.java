@@ -3,8 +3,7 @@ package com.gs.api.domain;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
-@JsonInclude(Include.ALWAYS)
-public class SiteSearchResponse {
+@JsonInclude(Include.ALWAYS) public class SitePagesSearchResponse {
 
     //page navigators
     private int currentPage = 0;
@@ -90,5 +89,5 @@ public class SiteSearchResponse {
     public void setPages(Page[] pages) {
         this.pages = pages;
     }
-    
+
 }

@@ -32,7 +32,7 @@ import com.gs.api.domain.Course;
 import com.gs.api.domain.CourseSearchResponse;
 import com.gs.api.domain.CourseSession;
 import com.gs.api.domain.Location;
-import com.gs.api.domain.SiteSearchResponse;
+import com.gs.api.domain.SitePagesSearchResponse;
 import com.gs.api.exception.NotFoundException;
 import com.gs.api.service.CourseSearchService;
 import com.gs.api.service.CourseService;
@@ -168,7 +168,7 @@ public class CourseController {
      * @throws Exception
      */
     @RequestMapping(value = "/site", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody SiteSearchResponse searchSite(
+    public @ResponseBody SitePagesSearchResponse searchSite(
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String page, 
             @RequestParam(required = false) String numRequested) throws Exception {

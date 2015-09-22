@@ -30,8 +30,8 @@ CATALINA_OPTS="-DpropertiesLoc=properties/dev"
 ```
 NOTE: JRE_HOME is optional but if you are running multiple Java version this is a way to handle it.
 
-<h2>API Documentation</h2>
-TODO
+<h2>Code Consistency</h2>
+Import the file "eclipse-code-formatter.xml" in the root of this project into your Eclipse IDE for code consistency.  If using Intellij check this out: https://plugins.jetbrains.com/plugin/6546
 
 <h2>Postman</h2>
 The APIs can be run using Postman.  A Postman collection is included in the repo.
