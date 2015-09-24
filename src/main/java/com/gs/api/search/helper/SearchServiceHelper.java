@@ -25,8 +25,8 @@ public class SearchServiceHelper {
         String solrQuery = searchSolrEndpoint.concat(searchSolrQuery);
 
         //set the curentpage value to 1 when current page is zero
-        if (currentPage==0) {
-            currentPage=1;
+        if (currentPage == 0) {
+            currentPage = 1;
         }
         // build search criteria
         solrQuery = StringUtils.replace(solrQuery, "{search}", stripAndEncode(search));
