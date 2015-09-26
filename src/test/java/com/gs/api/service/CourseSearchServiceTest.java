@@ -69,7 +69,7 @@ public class CourseSearchServiceTest {
                 createCourseContainer("ABC123", 0, 224, 100), HttpStatus.OK);
         when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class), any(Map.class)))
             .thenReturn(responseEntity);
-        CourseSearchResponse response = courseSearchService.searchCourses("stuff", 1, 100,new String[0]);
+        CourseSearchResponse response = courseSearchService.searchCourses("stuff", 1, 100, new String[0]);
         assertNotNull(response);
         assertEquals(224, response.getNumFound());
         assertEquals(1, response.getCurrentPage());
@@ -232,7 +232,50 @@ public class CourseSearchServiceTest {
         assertEquals(1, response.getNumFound());
         assertEquals("government", response.getCourses()[0].getId());
         assertTrue(response.isExactMatch());
-       verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class), any(Map.class));
+        assertEquals(response.getLocationFacets().size(), 2);
+        verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class), any(Map.class));
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testSearch_ExactMatchWithExcludedFacet() throws Exception {
+
+        CourseSearchContainer courseSearchContainer = createCourseContainerwithCityStateFacet("government", 0, 1);
+        courseSearchContainer.getRestFacetCount().getRestFacetFields().getCityState().add("Exclude,PA");
+        courseSearchContainer.getRestFacetCount().getRestFacetFields().getCityState().add("1");
+        
+        ResponseEntity<CourseSearchContainer> responseEntity = new ResponseEntity<CourseSearchContainer>(
+                courseSearchContainer, HttpStatus.OK);
+        when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class), any(Map.class)))
+                .thenReturn(responseEntity);
+        CourseSearchResponse response = courseSearchService.searchCourses("government", 0, 100, new String[] {});
+        assertNotNull(response);
+        assertEquals(1, response.getNumFound());
+        assertEquals("government", response.getCourses()[0].getId());
+        assertTrue(response.isExactMatch());
+        assertEquals(response.getLocationFacets().size(), 2);
+        verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class), any(Map.class));
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testSearch_ExactMatchWithZeroFacet() throws Exception {
+
+        CourseSearchContainer courseSearchContainer = createCourseContainerwithCityStateFacet("government", 0, 1);
+        courseSearchContainer.getRestFacetCount().getRestFacetFields().getCityState().add("DogfishHead,PA");
+        courseSearchContainer.getRestFacetCount().getRestFacetFields().getCityState().add("0");
+        
+        ResponseEntity<CourseSearchContainer> responseEntity = new ResponseEntity<CourseSearchContainer>(
+                courseSearchContainer, HttpStatus.OK);
+        when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class), any(Map.class)))
+                .thenReturn(responseEntity);
+        CourseSearchResponse response = courseSearchService.searchCourses("government", 0, 100, new String[] {});
+        assertNotNull(response);
+        assertEquals(1, response.getNumFound());
+        assertEquals("government", response.getCourses()[0].getId());
+        assertTrue(response.isExactMatch());
+        assertEquals(response.getLocationFacets().size(), 2);
+        verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class), any(Map.class));
     }
     
     @SuppressWarnings("unchecked")

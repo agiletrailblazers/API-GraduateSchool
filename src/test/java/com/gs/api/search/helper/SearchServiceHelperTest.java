@@ -48,13 +48,13 @@ public class SearchServiceHelperTest {
     public void buildSiteSearchString() {
         //single term
         final String SINGLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:9090/solr/nutch-core/select?q=(title:(*governnment*)) AND (content:(*governnment*))&start=0&rows=100&wt=json";
-        String endpoint = searchServiceHelper.buildSearchString(siteSearchSolrQuery,"governnment", 1, 100,"");
+        String endpoint = searchServiceHelper.buildSearchString(siteSearchSolrQuery,"governnment", 1, 100,new String[0]);
         assertEquals(SINGLE_TERM_RESULT, endpoint);
 
         //two terms
         final String DOUBLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:9090/solr/nutch-core/select?q=(title:(*governnment*)) AND (content:(*governnment*))&start=0&rows=100&wt=json";
 
-        endpoint = searchServiceHelper.buildSearchString(siteSearchSolrQuery,"governnment",1, 100,"");
+        endpoint = searchServiceHelper.buildSearchString(siteSearchSolrQuery,"governnment",1, 100,new String[0]);
 
         assertEquals(DOUBLE_TERM_RESULT, endpoint);
 
@@ -66,13 +66,13 @@ public class SearchServiceHelperTest {
         //single term
         final String SINGLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:9090/solr/courses/select?q=(course_name:(*fraud*))^3 OR (course_id:(*fraud*))^9 OR (course_code:(*fraud*))^6 OR (course_description:(*fraud*)) OR (course_abstract:(*fraud*)) OR (course_prerequisites:(*fraud*))&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true";
 
-        String endpoint = searchServiceHelper.buildSearchString(courseSearchSolrQuery,"fraud", 1, 100,"");
+        String endpoint = searchServiceHelper.buildSearchString(courseSearchSolrQuery,"fraud", 1, 100,new String[0]);
         assertEquals(SINGLE_TERM_RESULT, endpoint);
 
         //two terms
         final String DOUBLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:9090/solr/courses/select?q=(course_name:(*Project Management*))^3 OR (course_id:(*Project Management*))^9 OR (course_code:(*Project Management*))^6 OR (course_description:(*Project Management*)) OR (course_abstract:(*Project Management*)) OR (course_prerequisites:(*Project Management*))&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true";
 
-        endpoint = searchServiceHelper.buildSearchString(courseSearchSolrQuery,"Project Management",1, 100,"");
+        endpoint = searchServiceHelper.buildSearchString(courseSearchSolrQuery,"Project Management",1, 100,new String[0]);
 
         assertEquals(DOUBLE_TERM_RESULT, endpoint);
 
@@ -82,15 +82,15 @@ public class SearchServiceHelperTest {
     public void buildSearchStringWithFacetParam() {
 
         //single term
-        final String SINGLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:9090/solr/courses/select?q=(course_name:(*fraud*))^3 OR (course_id:(*fraud*))^9 OR (course_code:(*fraud*))^6 OR (course_description:(*fraud*)) OR (course_abstract:(*fraud*)) OR (course_prerequisites:(*fraud*))&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true&fq=city_state:Washington";
-        String facetParamsString = "&fq=city_state:Washington";
-        String endpoint = searchServiceHelper.buildSearchString(courseSearchSolrQuery,"fraud", 1, 100, facetParamsString);
+        final String SINGLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:9090/solr/courses/select?q=(course_name:(*fraud*))^3 OR (course_id:(*fraud*))^9 OR (course_code:(*fraud*))^6 OR (course_description:(*fraud*)) OR (course_abstract:(*fraud*)) OR (course_prerequisites:(*fraud*))&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true&fq=city_state:\"Washington\"";
+        String[] facetParam = {"city_state:Washington"};
+        String endpoint = searchServiceHelper.buildSearchString(courseSearchSolrQuery,"fraud", 1, 100, facetParam);
         assertEquals(SINGLE_TERM_RESULT, endpoint);
 
         //two terms
-        final String DOUBLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:9090/solr/courses/select?q=(course_name:(*Project Management*))^3 OR (course_id:(*Project Management*))^9 OR (course_code:(*Project Management*))^6 OR (course_description:(*Project Management*)) OR (course_abstract:(*Project Management*)) OR (course_prerequisites:(*Project Management*))&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true&fq=city_state:Washington&fq=status:S";
-        facetParamsString = "&fq=city_state:Washington&fq=status:S";
-        endpoint = searchServiceHelper.buildSearchString(courseSearchSolrQuery,"Project Management",1, 100,facetParamsString);
+        final String DOUBLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:9090/solr/courses/select?q=(course_name:(*Project Management*))^3 OR (course_id:(*Project Management*))^9 OR (course_code:(*Project Management*))^6 OR (course_description:(*Project Management*)) OR (course_abstract:(*Project Management*)) OR (course_prerequisites:(*Project Management*))&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true&fq=city_state:\"Washington\"&fq=status:\"S\"";
+        String[] facetParams = {"city_state:Washington","status:S"};
+        endpoint = searchServiceHelper.buildSearchString(courseSearchSolrQuery,"Project Management",1, 100,facetParams);
 
         assertEquals(DOUBLE_TERM_RESULT, endpoint);
 
@@ -146,13 +146,13 @@ public class SearchServiceHelperTest {
     @Test public void buildSiteSearchString_CurrentPage_EqualstoZero() {
         //single term
         final String SINGLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:9090/solr/nutch-core/select?q=(title:(*governnment*)) AND (content:(*governnment*))&start=0&rows=100&wt=json";
-        String endpoint = searchServiceHelper.buildSearchString(siteSearchSolrQuery, "governnment", 0, 100, "");
+        String endpoint = searchServiceHelper.buildSearchString(siteSearchSolrQuery, "governnment", 0, 100, new String[0]);
         assertEquals(SINGLE_TERM_RESULT, endpoint);
 
         //two terms
         final String DOUBLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:9090/solr/nutch-core/select?q=(title:(*governnment*)) AND (content:(*governnment*))&start=0&rows=100&wt=json";
 
-        endpoint = searchServiceHelper.buildSearchString(siteSearchSolrQuery, "governnment", 0, 100, "");
+        endpoint = searchServiceHelper.buildSearchString(siteSearchSolrQuery, "governnment", 0, 100, new String[0]);
 
         assertEquals(DOUBLE_TERM_RESULT, endpoint);
 
@@ -163,13 +163,13 @@ public class SearchServiceHelperTest {
         //single term
         final String SINGLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:9090/solr/courses/select?q=(course_name:(*fraud*))^3 OR (course_id:(*fraud*))^9 OR (course_code:(*fraud*))^6 OR (course_description:(*fraud*)) OR (course_abstract:(*fraud*)) OR (course_prerequisites:(*fraud*))&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true";
 
-        String endpoint = searchServiceHelper.buildSearchString(courseSearchSolrQuery, "fraud", 0, 100, "");
+        String endpoint = searchServiceHelper.buildSearchString(courseSearchSolrQuery, "fraud", 0, 100, new String[0]);
         assertEquals(SINGLE_TERM_RESULT, endpoint);
 
         //two terms
         final String DOUBLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:9090/solr/courses/select?q=(course_name:(*Project Management*))^3 OR (course_id:(*Project Management*))^9 OR (course_code:(*Project Management*))^6 OR (course_description:(*Project Management*)) OR (course_abstract:(*Project Management*)) OR (course_prerequisites:(*Project Management*))&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true";
 
-        endpoint = searchServiceHelper.buildSearchString(courseSearchSolrQuery, "Project Management", 0, 100, "");
+        endpoint = searchServiceHelper.buildSearchString(courseSearchSolrQuery, "Project Management", 0, 100, new String[0]);
 
         assertEquals(DOUBLE_TERM_RESULT, endpoint);
 
@@ -178,13 +178,13 @@ public class SearchServiceHelperTest {
     @Test public void buildSiteSearchString_CurrentPage_NegativeNumber() {
         //single term
         final String SINGLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:9090/solr/nutch-core/select?q=(title:(*governnment*)) AND (content:(*governnment*))&start=0&rows=100&wt=json";
-        String endpoint = searchServiceHelper.buildSearchString(siteSearchSolrQuery, "governnment", -1, 100, "");
+        String endpoint = searchServiceHelper.buildSearchString(siteSearchSolrQuery, "governnment", -1, 100, new String[0]);
         assertEquals(SINGLE_TERM_RESULT, endpoint);
 
         //two terms
         final String DOUBLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:9090/solr/nutch-core/select?q=(title:(*governnment*)) AND (content:(*governnment*))&start=0&rows=100&wt=json";
 
-        endpoint = searchServiceHelper.buildSearchString(siteSearchSolrQuery, "governnment", -1, 100, "");
+        endpoint = searchServiceHelper.buildSearchString(siteSearchSolrQuery, "governnment", -1, 100, new String[0]);
 
         assertEquals(DOUBLE_TERM_RESULT, endpoint);
 
@@ -195,13 +195,13 @@ public class SearchServiceHelperTest {
         //single term
         final String SINGLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:9090/solr/courses/select?q=(course_name:(*fraud*))^3 OR (course_id:(*fraud*))^9 OR (course_code:(*fraud*))^6 OR (course_description:(*fraud*)) OR (course_abstract:(*fraud*)) OR (course_prerequisites:(*fraud*))&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true";
 
-        String endpoint = searchServiceHelper.buildSearchString(courseSearchSolrQuery, "fraud", -1, 100, "");
+        String endpoint = searchServiceHelper.buildSearchString(courseSearchSolrQuery, "fraud", -1, 100, new String[0]);
         assertEquals(SINGLE_TERM_RESULT, endpoint);
 
         //two terms
         final String DOUBLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:9090/solr/courses/select?q=(course_name:(*Project Management*))^3 OR (course_id:(*Project Management*))^9 OR (course_code:(*Project Management*))^6 OR (course_description:(*Project Management*)) OR (course_abstract:(*Project Management*)) OR (course_prerequisites:(*Project Management*))&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true";
 
-        endpoint = searchServiceHelper.buildSearchString(courseSearchSolrQuery, "Project Management", -1, 100, "");
+        endpoint = searchServiceHelper.buildSearchString(courseSearchSolrQuery, "Project Management", -1, 100, new String[0]);
 
         assertEquals(DOUBLE_TERM_RESULT, endpoint);
 

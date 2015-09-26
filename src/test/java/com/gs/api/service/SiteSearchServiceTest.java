@@ -1,8 +1,6 @@
 package com.gs.api.service;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -13,7 +11,6 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.List;
 
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,7 +19,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -58,6 +54,7 @@ public class SiteSearchServiceTest {
     public void tearDown() throws Exception {
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testSearch_ResultsFound() throws Exception {
 
@@ -65,7 +62,7 @@ public class SiteSearchServiceTest {
                 createSiteContainer("ABC123", 0, 224, 100), HttpStatus.OK);
         when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
                 .thenReturn(responseEntity);
-        SitePagesSearchResponse response = siteSearchService.searchSite("", 1, 100);
+        SitePagesSearchResponse response = siteSearchService.searchSite("", 1, 100, new String[0]);
         assertNotNull(response);
         assertEquals(224, response.getNumFound());
         assertEquals(1, response.getCurrentPage());
@@ -76,6 +73,7 @@ public class SiteSearchServiceTest {
 
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testSearch_NoMatch() throws Exception {
 
@@ -83,7 +81,7 @@ public class SiteSearchServiceTest {
                 createSiteContainerNothing(), HttpStatus.OK);
         when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
                 .thenReturn(responseEntity);
-        SitePagesSearchResponse response = siteSearchService.searchSite("find-nothing", 0, 0);
+        SitePagesSearchResponse response = siteSearchService.searchSite("find-nothing", 0, 0, new String[0]);
         assertNotNull(response);
         assertEquals(0, response.getNumFound());
         assertEquals(0, response.getCurrentPage());
@@ -93,6 +91,7 @@ public class SiteSearchServiceTest {
 
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testSearch_MultipleResults() throws Exception {
 
@@ -100,7 +99,7 @@ public class SiteSearchServiceTest {
                 createSiteContainer("XYZ", 0, 2, 2), HttpStatus.OK);
         when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
                 .thenReturn(responseEntity);
-        SitePagesSearchResponse response = siteSearchService.searchSite("ABC123", 0, 100);
+        SitePagesSearchResponse response = siteSearchService.searchSite("ABC123", 0, 100, new String[0]);
         assertNotNull(response);
         assertEquals(2, response.getNumFound());
         verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class),
@@ -108,6 +107,7 @@ public class SiteSearchServiceTest {
 
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testSearch_LastPage() throws Exception {
 
@@ -115,7 +115,7 @@ public class SiteSearchServiceTest {
                 createSiteContainer("ABC123", 100, 162, 100), HttpStatus.OK);
         when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
                 .thenReturn(responseEntity);
-        SitePagesSearchResponse response = siteSearchService.searchSite("stuff", 2, 100);
+        SitePagesSearchResponse response = siteSearchService.searchSite("stuff", 2, 100, new String[0]);
         assertNotNull(response);
         assertEquals(162, response.getNumFound());
         assertEquals(2, response.getCurrentPage());
@@ -125,12 +125,13 @@ public class SiteSearchServiceTest {
 
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testSearch_Exception() throws Exception {
         when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
                 .thenThrow(new RuntimeException("I didn't expect this to happen"));
         try {
-            siteSearchService.searchSite("find-nothing", 0, 100);
+            siteSearchService.searchSite("find-nothing", 0, 100, new String[0]);
             assertTrue(false);   //fail test as we should not get here
         } catch (Exception e) {
             assertTrue(e instanceof NotFoundException);

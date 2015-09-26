@@ -42,11 +42,11 @@ public class SiteSearchServiceImpl implements SiteSearchService {
      * @param request
      * @return SearchResponse
     */
-    public SitePagesSearchResponse searchSite(String search, int currentPage, int numRequested)
+    public SitePagesSearchResponse searchSite(String search, int currentPage, int numRequested, String[] filter)
             throws NotFoundException {
         int numFound = 0;
         int pageSize = 0;
-        String searchString = searchServiceHelper.buildSearchString(siteSearchSolrQuery,search, currentPage, numRequested,"");
+        String searchString = searchServiceHelper.buildSearchString(siteSearchSolrQuery,search, currentPage, numRequested, filter);
         logger.info(searchString);
         HttpEntity<String> request = searchServiceHelper.createRequestHeader();
         ResponseEntity<SiteSearchContainer> responseEntity = null;

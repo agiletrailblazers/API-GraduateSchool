@@ -56,16 +56,10 @@ public class CourseSearchServiceImpl implements CourseSearchService {
         boolean exactMatch = false;
         int numFound = 0;
         int pageSize = 0;
-        StringBuffer groupFacetParamString = new StringBuffer();
-        if (null != filter) {
-            for (String groupFacetParam : filter) {
-                groupFacetParam = StringUtils.replace(groupFacetParam,":",":\"");
-                groupFacetParamString.append("&fq=").append(groupFacetParam).append("\"");
-            }
-        }
+
         // get search string
         String searchString = searchServiceHelper.buildSearchString(courseSearchSolrQuery,search, currentPage,
-                numRequested, groupFacetParamString.toString());
+                numRequested, filter);
         // create request header contain basic auth credentials
         HttpEntity<String> request = searchServiceHelper.createRequestHeader();
         // due to a quirk in rest template these facet filters need to be injected as params

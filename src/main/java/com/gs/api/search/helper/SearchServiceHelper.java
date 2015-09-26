@@ -21,7 +21,15 @@ public class SearchServiceHelper {
      * format into the proper SOLR search format for multiple words. Example:
      * *Word1* AND *Word2*
     */
-    public String buildSearchString(String searchSolrQuery,String search, int currentPage, int numRequested, String filter) {
+    public String buildSearchString(String searchSolrQuery,String search, int currentPage, int numRequested, String[] filter) {
+        StringBuffer filterString = new StringBuffer();
+        if (null != filter) {
+            for (String filterParam : filter) {
+                filterParam = StringUtils.replace(filterParam,":",":\"");
+                filterString.append("&fq=").append(filterParam).append("\"");
+            }
+        }
+        
         String solrQuery = searchSolrEndpoint.concat(searchSolrQuery);
 
         //set the curentpage value to 1 when current page is zero
@@ -34,7 +42,7 @@ public class SearchServiceHelper {
         // update start and num requested
         solrQuery = StringUtils.replace(solrQuery, "{start}", Integer.toString((currentPage - 1) * numRequested));
         solrQuery = StringUtils.replace(solrQuery, "{numRequested}", Integer.toString(numRequested));
-        solrQuery = StringUtils.replace(solrQuery, "{filter}", filter);
+        solrQuery = StringUtils.replace(solrQuery, "{filter}", filterString.toString());
         return solrQuery;
     }
 
