@@ -20,7 +20,9 @@ import com.gs.api.domain.SitePagesSearchResponse;
 import com.gs.api.exception.NotFoundException;
 import com.gs.api.rest.object.SiteSearchContainer;
 import com.gs.api.rest.object.SiteSearchDoc;
-import com.gs.api.search.helper.SearchServiceHelper;
+import com.gs.api.search.util.HttpRequestBuilder;
+import com.gs.api.search.util.NavRangeBuilder;
+import com.gs.api.search.util.SearchUrlBuilder;
 
 @Service
 public class SiteSearchServiceImpl implements SiteSearchService {
@@ -34,7 +36,13 @@ public class SiteSearchServiceImpl implements SiteSearchService {
     private RestOperations restTemplate;
 
     @Autowired
-    private SearchServiceHelper searchServiceHelper;
+    private SearchUrlBuilder searchServiceHelper;
+    
+    @Autowired
+    private HttpRequestBuilder httpRequestBuilder;
+    
+    @Autowired
+    private NavRangeBuilder navRangeBuilder;
 
     /**
      * Perform a search for Site
@@ -42,13 +50,13 @@ public class SiteSearchServiceImpl implements SiteSearchService {
      * @param request
      * @return SearchResponse
     */
-    public SitePagesSearchResponse searchSite(String search, int currentPage, int numRequested)
+    public SitePagesSearchResponse searchSite(String search, int currentPage, int numRequested, String[] filter)
             throws NotFoundException {
         int numFound = 0;
         int pageSize = 0;
-        String searchString = searchServiceHelper.buildSearchString(siteSearchSolrQuery,search, currentPage, numRequested,"");
+        String searchString = searchServiceHelper.buildSearchString(siteSearchSolrQuery,search, currentPage, numRequested, filter);
         logger.info(searchString);
-        HttpEntity<String> request = searchServiceHelper.createRequestHeader();
+        HttpEntity<String> request = httpRequestBuilder.createRequestHeader();
         ResponseEntity<SiteSearchContainer> responseEntity = null;
         try {
             responseEntity = restTemplate.exchange(searchString, HttpMethod.POST, request, SiteSearchContainer.class);
@@ -84,7 +92,7 @@ public class SiteSearchServiceImpl implements SiteSearchService {
             if (currentPage+1 <= totalPages) {
                 response.setNextPage(currentPage+1);
             }
-            response.setPageNavRange(searchServiceHelper.createNavRange(currentPage, totalPages));
+            response.setPageNavRange(navRangeBuilder.createNavRange(currentPage, totalPages));
         }
         return response;
     }

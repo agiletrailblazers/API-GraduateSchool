@@ -5,6 +5,6 @@ import com.gs.api.exception.NotFoundException;
 
 public interface SiteSearchService {
 
-    public SitePagesSearchResponse searchSite(String search, int currentPage, int numRequested) throws NotFoundException;
+    public SitePagesSearchResponse searchSite(String search, int currentPage, int numRequested, String[] filter) throws NotFoundException;
 
 }

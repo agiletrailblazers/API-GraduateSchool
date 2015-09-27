@@ -224,7 +224,7 @@ public class CourseControllerTest {
 
     @Test
     public void testCourseSearchWithcityStateFilter() throws Exception {
-        when(courseSearchService.searchCourses(anyString(), anyInt(), anyInt(),any(String[].class)))
+        when(courseSearchService.searchCourses(anyString(), anyInt(), anyInt(), any(String[].class)))
                 .thenReturn(createSearchResponse());
         mockMvc.perform(get("/courses?search=training&&filter=city_state:Washington,DC").accept(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
@@ -246,11 +246,11 @@ public class CourseControllerTest {
     
     @Test
     public void testSiteSearch() throws Exception {
-        when(siteSearchService.searchSite(anyString(), anyInt(), anyInt())).thenReturn(new SitePagesSearchResponse());
+        when(siteSearchService.searchSite(anyString(), anyInt(), anyInt(), any(String[].class))).thenReturn(new SitePagesSearchResponse());
         mockMvc.perform(get("/site?search=xxx").accept(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/json"));
-        verify(siteSearchService, times(1)).searchSite(anyString(), anyInt(), anyInt());
+        verify(siteSearchService, times(1)).searchSite(anyString(), anyInt(), anyInt(), any(String[].class));
     }
     
     //create object for mocks

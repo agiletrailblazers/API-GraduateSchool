@@ -171,11 +171,13 @@ public class CourseController {
     public @ResponseBody SitePagesSearchResponse searchSite(
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String page, 
-            @RequestParam(required = false) String numRequested) throws Exception {
+            @RequestParam(required = false) String numRequested,
+            @RequestParam(required = false) String[] filter) throws Exception {
         logger.info("Site Search API initiated");
         return siteSearchService.searchSite(search, 
                 NumberUtils.toInt(page, 1), 
-                NumberUtils.toInt(numRequested, searchPageSize));
+                NumberUtils.toInt(numRequested, searchPageSize), 
+                filter);
     }
     
     /**
