@@ -25,7 +25,9 @@ import com.gs.api.exception.NotFoundException;
 import com.gs.api.rest.object.CourseSearchContainer;
 import com.gs.api.rest.object.CourseSearchDoc;
 import com.gs.api.rest.object.CourseSearchGroup;
-import com.gs.api.search.helper.SearchServiceHelper;
+import com.gs.api.search.util.HttpRequestBuilder;
+import com.gs.api.search.util.NavRangeBuilder;
+import com.gs.api.search.util.SearchUrlBuilder;
 
 @Service
 public class CourseSearchServiceImpl implements CourseSearchService {
@@ -39,7 +41,13 @@ public class CourseSearchServiceImpl implements CourseSearchService {
     private String[] locationFacetExclude;
 
     @Autowired
-    private SearchServiceHelper searchServiceHelper;
+    private SearchUrlBuilder searchServiceHelper;
+    
+    @Autowired
+    private HttpRequestBuilder httpRequestBuilder;
+    
+    @Autowired
+    private NavRangeBuilder navRangeBuilder;
     
     @Autowired(required = true)
     private RestOperations restTemplate;
@@ -61,7 +69,7 @@ public class CourseSearchServiceImpl implements CourseSearchService {
         String searchString = searchServiceHelper.buildSearchString(courseSearchSolrQuery,search, currentPage,
                 numRequested, filter);
         // create request header contain basic auth credentials
-        HttpEntity<String> request = searchServiceHelper.createRequestHeader();
+        HttpEntity<String> request = httpRequestBuilder.createRequestHeader();
         // due to a quirk in rest template these facet filters need to be injected as params
         Map<String, String> uriParams = new HashMap<String, String>();
         uriParams.put("facet-exclude", "{!ex=dt}");
@@ -119,7 +127,7 @@ public class CourseSearchServiceImpl implements CourseSearchService {
             if (currentPage+1 <= totalPages) {
                 response.setNextPage(currentPage+1);
             }
-            response.setPageNavRange(searchServiceHelper.createNavRange(currentPage, totalPages));
+            response.setPageNavRange(navRangeBuilder.createNavRange(currentPage, totalPages));
         }
         response.setExactMatch(exactMatch);
         // Add a set facets (create method to populate facets, take response and

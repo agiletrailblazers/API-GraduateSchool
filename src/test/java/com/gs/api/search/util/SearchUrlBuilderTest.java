@@ -1,4 +1,4 @@
-package com.gs.api.search.helper;
+package com.gs.api.search.util;
 
 import org.junit.After;
 import org.junit.Before;
@@ -13,12 +13,14 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.client.RestOperations;
 
+import com.gs.api.search.util.SearchUrlBuilder;
+
 import static org.junit.Assert.assertEquals;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "classpath:spring/test-root-context.xml" })
-
-public class SearchServiceHelperTest {
+public class SearchUrlBuilderTest {
+    
     @Value("${search.solr.endpoint}")
     private String searchSolrEndpoint;
 
@@ -33,7 +35,7 @@ public class SearchServiceHelperTest {
 
     @InjectMocks
     @Autowired
-    private SearchServiceHelper searchServiceHelper;
+    private SearchUrlBuilder searchServiceHelper;
 
     @Before
     public void setUp() throws Exception {
@@ -105,43 +107,7 @@ public class SearchServiceHelperTest {
 
     }
 
-    @Test
-    public void createNavRange_LessThanFive() {
-        int[] out = searchServiceHelper.createNavRange(2, 3);
-        assertEquals(1, out[0]);
-        assertEquals(2, out[1]);
-        assertEquals(3, out[2]);
-    }
-
-    @Test
-    public void createNavRange_MoreThanFive_BeginRange() {
-        int[] out = searchServiceHelper.createNavRange(2, 10);
-        assertEquals(1, out[0]);
-        assertEquals(2, out[1]);
-        assertEquals(3, out[2]);
-        assertEquals(4, out[3]);
-        assertEquals(5, out[4]);
-    }
-
-    @Test
-    public void createNavRange_MoreThanFive_MidRange() {
-        int[] out = searchServiceHelper.createNavRange(5, 10);
-        assertEquals(3, out[0]);
-        assertEquals(4, out[1]);
-        assertEquals(5, out[2]);
-        assertEquals(6, out[3]);
-        assertEquals(7, out[4]);
-    }
-
-    @Test
-    public void createNavRange_MoreThanFive_EndRange() {
-        int[] out = searchServiceHelper.createNavRange(9, 10);
-        assertEquals(6, out[0]);
-        assertEquals(7, out[1]);
-        assertEquals(8, out[2]);
-        assertEquals(9, out[3]);
-        assertEquals(10, out[4]);
-    }
+    
 
     @Test public void buildSiteSearchString_CurrentPage_EqualstoZero() {
         //single term
