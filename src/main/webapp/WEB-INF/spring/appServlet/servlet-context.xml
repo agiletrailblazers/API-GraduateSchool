@@ -18,7 +18,7 @@
 
 	<context:property-placeholder
 		system-properties-mode="OVERRIDE"
-		location="classpath:sql.properties"  ignore-unresolvable="true" order="1" />
+		location="classpath:base.properties"  ignore-unresolvable="true" order="1" />
 		
 	<!-- Enables the Spring MVC @Controller programming model -->
 	<beans:bean id="dev-dataSource" class="org.apache.commons.dbcp.BasicDataSource">
