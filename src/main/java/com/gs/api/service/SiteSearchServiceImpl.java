@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +33,9 @@ public class SiteSearchServiceImpl implements SiteSearchService {
     @Value("${site.search.solr.query}")
     private String siteSearchSolrQuery;
 
+    @Value("${site.search.title.exclude}")
+    private String siteSearchTitleExclude;
+    
     @Autowired(required = true)
     private RestOperations restTemplate;
 
@@ -76,7 +80,7 @@ public class SiteSearchServiceImpl implements SiteSearchService {
         List<Page> pages = new ArrayList<Page>();
         if (CollectionUtils.isNotEmpty(docs)) {
             for (SiteSearchDoc doc : docs) {
-                Page newPage = new Page(doc.getTitle(), doc.getUrl(),doc.getContent());
+                Page newPage = new Page(parseTitle(doc.getTitle()), doc.getUrl(),doc.getContent());
                 pages.add(newPage);
             }
             response.setPages(pages.toArray(new Page[pages.size()]));
@@ -95,6 +99,15 @@ public class SiteSearchServiceImpl implements SiteSearchService {
             response.setPageNavRange(navRangeBuilder.createNavRange(currentPage, totalPages));
         }
         return response;
+    }
+
+    /**
+     * remove parts of the title we don't want to display
+     * @param title
+     * @return title
+     */
+    private String parseTitle(String title) {
+        return StringUtils.replace(title, siteSearchTitleExclude, "").trim();
     }
 
 }
