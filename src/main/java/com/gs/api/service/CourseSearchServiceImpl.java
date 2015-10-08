@@ -27,6 +27,7 @@ import com.gs.api.rest.object.CourseSearchDoc;
 import com.gs.api.rest.object.CourseSearchGroup;
 import com.gs.api.search.util.HttpRequestBuilder;
 import com.gs.api.search.util.NavRangeBuilder;
+import com.gs.api.search.util.SearchSortBuilder;
 import com.gs.api.search.util.SearchUrlBuilder;
 
 @Service
@@ -41,13 +42,16 @@ public class CourseSearchServiceImpl implements CourseSearchService {
     private String[] locationFacetExclude;
 
     @Autowired
-    private SearchUrlBuilder searchServiceHelper;
+    private SearchUrlBuilder searchUrlBuilder;
     
     @Autowired
     private HttpRequestBuilder httpRequestBuilder;
     
     @Autowired
     private NavRangeBuilder navRangeBuilder;
+    
+    @Autowired
+    private SearchSortBuilder searchSortBuilder;
     
     @Autowired(required = true)
     private RestOperations restTemplate;
@@ -66,8 +70,9 @@ public class CourseSearchServiceImpl implements CourseSearchService {
         int pageSize = 0;
 
         // get search string
-        String searchString = searchServiceHelper.buildSearchString(courseSearchSolrQuery,search, currentPage,
+        String searchString = searchUrlBuilder.build(courseSearchSolrQuery, search, currentPage,
                 numRequested, filter);
+        searchString = searchSortBuilder.build(searchString, StringUtils.isNotBlank(search), true);
         // create request header contain basic auth credentials
         HttpEntity<String> request = httpRequestBuilder.createRequestHeader();
         // due to a quirk in rest template these facet filters need to be injected as params

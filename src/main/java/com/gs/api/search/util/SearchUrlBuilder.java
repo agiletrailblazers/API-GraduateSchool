@@ -15,7 +15,7 @@ public class SearchUrlBuilder {
      * format into the proper SOLR search format for multiple words. Example:
      * *Word1* AND *Word2*
     */
-    public String buildSearchString(String searchSolrQuery,String search, int currentPage, int numRequested, String[] filter) {
+    public String build(String searchSolrQuery,String search, int currentPage, int numRequested, String[] filter) {
         StringBuffer filterString = new StringBuffer();
         if (null != filter) {
             for (String filterParam : filter) {
