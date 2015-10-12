@@ -181,43 +181,7 @@ public class CourseDAOTest {
         Course course = courseDetailRowMapper.mapRow(rs, 0);
         assertResultSet(course, null, true);
     }
-    
-    @Test
-    public void testCalculateDuration_Day() throws Exception {
-        Integer duration = courseDetailRowMapper.calculateCourseDuration("Day", 4320);
-        assertEquals(new Integer(3), duration);
-    }
-    
-    @Test
-    public void testCalculateDuration_Yr() throws Exception {
-        Integer duration = courseDetailRowMapper.calculateCourseDuration("Yr", 525600);
-        assertEquals(new Integer(1), duration);
-    }
-    
-    @Test
-    public void testCalculateDuration_Wk() throws Exception {
-        Integer duration = courseDetailRowMapper.calculateCourseDuration("Wk", 10080);
-        assertEquals(new Integer(1), duration);
-    }
-    
-    @Test
-    public void testCalculateDuration_Mth() throws Exception {
-        Integer duration = courseDetailRowMapper.calculateCourseDuration("Mth", 43200);
-        assertEquals(new Integer(1), duration);
-    }
-    
-    @Test
-    public void testCalculateDuration_Hr() throws Exception {
-        Integer duration = courseDetailRowMapper.calculateCourseDuration("Hr", 60);
-        assertEquals(new Integer(1), duration);
-    }
-    
-    @Test
-    public void testCalculateDuration_Null() throws Exception {
-        Integer duration = courseDetailRowMapper.calculateCourseDuration(null, 60);
-        assertEquals(null, duration);
-    }
-
+  
     //make it easier to test assertions on a course result for multiple cases
     private void assertResultSet(Course course, 
             CourseCreditType expectedCreditType, boolean expectDefaultInterval) {
@@ -228,7 +192,7 @@ public class CourseDAOTest {
         assertEquals(null, course.getDescription().getText());
         assertEquals("formatted-description", course.getDescription().getFormatted());
         assertEquals("type", course.getType());
-        assertEquals(new Integer((expectDefaultInterval ? 4320 : 3)), course.getLength().getValue());
+        assertEquals(new Integer(3), course.getLength().getValue());
         assertEquals((expectDefaultInterval ? "Variable" : "Day"), course.getLength().getInterval());
         if (null != expectedCreditType && null != course.getCredit()) {
             assertEquals("3", course.getCredit().getValue());
@@ -247,8 +211,8 @@ public class CourseDAOTest {
         when(rs.getString("DESC_TEXT")).thenReturn("text-description");
         when(rs.getString("DESC_FORMAT")).thenReturn("formatted-description");
         when(rs.getString("TYPE")).thenReturn("type");
-        when(rs.getInt("TM_CD_DUR")).thenReturn(4320);
-        when(rs.getString("TX_CRS_INTERVAL")).thenReturn(expectDefaultInterval ? null : "Day");
+        when(rs.getInt("TM_CD_DUR")).thenReturn(3);
+        when(rs.getString("TX_CRS_INTERVAL")).thenReturn(expectDefaultInterval ? null : "DY");
         when(rs.getString("CEU_CREDIT")).thenReturn(creditType==CourseCreditType.CEU ? "3":"0");
         when(rs.getString("CPE_CREDIT")).thenReturn(creditType==CourseCreditType.CPE ? "3":"0");
         when(rs.getString("ACE_CREDIT")).thenReturn(creditType==CourseCreditType.ACE ? "3":"0");
