@@ -21,7 +21,7 @@ import com.gs.api.domain.Course;
 import com.gs.api.domain.CourseCredit;
 import com.gs.api.domain.CourseCreditType;
 import com.gs.api.domain.CourseDescription;
-import com.gs.api.domain.CourseInterval;
+import com.gs.api.domain.CourseIntervalConvertor;
 import com.gs.api.domain.CourseLength;
 
 @Repository
@@ -65,7 +65,7 @@ public class CourseDAO {
         catch (Exception e) {
             logger.error("Error retrieving Course for id {} - {}", id, e);
             throw e;
-        }
+        }        
     }
     
     /**
@@ -107,21 +107,6 @@ public class CourseDAO {
             course.setType(rs.getString("TYPE"));
             return course;
         }
-            
-        /**
-         * Calculate duration based in given value
-         * Note: I didn't make this crap up. I just had to implement it.
-         * @param string
-         * @return String
-         */
-        protected Integer calculateCourseDuration(String interval, Integer duration) {
-            Integer finaDuration = null;
-            if (null != interval) {
-                CourseInterval ci = CourseInterval.valueFor(interval);
-                finaDuration = ci.getDuration(duration);
-            }
-            return finaDuration;
-        }
 
         /**
          * Replace course interval with a default value if empty
@@ -129,10 +114,11 @@ public class CourseDAO {
          * @return String
          */
         protected String calculateCourseInterval(String interval) {
+            interval = CourseIntervalConvertor.getInterval(interval);
             if (StringUtils.isEmpty(interval)) {
                 interval = courseIntervalDefault;
             }
-            return interval;
+            return interval; 
         }
 
         /**
@@ -175,8 +161,7 @@ public class CourseDAO {
              Course course = super.mapRow(rs, rowNum);
              course.setDescription(new CourseDescription(rs.getString("DESC_FORMAT")));
              String interval = calculateCourseInterval(rs.getString("TX_CRS_INTERVAL"));
-             course.setLength(new CourseLength(
-                 calculateCourseDuration(interval, rs.getInt("TM_CD_DUR")), interval));
+             course.setLength(new CourseLength(rs.getInt("TM_CD_DUR"), interval));
              course.setCredit(calculateCourseCredit(rs));
              course.setObjective(rs.getString("ABSTRACT"));
              course.setPrerequisites(rs.getString("PREREQUISITES"));
