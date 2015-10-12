@@ -1,5 +1,6 @@
 package com.gs.api.service;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -27,6 +28,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.client.RestOperations;
 
+import com.gs.api.domain.Page;
 import com.gs.api.domain.SitePagesSearchResponse;
 import com.gs.api.exception.NotFoundException;
 import com.gs.api.rest.object.SiteSearchContainer;
@@ -141,6 +143,43 @@ public class SiteSearchServiceTest {
         verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class),
                 any(Class.class));
     }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testSearch_Null_PageTitle() throws Exception {
+
+        ResponseEntity<SiteSearchContainer> responseEntity = new ResponseEntity<SiteSearchContainer>(
+                createSiteContainerWithNullPageTitle("ABC123", 0, 1, 1), HttpStatus.OK);
+        when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
+                .thenReturn(responseEntity);
+        SitePagesSearchResponse response = siteSearchService.searchSite("stuff", 2, 100, new String[0]);
+        assertNotNull(response);
+        assertEquals(1, response.getNumFound());
+        assertEquals(2, response.getCurrentPage());
+        Page[] page=response.getPages();
+        assertNull(page[0].getTitle());
+        verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class));
+
+    }
+
+    private SiteSearchContainer createSiteContainerWithNullPageTitle(String id, int start, int numFound, int pageSize) {
+        final SiteSearchContainer container = new SiteSearchContainer();
+        final SiteSearchResponse response = new SiteSearchResponse();
+        response.setNumFound(numFound);
+        List<SiteSearchDoc> docs = new ArrayList<SiteSearchDoc>();
+        for (int i = 0; i < pageSize; i++) {
+            SiteSearchDoc doc = new SiteSearchDoc();
+            doc.setTitle(null);
+            doc.setUrl("http://ec2-52-3-249-243.compute-1.amazonaws.com/");
+            doc.setContent("Graduate School Current Students Prospective");
+            docs.add(doc);
+        }
+        response.setDocs(docs);
+        container.setResponse(response);
+        return container;
+    }
+
+
 
     private SiteSearchContainer createSiteContainer(String id, int start, int numFound, int pageSize) {
         final SiteSearchContainer container = new SiteSearchContainer();

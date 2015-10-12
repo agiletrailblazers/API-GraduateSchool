@@ -80,7 +80,11 @@ public class SiteSearchServiceImpl implements SiteSearchService {
         List<Page> pages = new ArrayList<Page>();
         if (CollectionUtils.isNotEmpty(docs)) {
             for (SiteSearchDoc doc : docs) {
-                Page newPage = new Page(parseTitle(doc.getTitle()), doc.getUrl(),doc.getContent());
+                String pagetitle = doc.getTitle();
+                if (! StringUtils.isEmpty(doc.getTitle())) {
+                    pagetitle = parseTitle(doc.getTitle());
+                }
+                Page newPage = new Page(pagetitle, doc.getUrl(),doc.getContent());
                 pages.add(newPage);
             }
             response.setPages(pages.toArray(new Page[pages.size()]));
