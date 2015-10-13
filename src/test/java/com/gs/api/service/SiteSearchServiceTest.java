@@ -157,8 +157,9 @@ public class SiteSearchServiceTest {
         assertEquals(1, response.getNumFound());
         assertEquals(2, response.getCurrentPage());
         Page[] page=response.getPages();
-        assertNull(page[0].getTitle());
-        verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class));
+        assertEquals("Graduate School Curr",page[0].getTitle());
+        verify(restTemplate, times(1))
+                .exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class));
 
     }
 

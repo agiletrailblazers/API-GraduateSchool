@@ -80,11 +80,7 @@ public class SiteSearchServiceImpl implements SiteSearchService {
         List<Page> pages = new ArrayList<Page>();
         if (CollectionUtils.isNotEmpty(docs)) {
             for (SiteSearchDoc doc : docs) {
-                String pagetitle = doc.getTitle();
-                if (! StringUtils.isEmpty(doc.getTitle())) {
-                    pagetitle = parseTitle(doc.getTitle());
-                }
-                Page newPage = new Page(pagetitle, doc.getUrl(),doc.getContent());
+                Page newPage = new Page(parseTitle(doc.getTitle(),doc.getContent()), doc.getUrl(),doc.getContent());
                 pages.add(newPage);
             }
             response.setPages(pages.toArray(new Page[pages.size()]));
@@ -108,9 +104,13 @@ public class SiteSearchServiceImpl implements SiteSearchService {
     /**
      * remove parts of the title we don't want to display
      * @param title
+     * @param content
      * @return title
      */
-    private String parseTitle(String title) {
+    private String parseTitle(String title,String content) {
+        if (StringUtils.isEmpty(title)) {
+            title = StringUtils.substring(content,0,20);
+        }
         return StringUtils.replace(title, siteSearchTitleExclude, "").trim();
     }
 
