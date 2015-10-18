@@ -23,7 +23,7 @@ public class CourseSearchResponse {
     private Course[] courses;
     private Map<String, Integer> locationFacets;
     private Map<String, Integer> statusFacets;
-
+    private Map<String, Integer> categorySubjectFacets;
     public boolean isExactMatch() {
         return exactMatch;
     }
@@ -78,6 +78,14 @@ public class CourseSearchResponse {
 
     public void setLocationFacets(Map<String, Integer> locationFacets) {
         this.locationFacets = locationFacets;
+    }
+
+    public Map<String, Integer> getCategorySubjectFacets() {
+        return categorySubjectFacets;
+    }
+
+    public void setCategorySubjectFacets(Map<String, Integer> categorySubjectFacets) {
+        this.categorySubjectFacets = categorySubjectFacets;
     }
 
     public Map<String, Integer> getStatusFacets() {

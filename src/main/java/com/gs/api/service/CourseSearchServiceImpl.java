@@ -142,6 +142,9 @@ public class CourseSearchServiceImpl implements CourseSearchService {
                     arrayToMap(container.getRestFacetCount().getRestFacetFields().getCityState())));
             response.setStatusFacets(
                     arrayToMap(container.getRestFacetCount().getRestFacetFields().getStatus()));
+            response.setCategorySubjectFacets(
+                    arrayToMap(container.getRestFacetCount().getRestFacetFields().getCategorysubject()));
+
         }
         return response;
     }
