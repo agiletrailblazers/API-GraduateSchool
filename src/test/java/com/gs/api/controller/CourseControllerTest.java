@@ -2,21 +2,20 @@ package com.gs.api.controller;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.junit.Assert.assertNotNull;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.times;
 
 import org.junit.After;
 import org.junit.Before;
@@ -40,8 +39,9 @@ import com.gs.api.domain.CourseSearchResponse;
 import com.gs.api.domain.Location;
 import com.gs.api.domain.SitePagesSearchResponse;
 import com.gs.api.helper.CourseTestHelper;
-import com.gs.api.service.CourseService;
+import com.gs.api.service.CategoryService;
 import com.gs.api.service.CourseSearchService;
+import com.gs.api.service.CourseService;
 import com.gs.api.service.LocationService;
 import com.gs.api.service.SiteSearchService;
 
@@ -71,6 +71,9 @@ public class CourseControllerTest {
     
     @Mock
     private SiteSearchService siteSearchService;
+    
+    @Mock
+    private CategoryService categoryService;
     
     @Before
     public void setUp() throws Exception {
@@ -251,6 +254,17 @@ public class CourseControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/json"));
         verify(siteSearchService, times(1)).searchSite(anyString(), anyInt(), anyInt(), any(String[].class));
+    }
+    
+    @Test
+    public void testGetCategories() throws Exception {
+        when(categoryService.getCategories())
+            .thenReturn(CourseTestHelper.createCategoryResponse());
+        mockMvc.perform(get("/categories").accept(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].category").value(is("Math")))
+                .andExpect(jsonPath("$[0].courseSubject[0].subject").value(is("Addition")));
+        verify(categoryService, times(1)).getCategories();
     }
     
     //create object for mocks

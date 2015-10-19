@@ -4,12 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.gs.api.domain.Course;
+import com.gs.api.domain.CourseCategory;
 import com.gs.api.domain.CourseCredit;
 import com.gs.api.domain.CourseCreditType;
 import com.gs.api.domain.CourseDescription;
 import com.gs.api.domain.CourseInstructor;
 import com.gs.api.domain.CourseLength;
 import com.gs.api.domain.CourseSession;
+import com.gs.api.domain.CourseSubject;
 
 public class CourseTestHelper {
 
@@ -83,5 +85,21 @@ public class CourseTestHelper {
         session.setInstructor(instructor);
         return session;
     }
+    
+    /** 
+     * Create category for mocks 
+     * @return CourseCategory array
+     */
+    public static CourseCategory[] createCategoryResponse() {
+        CourseCategory[] categories = new CourseCategory[1];
+        categories[0] = new CourseCategory();
+        categories[0].setCategory("Math");
+        CourseSubject[] subjects = new CourseSubject[2];
+        subjects[0] = new CourseSubject("Addition", "Math/Addition", 1);
+        subjects[1] = new CourseSubject("Subtration", "Math/Subtration", 2);
+        categories[0].setCourseSubject(subjects);
+        return categories;
+    }
+
     
 }

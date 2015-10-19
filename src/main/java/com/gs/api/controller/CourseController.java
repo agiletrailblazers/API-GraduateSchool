@@ -29,11 +29,13 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.gs.api.domain.Course;
+import com.gs.api.domain.CourseCategory;
 import com.gs.api.domain.CourseSearchResponse;
 import com.gs.api.domain.CourseSession;
 import com.gs.api.domain.Location;
 import com.gs.api.domain.SitePagesSearchResponse;
 import com.gs.api.exception.NotFoundException;
+import com.gs.api.service.CategoryService;
 import com.gs.api.service.CourseSearchService;
 import com.gs.api.service.CourseService;
 import com.gs.api.service.LocationService;
@@ -57,11 +59,11 @@ public class CourseController {
     @Autowired
     private SiteSearchService siteSearchService;
     
+    @Autowired
+    private CategoryService categoryService;
+    
     @Value("${course.search.page.size}")
     private int searchPageSize;
-    
-    //@Autowired(required=true)
-    //private HttpServletRequest request;
 
     /**
      * A simple "is alive" API.
@@ -157,6 +159,18 @@ public class CourseController {
     public @ResponseBody List<Location> getLocations() throws Exception {
         logger.debug("Location search initiated");        
         return locationService.getLocations();
+    }
+    
+    /**
+     * Get a list of categories containing a list of subjects
+     * 
+     * @return Category List containing Subjects
+     * @throws Exception
+     */
+    @RequestMapping(value = "/categories", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody CourseCategory[] getCategories() throws Exception {
+        logger.debug("Category/subject search initiated");        
+        return categoryService.getCategories();
     }
     
     /**
