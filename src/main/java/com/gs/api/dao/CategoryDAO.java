@@ -74,7 +74,7 @@ public class CategoryDAO {
                 String thisSubject = rs.getString("SUBJECT");
                 String thisSubjectCategory = rs.getString("SUBJECT_CATEGORY");
                 logger.debug("Found row of subject: " + thisSubject + " category:" + thisCategory);
-                CourseSubject subject = new CourseSubject(thisSubject, thisSubjectCategory, 0);
+                CourseSubject subject = new CourseSubject(thisSubject, thisSubjectCategory, -1);
                 if (null == courseCategory) {
                     courseCategory = new CourseCategory();
                 }
