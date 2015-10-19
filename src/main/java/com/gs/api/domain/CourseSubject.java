@@ -1,5 +1,8 @@
 package com.gs.api.domain;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class CourseSubject {
 
     private String subject;
