@@ -173,5 +173,30 @@ public class SearchUrlBuilderTest {
 
     }
 
+    @Test
+    public void buildSearchStringWithCategorySubjectFacetParam() {
+
+        //single term
+        final String SINGLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:9090/solr/courses/select?q=(course_name:(*fraud*))^3 OR (course_id:(*fraud*))^9 OR (course_code:(*fraud*))^6 OR (course_description:(*fraud*)) OR (course_abstract:(*fraud*)) OR (course_prerequisites:(*fraud*))&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true&fq=category_subject:\"Accounting, Budgetingand Financial Management/Financial Management\"&sort={sort}";
+        String[] facetParam = {"category_subject:Accounting, Budgetingand Financial Management/Financial Management"};
+        String endpoint = searchServiceHelper.build(courseSearchSolrQuery,"fraud", 1, 100, facetParam);
+        assertEquals(SINGLE_TERM_RESULT, endpoint);
+
+
+        final String DOUBLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:9090/solr/courses/select?q=(course_name:(*fraud*))^3 OR (course_id:(*fraud*))^9 OR (course_code:(*fraud*))^6 OR (course_description:(*fraud*)) OR (course_abstract:(*fraud*)) OR (course_prerequisites:(*fraud*))&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true&fq=city_state:\"Washington\"&fq=category_subject:\"Accounting, Budgetingand Financial Management/Financial Management\"&sort={sort}";
+        String[] facetParams = {"city_state:Washington","category_subject:Accounting, Budgetingand Financial Management/Financial Management"};
+        endpoint = searchServiceHelper.build(courseSearchSolrQuery,"fraud", 1, 100, facetParams);
+        assertEquals(DOUBLE_TERM_RESULT, endpoint);
+
+
+        final String TRIPLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:9090/solr/courses/select?q=(course_name:(*fraud*))^3 OR (course_id:(*fraud*))^9 OR (course_code:(*fraud*))^6 OR (course_description:(*fraud*)) OR (course_abstract:(*fraud*)) OR (course_prerequisites:(*fraud*))&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true&fq=city_state:\"Washington\"&fq=status:\"S\"&fq=category_subject:\"Accounting, Budgetingand Financial Management/Financial Management\"&sort={sort}";
+        String[] facetTripleParams = {"city_state:Washington","status:S","category_subject:Accounting, Budgetingand Financial Management/Financial Management"};
+        endpoint = searchServiceHelper.build(courseSearchSolrQuery,"fraud", 1, 100, facetTripleParams);
+        assertEquals(TRIPLE_TERM_RESULT, endpoint);
+
+
+
+    }
+
 }
 
