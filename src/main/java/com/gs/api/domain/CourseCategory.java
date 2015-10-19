@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 public class CourseCategory {
 
     private String category;
-    private CourseSubject[] CourseSubject;
+    private CourseSubject[] courseSubject;
 
     //default constructor
     public CourseCategory() {
@@ -13,15 +13,15 @@ public class CourseCategory {
     
     //convenience constructor
     public CourseCategory(CourseSubject[] courseSubject) {
-        this.CourseSubject = courseSubject;
+        this.courseSubject = courseSubject;
     }
 
     public CourseSubject[] getCourseSubject() {
-        return CourseSubject;
+        return courseSubject;
     }
 
     public void setCourseSubject(CourseSubject[] courseSubject) {
-        CourseSubject = courseSubject;
+        this.courseSubject = courseSubject;
     }
 
     public String getCategory() {
@@ -30,6 +30,19 @@ public class CourseCategory {
 
     public void setCategory(String category) {
         this.category = category;
+    }
+    
+    /**
+     * Convenience getter for the count
+     * @return int
+     */
+    public int getSubjectCount() {
+        if (null != courseSubject) {
+            return courseSubject.length;
+        }
+        else {
+            return 0;
+        }
     }
     
 }
