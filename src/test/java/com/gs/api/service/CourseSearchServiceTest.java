@@ -313,6 +313,24 @@ public class CourseSearchServiceTest {
 
     }
 
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testSearch_WithSubjectFacetParams() throws Exception {
+
+        ResponseEntity<CourseSearchContainer> responseEntity = new ResponseEntity<CourseSearchContainer>(
+                createCourseContainer("ABC123001", 0, 1, 1), HttpStatus.OK);
+        String[] facetParams = {"category_subject:Accounting, Budgetingand Financial Management/Financial Management"};
+        when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class), any(Map.class)))
+                .thenReturn(responseEntity);
+        CourseSearchResponse response = courseSearchService.searchCourses("ABC123", 0, 100,facetParams);
+        assertNotNull(response);
+        assertEquals(1, response.getNumFound());
+        assertEquals("ABC123001", response.getCourses()[0].getId());
+        assertTrue(response.isExactMatch());
+        verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class), any(Map.class));
+
+    }
+
     private CourseSearchContainer createCourseContainerNothing() {
         final CourseSearchContainer container = new CourseSearchContainer();
         final CourseSearchGrouped grouped = new CourseSearchGrouped();
