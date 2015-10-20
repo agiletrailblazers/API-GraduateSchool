@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -20,7 +21,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestOperations;
 
 import com.gs.api.domain.Course;
+import com.gs.api.domain.CourseCategory;
 import com.gs.api.domain.CourseSearchResponse;
+import com.gs.api.domain.CourseSubject;
 import com.gs.api.exception.NotFoundException;
 import com.gs.api.rest.object.CourseSearchContainer;
 import com.gs.api.rest.object.CourseSearchDoc;
@@ -142,8 +145,47 @@ public class CourseSearchServiceImpl implements CourseSearchService {
                     arrayToMap(container.getRestFacetCount().getRestFacetFields().getCityState())));
             response.setStatusFacets(
                     arrayToMap(container.getRestFacetCount().getRestFacetFields().getStatus()));
+            if (null != container.getRestFacetCount().getRestFacetFields().getCategorysubject()) {
+                response.setCategorySubjectFacets(getCategorySubjectFacets(
+                        container.getRestFacetCount().getRestFacetFields().getCategorysubject()));
+            }
         }
         return response;
+    }
+
+    /**To get the list of categories from the category subject filters list
+     * @param List
+     * @param categorySubjectFilter
+     * @return CourseCategory
+     */
+    private CourseCategory[] getCategorySubjectFacets(List<String> categorySubjectFilter) {
+        List<CourseCategory> categories = new ArrayList<CourseCategory>();
+        List<CourseSubject> subjects = new ArrayList<CourseSubject>();
+        CourseCategory courseCategory = null;
+        for (int categorySubject = 0;
+             categorySubject < categorySubjectFilter.size(); categorySubject = categorySubject + 2) {
+            String[]  categorySubjectItem= StringUtils.split(String.valueOf(categorySubjectFilter.get(categorySubject)), "/");
+            if (categorySubjectItem.length > 0) {
+                CourseSubject subject = new CourseSubject(categorySubjectItem[0],
+                        String.valueOf(categorySubjectFilter.get(categorySubject)),
+                        Integer.valueOf(categorySubjectFilter.get(categorySubject + 1)));
+                if (null == courseCategory) {
+                    courseCategory = new CourseCategory();
+                } else if (!categorySubjectItem[0].equals(courseCategory.getCategory())) {
+                    courseCategory.setCourseSubject(subjects.toArray(new CourseSubject[subjects.size()]));
+                    categories.add(courseCategory);
+                    courseCategory = new CourseCategory();
+                    subjects = new ArrayList<CourseSubject>();
+                }
+                courseCategory.setCategory(categorySubjectItem[0]);
+                subjects.add(subject);
+            }
+        }
+        if (null != courseCategory) {
+            courseCategory.setCourseSubject(subjects.toArray(new CourseSubject[subjects.size()]));
+            categories.add(courseCategory);
+        }
+        return categories.toArray(new CourseCategory[categories.size()]);
     }
 
     /**

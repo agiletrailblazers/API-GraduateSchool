@@ -14,4 +14,8 @@
 .settings/
 api.iml
 target/
+.idea/
+.metadata/
+src/main/main.iml
+src/test/test.iml
 
