@@ -1,14 +1,17 @@
 package com.gs.api.service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import com.gs.api.domain.Course;
 import com.gs.api.domain.CourseCategory;
+import com.gs.api.domain.CourseSearchResponse;
 import com.gs.api.domain.CourseSubject;
+import com.gs.api.exception.NotFoundException;
+import com.gs.api.rest.object.CourseSearchContainer;
+import com.gs.api.rest.object.CourseSearchDoc;
+import com.gs.api.rest.object.CourseSearchGroup;
+import com.gs.api.search.util.HttpRequestBuilder;
+import com.gs.api.search.util.NavRangeBuilder;
+import com.gs.api.search.util.SearchSortBuilder;
+import com.gs.api.search.util.SearchUrlBuilder;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -21,42 +24,25 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestOperations;
 
-import com.gs.api.domain.Course;
-import com.gs.api.domain.CourseSearchResponse;
-import com.gs.api.exception.NotFoundException;
-import com.gs.api.rest.object.CourseSearchContainer;
-import com.gs.api.rest.object.CourseSearchDoc;
-import com.gs.api.rest.object.CourseSearchGroup;
-import com.gs.api.search.util.HttpRequestBuilder;
-import com.gs.api.search.util.NavRangeBuilder;
-import com.gs.api.search.util.SearchSortBuilder;
-import com.gs.api.search.util.SearchUrlBuilder;
+import java.util.*;
 
-@Service
-public class CourseSearchServiceImpl implements CourseSearchService {
+@Service public class CourseSearchServiceImpl implements CourseSearchService {
 
     private static final Logger logger = LoggerFactory.getLogger(CourseSearchServiceImpl.class);
 
-    @Value("${course.search.solr.query}")
-    private String courseSearchSolrQuery;
+    @Value("${course.search.solr.query}") private String courseSearchSolrQuery;
 
-    @Value("#{'${course.search.facet.location.exclude}'.split(';')}")
-    private String[] locationFacetExclude;
+    @Value("#{'${course.search.facet.location.exclude}'.split(';')}") private String[] locationFacetExclude;
 
-    @Autowired
-    private SearchUrlBuilder searchUrlBuilder;
-    
-    @Autowired
-    private HttpRequestBuilder httpRequestBuilder;
-    
-    @Autowired
-    private NavRangeBuilder navRangeBuilder;
-    
-    @Autowired
-    private SearchSortBuilder searchSortBuilder;
-    
-    @Autowired(required = true)
-    private RestOperations restTemplate;
+    @Autowired private SearchUrlBuilder searchUrlBuilder;
+
+    @Autowired private HttpRequestBuilder httpRequestBuilder;
+
+    @Autowired private NavRangeBuilder navRangeBuilder;
+
+    @Autowired private SearchSortBuilder searchSortBuilder;
+
+    @Autowired(required = true) private RestOperations restTemplate;
 
     /**
      * Perform a search for courses
@@ -72,8 +58,7 @@ public class CourseSearchServiceImpl implements CourseSearchService {
         int pageSize = 0;
 
         // get search string
-        String searchString = searchUrlBuilder.build(courseSearchSolrQuery, search, currentPage,
-                numRequested, filter);
+        String searchString = searchUrlBuilder.build(courseSearchSolrQuery, search, currentPage, numRequested, filter);
         searchString = searchSortBuilder.build(searchString, StringUtils.isNotBlank(search), true);
         // create request header contain basic auth credentials
         HttpEntity<String> request = httpRequestBuilder.createRequestHeader();
@@ -85,7 +70,8 @@ public class CourseSearchServiceImpl implements CourseSearchService {
         // perform search
         ResponseEntity<CourseSearchContainer> responseEntity = null;
         try {
-           responseEntity = restTemplate.exchange(searchString, HttpMethod.POST, request, CourseSearchContainer.class, uriParams);
+            responseEntity = restTemplate
+                    .exchange(searchString, HttpMethod.POST, request, CourseSearchContainer.class, uriParams);
         } catch (Exception e) {
             logger.error("Failed to get search results from SOLR", e);
             throw new NotFoundException("No search results found");
@@ -115,8 +101,7 @@ public class CourseSearchServiceImpl implements CourseSearchService {
                 // string is contained in the course id then this is almost
                 // and search string has something in it
                 // certainly an exact match
-                if (numFound == 1 
-                        && StringUtils.containsIgnoreCase(courseId, search) 
+                if (numFound == 1 && StringUtils.containsIgnoreCase(courseId, search)
                         && StringUtils.length(search) > 0) {
                     exactMatch = true;
                 }
@@ -124,15 +109,15 @@ public class CourseSearchServiceImpl implements CourseSearchService {
             response.setCourses(courses.toArray(new Course[courses.size()]));
         }
         if (pageSize > 0) {
-            response.setPreviousPage(currentPage-1);
+            response.setPreviousPage(currentPage - 1);
             response.setCurrentPage(currentPage);
             response.setPageSize(pageSize);
             response.setNumFound(numFound);
             response.setNumRequested(numRequested);
             int totalPages = ((int) Math.ceil((double) numFound / numRequested));
             response.setTotalPages(totalPages);
-            if (currentPage+1 <= totalPages) {
-                response.setNextPage(currentPage+1);
+            if (currentPage + 1 <= totalPages) {
+                response.setNextPage(currentPage + 1);
             }
             response.setPageNavRange(navRangeBuilder.createNavRange(currentPage, totalPages));
         }
@@ -151,24 +136,31 @@ public class CourseSearchServiceImpl implements CourseSearchService {
         return response;
     }
 
+    /**To get the list of categories from the category subject filters list
+     * @param List
+     * @param categorySubjectFilter
+     * @return CourseCategory
+     */
     private CourseCategory[] getCategorySubjectFacets(List<String> categorySubjectFilter) {
         List<CourseCategory> categories = new ArrayList<CourseCategory>();
         List<CourseSubject> subjects = new ArrayList<CourseSubject>();
         CourseCategory courseCategory = null;
-        for (int categorySubject = 0; categorySubject < categorySubjectFilter.size(); categorySubject = categorySubject + 2) {
-            String [] docSplitArr=StringUtils.split(String.valueOf(categorySubjectFilter.get(categorySubject)), "/");
-            if (docSplitArr.length>0) {
-                CourseSubject subject = new CourseSubject(docSplitArr[0], String.valueOf(categorySubjectFilter.get(categorySubject)),
+        for (int categorySubject = 0;
+             categorySubject < categorySubjectFilter.size(); categorySubject = categorySubject + 2) {
+            String[]  categorySubjectItem= StringUtils.split(String.valueOf(categorySubjectFilter.get(categorySubject)), "/");
+            if (categorySubjectItem.length > 0) {
+                CourseSubject subject = new CourseSubject(categorySubjectItem[0],
+                        String.valueOf(categorySubjectFilter.get(categorySubject)),
                         Integer.valueOf(categorySubjectFilter.get(categorySubject + 1)));
                 if (null == courseCategory) {
                     courseCategory = new CourseCategory();
-                } else if (!docSplitArr[0].equals(courseCategory.getCategory())) {
+                } else if (!categorySubjectItem[0].equals(courseCategory.getCategory())) {
                     courseCategory.setCourseSubject(subjects.toArray(new CourseSubject[subjects.size()]));
                     categories.add(courseCategory);
                     courseCategory = new CourseCategory();
                     subjects = new ArrayList<CourseSubject>();
                 }
-                courseCategory.setCategory(docSplitArr[0]);
+                courseCategory.setCategory(categorySubjectItem[0]);
                 subjects.add(subject);
             }
         }
@@ -181,6 +173,7 @@ public class CourseSearchServiceImpl implements CourseSearchService {
 
     /**
      * Clean up the location facet map
+     *
      * @param map
      * @param facet
      * @return Map
@@ -188,8 +181,7 @@ public class CourseSearchServiceImpl implements CourseSearchService {
     private Map<String, Integer> cleanLocationFacetMap(Map<String, Integer> map) {
         Map<String, Integer> out = new HashMap<String, Integer>();
         for (String key : map.keySet()) {
-            if (!Arrays.asList(locationFacetExclude).contains(key)
-                    && map.get(key) > 0) {
+            if (!Arrays.asList(locationFacetExclude).contains(key) && map.get(key) > 0) {
                 out.put(key, map.get(key));
             }
         }
@@ -199,7 +191,7 @@ public class CourseSearchServiceImpl implements CourseSearchService {
     /**
      * Convert a array to a map so every even element is the key and odd element
      * is the value.
-     * 
+     *
      * @param list
      * @return Map
      */
@@ -212,7 +204,5 @@ public class CourseSearchServiceImpl implements CourseSearchService {
         }
         return locations;
     }
-
-
 
 }
