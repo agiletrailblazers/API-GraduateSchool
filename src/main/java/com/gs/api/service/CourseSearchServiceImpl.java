@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.gs.api.domain.CourseCategory;
+import com.gs.api.domain.CourseSubject;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -140,13 +142,41 @@ public class CourseSearchServiceImpl implements CourseSearchService {
         if (null != container.getRestFacetCount()) {
             response.setLocationFacets(cleanLocationFacetMap(
                     arrayToMap(container.getRestFacetCount().getRestFacetFields().getCityState())));
-            response.setStatusFacets(
-                    arrayToMap(container.getRestFacetCount().getRestFacetFields().getStatus()));
-            response.setCategorySubjectFacets(
-                    arrayToMap(container.getRestFacetCount().getRestFacetFields().getCategorysubject()));
-
+            response.setStatusFacets(arrayToMap(container.getRestFacetCount().getRestFacetFields().getStatus()));
+            if (null != container.getRestFacetCount().getRestFacetFields().getCategorysubject()) {
+                response.setCategorySubjectFacets(getCategorySubjectFacets(
+                        container.getRestFacetCount().getRestFacetFields().getCategorysubject()));
+            }
         }
         return response;
+    }
+
+    private CourseCategory[] getCategorySubjectFacets(List<String> categorySubjectFilter) {
+        List<CourseCategory> categories = new ArrayList<CourseCategory>();
+        List<CourseSubject> subjects = new ArrayList<CourseSubject>();
+        CourseCategory courseCategory = null;
+        for (int categorySubject = 0; categorySubject < categorySubjectFilter.size(); categorySubject = categorySubject + 2) {
+            String [] docSplitArr=StringUtils.split(String.valueOf(categorySubjectFilter.get(categorySubject)), "/");
+            if (docSplitArr.length>0) {
+                CourseSubject subject = new CourseSubject(docSplitArr[0], String.valueOf(categorySubjectFilter.get(categorySubject)),
+                        Integer.valueOf(categorySubjectFilter.get(categorySubject + 1)));
+                if (null == courseCategory) {
+                    courseCategory = new CourseCategory();
+                } else if (!docSplitArr[0].equals(courseCategory.getCategory())) {
+                    courseCategory.setCourseSubject(subjects.toArray(new CourseSubject[subjects.size()]));
+                    categories.add(courseCategory);
+                    courseCategory = new CourseCategory();
+                    subjects = new ArrayList<CourseSubject>();
+                }
+                courseCategory.setCategory(docSplitArr[0]);
+                subjects.add(subject);
+            }
+        }
+        if (null != courseCategory) {
+            courseCategory.setCourseSubject(subjects.toArray(new CourseSubject[subjects.size()]));
+            categories.add(courseCategory);
+        }
+        return categories.toArray(new CourseCategory[categories.size()]);
     }
 
     /**

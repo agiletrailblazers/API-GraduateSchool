@@ -15,6 +15,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.gs.api.domain.CourseCategory;
+import com.gs.api.domain.CourseSubject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -219,7 +221,7 @@ public class CourseSearchServiceTest {
 
     }
 
-    @SuppressWarnings("unchecked")
+   @SuppressWarnings("unchecked")
     @Test
     public void testSearch_ExactMatchWithFacetParam() throws Exception {
 
@@ -318,8 +320,8 @@ public class CourseSearchServiceTest {
     public void testSearch_WithSubjectFacetParams() throws Exception {
 
         ResponseEntity<CourseSearchContainer> responseEntity = new ResponseEntity<CourseSearchContainer>(
-                createCourseContainer("ABC123001", 0, 1, 1), HttpStatus.OK);
-        String[] facetParams = {"category_subject:Accounting, Budgetingand Financial Management/Financial Management"};
+                createCourseContainerwithCategorySubjectFacet("ABC123001", 0, 1), HttpStatus.OK);
+        String[] facetParams = {"category_subject:Accounting, Budgeting and Financial Management/Auditing"};
         when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class), any(Map.class)))
                 .thenReturn(responseEntity);
         CourseSearchResponse response = courseSearchService.searchCourses("ABC123", 0, 100,facetParams);
@@ -328,6 +330,25 @@ public class CourseSearchServiceTest {
         assertEquals("ABC123001", response.getCourses()[0].getId());
         assertTrue(response.isExactMatch());
         verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class), any(Map.class));
+
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testSearch_WithEmptySubjectFacetParams() throws Exception {
+
+        ResponseEntity<CourseSearchContainer> responseEntity = new ResponseEntity<CourseSearchContainer>(
+                createCourseContainerwithEmptyCategorySubjectFacet("ABC123001", 0, 1), HttpStatus.OK);
+        String[] facetParams = {"category_subject:"};
+        when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class), any(Map.class)))
+                .thenReturn(responseEntity);
+        CourseSearchResponse response = courseSearchService.searchCourses("ABC123", 0, 100,facetParams);
+        assertNotNull(response);
+        assertEquals(1, response.getNumFound());
+        assertEquals("ABC123001", response.getCourses()[0].getId());
+        assertTrue(response.isExactMatch());
+        verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class),
+                any(Class.class), any(Map.class));
 
     }
 
@@ -401,5 +422,70 @@ public class CourseSearchServiceTest {
         container.setCourseRestFacetCount(restFacetCount);
         return container;
     }
+
+    private CourseSearchContainer createCourseContainerwithCategorySubjectFacet(String id, int start, int numFound) {
+        final CourseSearchContainer container = new CourseSearchContainer();
+        final CourseSearchGrouped grouped = new CourseSearchGrouped();
+        final CourseSearchGroup group = new CourseSearchGroup();
+        final CourseSearchDocList docList = new CourseSearchDocList();
+        final CourseSearchRestFacetCount restFacetCount = new CourseSearchRestFacetCount();
+        CourseSearchFacetFields   restFacetFields= new CourseSearchFacetFields();
+        List<String> courseCategoryList = new ArrayList<String>();
+        courseCategoryList.add("Accounting, Budgeting and Financial Management/Auditing");
+        courseCategoryList.add("1");
+        courseCategoryList.add("Acquisition/Acquisition");
+        courseCategoryList.add("2");
+        restFacetFields.setCategorysubject(courseCategoryList);
+        restFacetCount.setCourseRestFacetFields(restFacetFields);
+        List<CourseSearchDoc> docs = new ArrayList<CourseSearchDoc>();
+        for (int i = 0; i < numFound; i++) {
+            CourseSearchDoc doc = new CourseSearchDoc();
+            doc.setCourse_id(id);
+            doc.setCourse_name("Course Name for " + id);
+            docs.add(doc);
+        }
+        docList.setDocs(docs);
+        docList.setNumFound(numFound);
+        docList.setStart(start);
+        group.setDoclist(docList);
+        group.setMatches(numFound);
+        group.setNgroups(numFound);
+        grouped.setGroup(group);
+        container.setGrouped(grouped);
+        container.setCourseRestFacetCount(restFacetCount);
+        return container;
+    }
+
+    private CourseSearchContainer createCourseContainerwithEmptyCategorySubjectFacet(String id, int start, int numFound) {
+        final CourseSearchContainer container = new CourseSearchContainer();
+        final CourseSearchGrouped grouped = new CourseSearchGrouped();
+        final CourseSearchGroup group = new CourseSearchGroup();
+        final CourseSearchDocList docList = new CourseSearchDocList();
+        final CourseSearchRestFacetCount restFacetCount = new CourseSearchRestFacetCount();
+        CourseSearchFacetFields   restFacetFields= new CourseSearchFacetFields();
+        List<String> courseCategoryList = new ArrayList<String>();
+        courseCategoryList.add("");
+        courseCategoryList.add("");
+        restFacetFields.setCategorysubject(courseCategoryList);
+        restFacetCount.setCourseRestFacetFields(restFacetFields);
+        List<CourseSearchDoc> docs = new ArrayList<CourseSearchDoc>();
+        for (int i = 0; i < numFound; i++) {
+            CourseSearchDoc doc = new CourseSearchDoc();
+            doc.setCourse_id(id);
+            doc.setCourse_name("Course Name for " + id);
+            docs.add(doc);
+        }
+        docList.setDocs(docs);
+        docList.setNumFound(numFound);
+        docList.setStart(start);
+        group.setDoclist(docList);
+        group.setMatches(numFound);
+        group.setNgroups(numFound);
+        grouped.setGroup(group);
+        container.setGrouped(grouped);
+        container.setCourseRestFacetCount(restFacetCount);
+        return container;
+    }
+
 
 }
