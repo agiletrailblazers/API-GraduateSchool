@@ -1,17 +1,13 @@
 package com.gs.api.service;
 
-import com.gs.api.domain.Course;
-import com.gs.api.domain.CourseCategory;
-import com.gs.api.domain.CourseSearchResponse;
-import com.gs.api.domain.CourseSubject;
-import com.gs.api.exception.NotFoundException;
-import com.gs.api.rest.object.CourseSearchContainer;
-import com.gs.api.rest.object.CourseSearchDoc;
-import com.gs.api.rest.object.CourseSearchGroup;
-import com.gs.api.search.util.HttpRequestBuilder;
-import com.gs.api.search.util.NavRangeBuilder;
-import com.gs.api.search.util.SearchSortBuilder;
-import com.gs.api.search.util.SearchUrlBuilder;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -24,25 +20,44 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestOperations;
 
-import java.util.*;
+import com.gs.api.domain.Course;
+import com.gs.api.domain.CourseCategory;
+import com.gs.api.domain.CourseSearchResponse;
+import com.gs.api.domain.CourseSubject;
+import com.gs.api.exception.NotFoundException;
+import com.gs.api.rest.object.CourseSearchContainer;
+import com.gs.api.rest.object.CourseSearchDoc;
+import com.gs.api.rest.object.CourseSearchGroup;
+import com.gs.api.search.util.HttpRequestBuilder;
+import com.gs.api.search.util.NavRangeBuilder;
+import com.gs.api.search.util.SearchSortBuilder;
+import com.gs.api.search.util.SearchUrlBuilder;
 
-@Service public class CourseSearchServiceImpl implements CourseSearchService {
+@Service
+public class CourseSearchServiceImpl implements CourseSearchService {
 
     private static final Logger logger = LoggerFactory.getLogger(CourseSearchServiceImpl.class);
 
-    @Value("${course.search.solr.query}") private String courseSearchSolrQuery;
+    @Value("${course.search.solr.query}")
+    private String courseSearchSolrQuery;
 
-    @Value("#{'${course.search.facet.location.exclude}'.split(';')}") private String[] locationFacetExclude;
+    @Value("#{'${course.search.facet.location.exclude}'.split(';')}")
+    private String[] locationFacetExclude;
 
-    @Autowired private SearchUrlBuilder searchUrlBuilder;
-
-    @Autowired private HttpRequestBuilder httpRequestBuilder;
-
-    @Autowired private NavRangeBuilder navRangeBuilder;
-
-    @Autowired private SearchSortBuilder searchSortBuilder;
-
-    @Autowired(required = true) private RestOperations restTemplate;
+    @Autowired
+    private SearchUrlBuilder searchUrlBuilder;
+    
+    @Autowired
+    private HttpRequestBuilder httpRequestBuilder;
+    
+    @Autowired
+    private NavRangeBuilder navRangeBuilder;
+    
+    @Autowired
+    private SearchSortBuilder searchSortBuilder;
+    
+    @Autowired(required = true)
+    private RestOperations restTemplate;
 
     /**
      * Perform a search for courses
@@ -58,7 +73,8 @@ import java.util.*;
         int pageSize = 0;
 
         // get search string
-        String searchString = searchUrlBuilder.build(courseSearchSolrQuery, search, currentPage, numRequested, filter);
+        String searchString = searchUrlBuilder.build(courseSearchSolrQuery, search, currentPage,
+                numRequested, filter);
         searchString = searchSortBuilder.build(searchString, StringUtils.isNotBlank(search), true);
         // create request header contain basic auth credentials
         HttpEntity<String> request = httpRequestBuilder.createRequestHeader();
@@ -70,8 +86,7 @@ import java.util.*;
         // perform search
         ResponseEntity<CourseSearchContainer> responseEntity = null;
         try {
-            responseEntity = restTemplate
-                    .exchange(searchString, HttpMethod.POST, request, CourseSearchContainer.class, uriParams);
+           responseEntity = restTemplate.exchange(searchString, HttpMethod.POST, request, CourseSearchContainer.class, uriParams);
         } catch (Exception e) {
             logger.error("Failed to get search results from SOLR", e);
             throw new NotFoundException("No search results found");
@@ -101,7 +116,8 @@ import java.util.*;
                 // string is contained in the course id then this is almost
                 // and search string has something in it
                 // certainly an exact match
-                if (numFound == 1 && StringUtils.containsIgnoreCase(courseId, search)
+                if (numFound == 1 
+                        && StringUtils.containsIgnoreCase(courseId, search) 
                         && StringUtils.length(search) > 0) {
                     exactMatch = true;
                 }
@@ -109,15 +125,15 @@ import java.util.*;
             response.setCourses(courses.toArray(new Course[courses.size()]));
         }
         if (pageSize > 0) {
-            response.setPreviousPage(currentPage - 1);
+            response.setPreviousPage(currentPage-1);
             response.setCurrentPage(currentPage);
             response.setPageSize(pageSize);
             response.setNumFound(numFound);
             response.setNumRequested(numRequested);
             int totalPages = ((int) Math.ceil((double) numFound / numRequested));
             response.setTotalPages(totalPages);
-            if (currentPage + 1 <= totalPages) {
-                response.setNextPage(currentPage + 1);
+            if (currentPage+1 <= totalPages) {
+                response.setNextPage(currentPage+1);
             }
             response.setPageNavRange(navRangeBuilder.createNavRange(currentPage, totalPages));
         }
@@ -127,7 +143,8 @@ import java.util.*;
         if (null != container.getRestFacetCount()) {
             response.setLocationFacets(cleanLocationFacetMap(
                     arrayToMap(container.getRestFacetCount().getRestFacetFields().getCityState())));
-            response.setStatusFacets(arrayToMap(container.getRestFacetCount().getRestFacetFields().getStatus()));
+            response.setStatusFacets(
+                    arrayToMap(container.getRestFacetCount().getRestFacetFields().getStatus()));
             if (null != container.getRestFacetCount().getRestFacetFields().getCategorysubject()) {
                 response.setCategorySubjectFacets(getCategorySubjectFacets(
                         container.getRestFacetCount().getRestFacetFields().getCategorysubject()));
@@ -173,7 +190,6 @@ import java.util.*;
 
     /**
      * Clean up the location facet map
-     *
      * @param map
      * @param facet
      * @return Map
@@ -181,7 +197,8 @@ import java.util.*;
     private Map<String, Integer> cleanLocationFacetMap(Map<String, Integer> map) {
         Map<String, Integer> out = new HashMap<String, Integer>();
         for (String key : map.keySet()) {
-            if (!Arrays.asList(locationFacetExclude).contains(key) && map.get(key) > 0) {
+            if (!Arrays.asList(locationFacetExclude).contains(key)
+                    && map.get(key) > 0) {
                 out.put(key, map.get(key));
             }
         }
@@ -191,7 +208,7 @@ import java.util.*;
     /**
      * Convert a array to a map so every even element is the key and odd element
      * is the value.
-     *
+     * 
      * @param list
      * @return Map
      */
@@ -204,5 +221,7 @@ import java.util.*;
         }
         return locations;
     }
+
+
 
 }
