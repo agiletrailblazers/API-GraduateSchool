@@ -166,7 +166,7 @@ public class CourseSearchServiceImpl implements CourseSearchService {
              categorySubject < categorySubjectFilter.size(); categorySubject = categorySubject + 2) {
             String[]  categorySubjectItem= StringUtils.split(String.valueOf(categorySubjectFilter.get(categorySubject)), "/");
             if (categorySubjectItem.length > 0) {
-                CourseSubject subject = new CourseSubject(categorySubjectItem[0],
+                CourseSubject subject = new CourseSubject(categorySubjectItem[1],
                         String.valueOf(categorySubjectFilter.get(categorySubject)),
                         Integer.valueOf(categorySubjectFilter.get(categorySubject + 1)));
                 if (null == courseCategory) {
