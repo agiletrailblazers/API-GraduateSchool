@@ -162,16 +162,19 @@ public class CourseSearchServiceImpl implements CourseSearchService {
         List<CourseCategory> categories = new ArrayList<CourseCategory>();
         List<CourseSubject> subjects = new ArrayList<CourseSubject>();
         CourseCategory courseCategory = null;
+        CourseSubject subject = null;
         for (int categorySubject = 0; categorySubject < categorySubjectFilter.size(); categorySubject = categorySubject + 2) {
             //split the category and subject by the forward slash
             String[] categorySubjectItem = StringUtils.split(String.valueOf(categorySubjectFilter.get(categorySubject)), "/");
-            int subjectCount = Integer.valueOf(categorySubjectFilter.get(categorySubject + 1));
-            //only add subject if it has a category/seubject description and the count of matches is greater than zero
-            if (categorySubjectItem.length > 0 && subjectCount > 0) {
-                //create a new subject
-                CourseSubject subject = new CourseSubject(categorySubjectItem[1],
+            //only add subject if it has a category/subject description
+            if (categorySubjectItem.length > 0) {
+                int subjectCount = Integer.valueOf(categorySubjectFilter.get(categorySubject + 1));
+                if (subjectCount > 0) {
+                    //create a new subject if count is more than zero
+                    subject = new CourseSubject(categorySubjectItem[1],
                         String.valueOf(categorySubjectFilter.get(categorySubject)),
                         subjectCount);
+                }
                 if (null == courseCategory) {
                     //this will only happen the first time through
                     courseCategory = new CourseCategory();
@@ -183,7 +186,9 @@ public class CourseSearchServiceImpl implements CourseSearchService {
                     subjects = new ArrayList<CourseSubject>();
                 }
                 courseCategory.setCategory(categorySubjectItem[0]);
-                subjects.add(subject);
+                if (null != subject) {
+                    subjects.add(subject);
+                }
             }
         }
         if (null != courseCategory) {
