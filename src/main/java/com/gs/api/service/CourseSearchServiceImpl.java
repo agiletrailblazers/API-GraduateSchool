@@ -162,16 +162,21 @@ public class CourseSearchServiceImpl implements CourseSearchService {
         List<CourseCategory> categories = new ArrayList<CourseCategory>();
         List<CourseSubject> subjects = new ArrayList<CourseSubject>();
         CourseCategory courseCategory = null;
-        for (int categorySubject = 0;
-             categorySubject < categorySubjectFilter.size(); categorySubject = categorySubject + 2) {
-            String[]  categorySubjectItem= StringUtils.split(String.valueOf(categorySubjectFilter.get(categorySubject)), "/");
-            if (categorySubjectItem.length > 0) {
+        for (int categorySubject = 0; categorySubject < categorySubjectFilter.size(); categorySubject = categorySubject + 2) {
+            //split the category and subject by the forward slash
+            String[] categorySubjectItem = StringUtils.split(String.valueOf(categorySubjectFilter.get(categorySubject)), "/");
+            int subjectCount = Integer.valueOf(categorySubjectFilter.get(categorySubject + 1));
+            //only add subject if it has a category/seubject description and the count of matches is greater than zero
+            if (categorySubjectItem.length > 0 && subjectCount > 0) {
+                //create a new subject
                 CourseSubject subject = new CourseSubject(categorySubjectItem[1],
                         String.valueOf(categorySubjectFilter.get(categorySubject)),
-                        Integer.valueOf(categorySubjectFilter.get(categorySubject + 1)));
+                        subjectCount);
                 if (null == courseCategory) {
+                    //this will only happen the first time through
                     courseCategory = new CourseCategory();
                 } else if (!categorySubjectItem[0].equals(courseCategory.getCategory())) {
+                    //when every the category changes we need to "end" the current category and start a new one
                     courseCategory.setCourseSubject(subjects.toArray(new CourseSubject[subjects.size()]));
                     categories.add(courseCategory);
                     courseCategory = new CourseCategory();
@@ -182,6 +187,7 @@ public class CourseSearchServiceImpl implements CourseSearchService {
             }
         }
         if (null != courseCategory) {
+            //this handles the last category on the list
             courseCategory.setCourseSubject(subjects.toArray(new CourseSubject[subjects.size()]));
             categories.add(courseCategory);
         }
