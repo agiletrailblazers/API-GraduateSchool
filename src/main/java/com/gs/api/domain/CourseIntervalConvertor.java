@@ -13,6 +13,9 @@ public class CourseIntervalConvertor {
         intervalMap.put("MN", "Month");
         intervalMap.put("YR", "Year");
         intervalMap.put("WK", "Week");
+        intervalMap.put("HR", "Hour");
+        intervalMap.put("'MNTH", "Month");
+        intervalMap.put("MI", "Minute");
     }
 
     /**
