@@ -175,13 +175,18 @@ public class CourseSearchServiceImpl implements CourseSearchService {
                         String.valueOf(categorySubjectFilter.get(categorySubject)),
                         subjectCount);
                 }
+                else {
+                    subject = null;  //reset subject
+                }
                 if (null == courseCategory) {
                     //this will only happen the first time through
                     courseCategory = new CourseCategory();
                 } else if (!categorySubjectItem[0].equals(courseCategory.getCategory())) {
                     //when every the category changes we need to "end" the current category and start a new one
-                    courseCategory.setCourseSubject(subjects.toArray(new CourseSubject[subjects.size()]));
-                    categories.add(courseCategory);
+                    if (subjects.size() > 0) {
+                        courseCategory.setCourseSubject(subjects.toArray(new CourseSubject[subjects.size()]));
+                        categories.add(courseCategory);
+                    }
                     courseCategory = new CourseCategory();
                     subjects = new ArrayList<CourseSubject>();
                 }
@@ -193,8 +198,10 @@ public class CourseSearchServiceImpl implements CourseSearchService {
         }
         if (null != courseCategory) {
             //this handles the last category on the list
-            courseCategory.setCourseSubject(subjects.toArray(new CourseSubject[subjects.size()]));
-            categories.add(courseCategory);
+            if (subjects.size() > 0) {
+                courseCategory.setCourseSubject(subjects.toArray(new CourseSubject[subjects.size()]));
+                categories.add(courseCategory);
+            }
         }
         return categories.toArray(new CourseCategory[categories.size()]);
     }
