@@ -433,6 +433,12 @@ public class CourseSearchServiceTest {
         courseCategoryList.add("1");
         courseCategoryList.add("Acquisition/Acquisition");
         courseCategoryList.add("2");
+        courseCategoryList.add("Acquisition/Fraud Detection");
+        courseCategoryList.add("3");
+        courseCategoryList.add("Acquisition/Irony Studies");
+        courseCategoryList.add("0");
+        courseCategoryList.add("Math/Subtraction");
+        courseCategoryList.add("0");
         restFacetFields.setCategorysubject(courseCategoryList);
         restFacetCount.setCourseRestFacetFields(restFacetFields);
         List<CourseSearchDoc> docs = new ArrayList<CourseSearchDoc>();
