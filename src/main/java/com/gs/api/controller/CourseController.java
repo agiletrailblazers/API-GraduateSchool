@@ -64,6 +64,10 @@ public class CourseController {
     
     @Value("${course.search.page.size}")
     private int searchPageSize;
+    
+    @Value("${property.name}")
+    private String propertyName;
+    
 
     /**
      * A simple "is alive" API.
@@ -75,6 +79,17 @@ public class CourseController {
     public ResponseEntity<HttpStatus> ping() throws Exception {
         logger.debug("Service ping initiated");
         return new ResponseEntity<HttpStatus>(HttpStatus.OK);
+    }
+    
+    /**
+     * A simple API to tell us which environment it is 
+     * @return
+     * @throws Exception
+     */
+    @RequestMapping(value = "/env", method = RequestMethod.GET, produces = MediaType.TEXT_PLAIN_VALUE)
+    public @ResponseBody String env() throws Exception {
+        logger.debug("Service env initiated");
+        return propertyName;
     }
     
     /**
