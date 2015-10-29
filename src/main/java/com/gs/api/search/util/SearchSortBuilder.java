@@ -9,15 +9,15 @@ public class SearchSortBuilder {
 
     @Value("${course.search.sort.score}")
     private String sortScore;
-    
+
     @Value("${course.search.sort.course_id}")
     private String sortCourseId;
-    
+
     /**
      * Build proper sort criteria based on type of search
-     * @param searchSolrQuery
-     * @param includeScoreSort
-     * @param includeCourseIdSort
+     * @param searchSolrQuery whats my solr query
+     * @param includeScoreSort should I sort by score?
+     * @param includeCourseIdSort should i sort by CourseId?
      * @return String
      */
     public String build(String searchSolrQuery, boolean includeScoreSort, boolean includeCourseIdSort) {
@@ -33,5 +33,5 @@ public class SearchSortBuilder {
         }
         return StringUtils.replace(searchSolrQuery, "{sort}", sort.toString());
     }
-    
+
 }

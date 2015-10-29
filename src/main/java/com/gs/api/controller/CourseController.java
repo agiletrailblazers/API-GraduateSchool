@@ -49,37 +49,37 @@ public class CourseController {
 
     @Autowired
     private CourseSearchService courseSearchService;
-    
+
     @Autowired
     private CourseService courseService;
-    
+
     @Autowired
     private LocationService locationService;
-    
+
     @Autowired
     private SiteSearchService siteSearchService;
-    
+
     @Autowired
     private CategoryService categoryService;
-    
+
     @Value("${course.search.page.size}")
     private int searchPageSize;
 
     /**
      * A simple "is alive" API.
-     * 
+     *
      * @return Empty response with HttpStatus of OK
      * @throws Exception
      */
     @RequestMapping(value = "/ping", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<HttpStatus> ping() throws Exception {
         logger.debug("Service ping initiated");
-        return new ResponseEntity<HttpStatus>(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
-    
+
     /**
      * Given search criteria for a course return the results.
-     * 
+     *
      * @return SearchResponse
      * @throws Exception
      */
@@ -87,15 +87,15 @@ public class CourseController {
     public @ResponseBody CourseSearchResponse searchCourse(
             @RequestParam Map<String,String> allRequestParams,
             @RequestParam(required = false) String search,
-            @RequestParam(required = false) String page, 
+            @RequestParam(required = false) String page,
             @RequestParam(required = false) String numRequested,
             @RequestParam(required = false) String[] filter) throws Exception {
         logger.info("Course Search API initiated");
-        
+
         if (!StringUtils.isEmpty(search) || allRequestParams.containsKey("search")) {
             //this is a course search
-            return courseSearchService.searchCourses(search, 
-                    NumberUtils.toInt(page, 1), 
+            return courseSearchService.searchCourses(search,
+                    NumberUtils.toInt(page, 1),
                     NumberUtils.toInt(numRequested, searchPageSize),filter);
         }
         else {
@@ -112,88 +112,88 @@ public class CourseController {
            }
            return response;
         }
-        
+
     }
-    
+
     /**
-     * Get a course for the given id
-     * @param id
+     * Get a course for the given courseId
+     * @param id the course ID
      * @return Course
      * @throws Exception
      */
     @RequestMapping(value = "/courses/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody Course getCourse(@PathVariable("id") String id) throws Exception {        
-        logger.debug("Course details initiated with  course id: " + id);
+    public @ResponseBody Course getCourse(@PathVariable("id") String id) throws Exception {
+        logger.debug("Course details initiated with  course courseId: " + id);
         final Course course = courseService.getCourse(id);
         if (null == course || StringUtils.isEmpty(course.getId())){
-            logger.error("No course found for id {}", id);
-            throw new NotFoundException("No course found for course id " + id);
+            logger.error("No course found for courseId {}", id);
+            throw new NotFoundException("No course found for course courseId " + id);
         }
         return course;
     }
-    
+
     /**
-     * Get course sessions given a course id
-     * @param id
+     * Get course sessions given a course courseId
+     * @param id the course ID
      * @return List of Course Sessions
      * @throws Exception
      */
     @RequestMapping(value = "/courses/{id}/sessions", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody List<CourseSession> getSessions(@PathVariable("id") String id) throws Exception {        
-        logger.debug("Course sessions initiated with  course id: " + id);
+    public @ResponseBody List<CourseSession> getSessions(@PathVariable("id") String id) throws Exception {
+        logger.debug("Course sessions initiated with  course courseId: " + id);
         final List<CourseSession> sessions = courseService.getSessions(id);
         if (CollectionUtils.isEmpty(sessions)){
-            logger.error("No sessions found for id {}", id);
-            throw new NotFoundException("No sessions found for course id " + id);
+            logger.error("No sessions found for courseId {}", id);
+            throw new NotFoundException("No sessions found for course courseId " + id);
         }
         return sessions;
     }
-    
+
     /**
      * Get a list of active locations
-     * 
+     *
      * @return SearchResponse
      * @throws Exception
      */
     @RequestMapping(value = "/locations", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody List<Location> getLocations() throws Exception {
-        logger.debug("Location search initiated");        
+        logger.debug("Location search initiated");
         return locationService.getLocations();
     }
-    
+
     /**
      * Get a list of categories containing a list of subjects
-     * 
+     *
      * @return Category List containing Subjects
      * @throws Exception
      */
     @RequestMapping(value = "/categories", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody CourseCategory[] getCategories() throws Exception {
-        logger.debug("Category/subject search initiated");        
+        logger.debug("Category/subject search initiated");
         return categoryService.getCategories();
     }
-    
+
     /**
      * Search site by keyword
-     * @param search
-     * @param page
-     * @param numRequested
+     * @param search what is my keyword search
+     * @param page what page of results am I on
+     * @param numRequested number of results requested
      * @return Site Search Response
      * @throws Exception
      */
     @RequestMapping(value = "/site", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody SitePagesSearchResponse searchSite(
             @RequestParam(required = false) String search,
-            @RequestParam(required = false) String page, 
+            @RequestParam(required = false) String page,
             @RequestParam(required = false) String numRequested,
             @RequestParam(required = false) String[] filter) throws Exception {
         logger.info("Site Search API initiated");
-        return siteSearchService.searchSite(search, 
-                NumberUtils.toInt(page, 1), 
-                NumberUtils.toInt(numRequested, searchPageSize), 
+        return siteSearchService.searchSite(search,
+                NumberUtils.toInt(page, 1),
+                NumberUtils.toInt(numRequested, searchPageSize),
                 filter);
     }
-    
+
     /**
      * Return json formatted error response for any custom "not found" errors
      * @return ResponseBody
@@ -228,7 +228,7 @@ public class CourseController {
 
     /**
      * Return json formatted error response for bad request
-     * 
+     *
      * @return ResponseBody
      */
     @ResponseStatus(HttpStatus.BAD_REQUEST)

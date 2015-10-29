@@ -10,6 +10,6 @@ public interface LocationService {
      * Get a list of locations - city and state
      * @return List of CourseLocation
      */
-    public List<Location> getLocations() throws Exception;
-    
+    List<Location> getLocations() throws Exception;
+
 }

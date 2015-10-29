@@ -23,7 +23,7 @@ public class SearchUrlBuilder {
                 filterString.append("&fq=").append(filterParam).append("\"");
             }
         }
-        
+
         String solrQuery = searchSolrEndpoint.concat(searchSolrQuery);
 
         //set the curentpage value to 1 when current page is zero
@@ -49,7 +49,7 @@ public class SearchUrlBuilder {
      * Useless: Remove AND or OR from search string as these only confuse the
      * situation
      *
-     * @param search
+     * @param search the solr search item
      * @return string
      */
     protected String stripAndEncode(String search) {

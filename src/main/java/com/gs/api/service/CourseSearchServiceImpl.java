@@ -46,23 +46,27 @@ public class CourseSearchServiceImpl implements CourseSearchService {
 
     @Autowired
     private SearchUrlBuilder searchUrlBuilder;
-    
+
     @Autowired
     private HttpRequestBuilder httpRequestBuilder;
-    
+
     @Autowired
     private NavRangeBuilder navRangeBuilder;
-    
+
     @Autowired
     private SearchSortBuilder searchSortBuilder;
-    
+
     @Autowired(required = true)
     private RestOperations restTemplate;
 
     /**
      * Perform a search for courses
      *
-     * @param request
+     * @param search Solr Search string
+     * @param currentPage what page of the data I am on
+     * @param numRequested how many results did I request
+     * @param filter filter by these things
+     *
      * @return SearchResponse
      */
     public CourseSearchResponse searchCourses(String search, int currentPage, int numRequested, String[] filter)
@@ -79,12 +83,12 @@ public class CourseSearchServiceImpl implements CourseSearchService {
         // create request header contain basic auth credentials
         HttpEntity<String> request = httpRequestBuilder.createRequestHeader();
         // due to a quirk in rest template these facet filters need to be injected as params
-        Map<String, String> uriParams = new HashMap<String, String>();
+        Map<String, String> uriParams = new HashMap<>();
         uriParams.put("facet-exclude", "{!ex=dt}");
         uriParams.put("facet-countall", "{!tag=dt}");
         logger.info(searchString);
         // perform search
-        ResponseEntity<CourseSearchContainer> responseEntity = null;
+        ResponseEntity<CourseSearchContainer> responseEntity;
         try {
            responseEntity = restTemplate.exchange(searchString, HttpMethod.POST, request, CourseSearchContainer.class, uriParams);
         } catch (Exception e) {
@@ -103,7 +107,7 @@ public class CourseSearchServiceImpl implements CourseSearchService {
         logger.info("Found " + numFound + " matches for search " + search + " page size " + pageSize);
         // loop through responses
         CourseSearchResponse response = new CourseSearchResponse();
-        List<Course> courses = new ArrayList<Course>();
+        List<Course> courses = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(docs)) {
             for (CourseSearchDoc doc : docs) {
                 String courseId = doc.getCourse_id();
@@ -116,8 +120,8 @@ public class CourseSearchServiceImpl implements CourseSearchService {
                 // string is contained in the course id then this is almost
                 // and search string has something in it
                 // certainly an exact match
-                if (numFound == 1 
-                        && StringUtils.containsIgnoreCase(courseId, search) 
+                if (numFound == 1
+                        && StringUtils.containsIgnoreCase(courseId, search)
                         && StringUtils.length(search) > 0) {
                     exactMatch = true;
                 }
@@ -153,16 +157,16 @@ public class CourseSearchServiceImpl implements CourseSearchService {
         return response;
     }
 
-    /**To get the list of categories from the category subject filters list
-     * @param List
-     * @param categorySubjectFilter
+    /**
+     * To get the list of categories from the category subject filters list
+     * @param categorySubjectFilter filter by this subject list
      * @return CourseCategory
      */
     private CourseCategory[] getCategorySubjectFacets(List<String> categorySubjectFilter) {
-        List<CourseCategory> categories = new ArrayList<CourseCategory>();
-        List<CourseSubject> subjects = new ArrayList<CourseSubject>();
+        List<CourseCategory> categories = new ArrayList<>();
+        List<CourseSubject> subjects = new ArrayList<>();
         CourseCategory courseCategory = null;
-        CourseSubject subject = null;
+        CourseSubject subject;
         for (int categorySubject = 0; categorySubject < categorySubjectFilter.size(); categorySubject = categorySubject + 2) {
             //split the category and subject by the forward slash
             String[] categorySubjectItem = StringUtils.split(String.valueOf(categorySubjectFilter.get(categorySubject)), "/");
@@ -188,7 +192,7 @@ public class CourseSearchServiceImpl implements CourseSearchService {
                         categories.add(courseCategory);
                     }
                     courseCategory = new CourseCategory();
-                    subjects = new ArrayList<CourseSubject>();
+                    subjects = new ArrayList<>();
                 }
                 courseCategory.setCategory(categorySubjectItem[0]);
                 if (null != subject) {
@@ -208,12 +212,11 @@ public class CourseSearchServiceImpl implements CourseSearchService {
 
     /**
      * Clean up the location facet map
-     * @param map
-     * @param facet
+     * @param map clean this in bound data
      * @return Map
      */
     private Map<String, Integer> cleanLocationFacetMap(Map<String, Integer> map) {
-        Map<String, Integer> out = new HashMap<String, Integer>();
+        Map<String, Integer> out = new HashMap<>();
         for (String key : map.keySet()) {
             if (!Arrays.asList(locationFacetExclude).contains(key)
                     && map.get(key) > 0) {
@@ -226,8 +229,8 @@ public class CourseSearchServiceImpl implements CourseSearchService {
     /**
      * Convert a array to a map so every even element is the key and odd element
      * is the value.
-     * 
-     * @param list
+     *
+     * @param list convert this list to a map
      * @return Map
      */
     public Map<String, Integer> arrayToMap(List<String> list) {

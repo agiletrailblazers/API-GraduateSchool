@@ -26,16 +26,16 @@ import com.gs.api.domain.CourseLength;
 
 @Repository
 public class CourseDAO {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(CourseDAO.class);
     private JdbcTemplate jdbcTemplate;
 
     @Value("${sql.course.single.query}")
     private String singleCourseSql;
-    
+
     @Value("${sql.course.all.query}")
     private String allCourseSql;
-    
+
     @Value("${course.interval.default}")
     private String courseIntervalDefault;
 
@@ -43,21 +43,21 @@ public class CourseDAO {
     public void setDataSource(DataSource dataSource) {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
-    
+
     /**
      * Get course object from database
-     * @param id
+     * @param id load this course by ID
      * @return Course
      */
     public Course getCourse(String id) {
         logger.debug("Getting course from database for course id {}", id);
         logger.debug(singleCourseSql);
         try {
-            final Course course = this.jdbcTemplate.queryForObject(singleCourseSql, new Object[] { id, id }, 
+            final Course course = this.jdbcTemplate.queryForObject(singleCourseSql, new Object[] { id, id },
                     new CourseDetailRowMapper());
             logger.debug("Found course match for {}", id);
             return course;
-        } 
+        }
         catch (EmptyResultDataAccessException e) {
             logger.warn("Course not found for id {} - {}", id, e);
             return null;
@@ -65,9 +65,9 @@ public class CourseDAO {
         catch (Exception e) {
             logger.error("Error retrieving Course for id {} - {}", id, e);
             throw e;
-        }        
+        }
     }
-    
+
     /**
      * Get all active courses
      * @return List of courses
@@ -77,11 +77,11 @@ public class CourseDAO {
         logger.debug("Getting courses from database");
         logger.debug(allCourseSql);
         try {
-            List<Course> courses = this.jdbcTemplate.query(allCourseSql, 
+            List<Course> courses = this.jdbcTemplate.query(allCourseSql,
                     new CourseRowMapper());
             logger.debug("Found {} courses", courses.size());
             return courses;
-        } 
+        }
         catch (EmptyResultDataAccessException e) {
             logger.warn("Courses not found - {}", e);
             return null;
@@ -91,7 +91,7 @@ public class CourseDAO {
             throw e;
         }
     }
-    
+
     /**
      * Maps a course result to a Course object
      */
@@ -110,7 +110,7 @@ public class CourseDAO {
 
         /**
          * Replace course interval with a default value if empty
-         * @param interval
+         * @param interval a string representing time that needs converting to 'how long' course is
          * @return String
          */
         protected String calculateCourseInterval(String interval) {
@@ -118,22 +118,22 @@ public class CourseDAO {
             if (StringUtils.isEmpty(interval)) {
                 interval = courseIntervalDefault;
             }
-            return interval; 
+            return interval;
         }
 
         /**
          * Calculate course credit based on business rules
-         * @param rs
+         * @param resultSet How many credits does a class count for (From SQL)
          * @return CourseCredit
          * @throws SQLException
          */
-        protected CourseCredit calculateCourseCredit(ResultSet rs) throws SQLException {
-            String creditValue = StringUtils.EMPTY;
-            CourseCreditType creditType = null;
-            String ceuCredit = rs.getString("CEU_CREDIT");
-            String cpeCredit = rs.getString("CPE_CREDIT");
-            String aceCredit = rs.getString("ACE_CREDIT");
-            
+        protected CourseCredit calculateCourseCredit(ResultSet resultSet) throws SQLException {
+            String creditValue;
+            CourseCreditType creditType;
+            String ceuCredit = resultSet.getString("CEU_CREDIT");
+            String cpeCredit = resultSet.getString("CPE_CREDIT");
+            String aceCredit = resultSet.getString("ACE_CREDIT");
+
             if (StringUtils.isNotEmpty(ceuCredit) && !ceuCredit.equals("0")) {
                 creditValue = ceuCredit;
                 creditType = CourseCreditType.CEU;
@@ -153,7 +153,7 @@ public class CourseDAO {
             return new CourseCredit(creditValue, creditType);
         }
     }
-    
+
     protected class CourseDetailRowMapper extends CourseRowMapper implements RowMapper<Course> {
 
         @Override
@@ -168,7 +168,7 @@ public class CourseDAO {
              course.setSegment(rs.getString("CD_SEG"));
              return course;
         }
-        
+
     }
 
 }

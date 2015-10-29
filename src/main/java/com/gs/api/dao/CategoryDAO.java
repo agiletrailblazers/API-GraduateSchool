@@ -34,10 +34,9 @@ public class CategoryDAO {
     public void setDataSource(DataSource dataSource) {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
-    
+
     /**
      * Get subject/category object from database
-     * @param id
      * @return Subject
      */
     @Cacheable(cacheName="subjectCategoryCache")
@@ -49,7 +48,7 @@ public class CategoryDAO {
                     new CategoryExtractor());
             logger.debug("Found {} subjects/categories", categories.length);
             return categories;
-        } 
+        }
         catch (EmptyResultDataAccessException e) {
             logger.warn("Subjects/categories not found - {}", e);
             return null;
@@ -59,15 +58,15 @@ public class CategoryDAO {
             throw e;
         }
     }
-    
+
     /**
      * Map entire result set to a hierarchial array of categories containing subjects
      */
     protected class CategoryExtractor implements ResultSetExtractor<CourseCategory[]> {
 
         public CourseCategory[] extractData(ResultSet rs) throws SQLException, DataAccessException {
-            List<CourseCategory> categories = new ArrayList<CourseCategory>();
-            List<CourseSubject> subjects = new ArrayList<CourseSubject>();
+            List<CourseCategory> categories = new ArrayList<>();
+            List<CourseSubject> subjects = new ArrayList<>();
             CourseCategory courseCategory = null;
             while (rs.next()) {
                 String thisCategory = rs.getString("CATEGORY");
@@ -82,7 +81,7 @@ public class CategoryDAO {
                     courseCategory.setCourseSubject(subjects.toArray(new CourseSubject[subjects.size()]));
                     categories.add(courseCategory);
                     courseCategory = new CourseCategory();
-                    subjects = new ArrayList<CourseSubject>();
+                    subjects = new ArrayList<>();
                 }
                 courseCategory.setCategory(thisCategory);
                 subjects.add(subject);

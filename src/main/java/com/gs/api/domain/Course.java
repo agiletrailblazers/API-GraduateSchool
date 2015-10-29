@@ -19,22 +19,22 @@ public class Course {
     private CourseLength length;
     private String segment;
     private CourseDescription description;
-    
+
     public Course() {
     }
 
     /**
      * Constructor
-     * 
-     * @param courseId
-     * @param courseTitle
-     * @param courseDescription
+     *
+     * @param courseId The CourseID
+     * @param courseTitle The title of the course represented by courseId
+     * @param courseDescription the description of the course represented by courseId
      */
-    public Course(String id, String code, String title, String description) {
-        this.id = id;
+    public Course(String courseId, String code, String courseTitle, String courseDescription) {
+        this.id = courseId;
         this.code = code;
-        this.title = title;
-        this.description = new CourseDescription(description, null);
+        this.title = courseTitle;
+        this.description = new CourseDescription(courseDescription, null);
     }
 
     public String getId() {
@@ -84,7 +84,7 @@ public class Course {
     public void setPrerequisites(String prerequisites) {
         this.prerequisites = prerequisites;
     }
- 
+
     public CourseCredit getCredit() {
         return credit;
     }

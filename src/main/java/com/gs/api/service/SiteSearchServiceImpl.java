@@ -35,23 +35,27 @@ public class SiteSearchServiceImpl implements SiteSearchService {
 
     @Value("${site.search.title.exclude}")
     private String siteSearchTitleExclude;
-    
+
     @Autowired(required = true)
     private RestOperations restTemplate;
 
     @Autowired
     private SearchUrlBuilder searchServiceHelper;
-    
+
     @Autowired
     private HttpRequestBuilder httpRequestBuilder;
-    
+
     @Autowired
     private NavRangeBuilder navRangeBuilder;
 
     /**
      * Perform a search for Site
      *
-     * @param request
+     * @param search the query for searching
+     * @param currentPage what page of results am I on
+     * @param numRequested how many results do I want
+     * @param filter filter by these things
+     *
      * @return SearchResponse
     */
     public SitePagesSearchResponse searchSite(String search, int currentPage, int numRequested, String[] filter)
@@ -61,7 +65,8 @@ public class SiteSearchServiceImpl implements SiteSearchService {
         String searchString = searchServiceHelper.build(siteSearchSolrQuery,search, currentPage, numRequested, filter);
         logger.info(searchString);
         HttpEntity<String> request = httpRequestBuilder.createRequestHeader();
-        ResponseEntity<SiteSearchContainer> responseEntity = null;
+        ResponseEntity<SiteSearchContainer> responseEntity;
+
         try {
             responseEntity = restTemplate.exchange(searchString, HttpMethod.POST, request, SiteSearchContainer.class);
 
@@ -69,15 +74,18 @@ public class SiteSearchServiceImpl implements SiteSearchService {
             logger.error("Failed to get search results from SOLR", e);
             throw new NotFoundException("No search results found");
         }
+
         SiteSearchContainer container = responseEntity.getBody();
         Collection<SiteSearchDoc> docs  = container.getResponse().getDocs();
+
         if (CollectionUtils.isNotEmpty(docs)) {
             numFound =  container.getResponse().getNumFound();
             pageSize = docs.size();
         }
+
         // loop through responses
         SitePagesSearchResponse response = new SitePagesSearchResponse();
-        List<Page> pages = new ArrayList<Page>();
+        List<Page> pages = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(docs)) {
             for (SiteSearchDoc doc : docs) {
                 Page newPage = new Page(parseTitle(doc.getTitle(),doc.getContent()), doc.getUrl(),doc.getContent());
@@ -85,6 +93,7 @@ public class SiteSearchServiceImpl implements SiteSearchService {
             }
             response.setPages(pages.toArray(new Page[pages.size()]));
         }
+
         if (pageSize > 0) {
             response.setPreviousPage(currentPage-1);
             response.setCurrentPage(currentPage);
@@ -103,11 +112,11 @@ public class SiteSearchServiceImpl implements SiteSearchService {
 
     /**
      * remove parts of the title we don't want to display
-     * @param title
-     * @param content
+     * @param title the title
+     * @param content the content I will use if the title is empty
      * @return title
      */
-    private String parseTitle(String title,String content) {
+    private String parseTitle(String title, String content) {
         if (StringUtils.isEmpty(title)) {
             title = StringUtils.substring(content,0,20);
         }

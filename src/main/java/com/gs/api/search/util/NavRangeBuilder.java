@@ -12,8 +12,8 @@ public class NavRangeBuilder {
      *   - if current page is 3 of 10 show: 1,2,3,4,5
      *   - if current page is 7 of 10 show: 5,6,7,8,9
      *   - if current page is 10 of 10 show: 6,7,8,9,10
-     * @param currentPage
-     * @param totalPages
+     * @param currentPage where am I currently
+     * @param totalPages how many total pages are there
      * @return int[]
      */
     public int[] createNavRange(int currentPage, int totalPages) {
@@ -50,5 +50,5 @@ public class NavRangeBuilder {
         }
         return pageNavRange;
     }
-    
+
 }
