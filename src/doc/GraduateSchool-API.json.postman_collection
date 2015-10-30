@@ -18,13 +18,14 @@
 		"5e155323-64ec-fc47-ec45-a90d72966ef6",
 		"ca13159f-fbea-407e-6f72-20ba0a955307",
 		"d41e8c28-638b-ee49-74c0-ec0e6222b78d",
-		"87953285-3873-c150-ffe7-54702e87ff3d"
+		"87953285-3873-c150-ffe7-54702e87ff3d",
+		"59533d3d-16c9-d137-f5e6-c6624dc2abf0"
 	],
 	"folders": [],
 	"timestamp": 1436731751085,
 	"owner": 0,
+	"remoteLink": "",
 	"public": false,
-	"hasRequests": true,
 	"requests": [
 		{
 			"id": "24b2abc7-439a-576e-b7dd-870307df80f7",
@@ -44,6 +45,26 @@
 			"description": "Search for a course by a description or course code",
 			"collectionId": "9d1162ea-a7c2-3c92-20e3-44348f6407bb",
 			"responses": []
+		},
+		{
+			"id": "59533d3d-16c9-d137-f5e6-c6624dc2abf0",
+			"headers": "",
+			"url": "http://{{url}}:{{port}}/api/env",
+			"pathVariables": {},
+			"preRequestScript": "",
+			"method": "GET",
+			"collectionId": "9d1162ea-a7c2-3c92-20e3-44348f6407bb",
+			"data": [],
+			"dataMode": "params",
+			"name": "Environment Check",
+			"description": "An API to find out which environment you are running",
+			"descriptionFormat": "html",
+			"time": 1446150846445,
+			"version": 2,
+			"responses": [],
+			"tests": "tests[\"Status code is 200\"] = responseCode.code === 200;",
+			"currentHelper": "normal",
+			"helperAttributes": {}
 		},
 		{
 			"id": "5e155323-64ec-fc47-ec45-a90d72966ef6",
