@@ -9,23 +9,22 @@ public interface CourseService {
 
     /**
      * Get list of courses.
-     * @param filter
      * @return List of courses
      */
-    public List<Course> getCourses() throws Exception;
-    
+    List<Course> getCourses() throws Exception;
+
     /**
      * Get a single course
-     * @param id
+     * @param id get a course by this id
      * @return Course
      */
-    public Course getCourse(String id) throws Exception;
+    Course getCourse(String id) throws Exception;
 
     /**
      * Get sessions from database id
-     * @param id
+     * @param id get a session by this id
      * @return List of sessions
      */
-    public List<CourseSession> getSessions(String id) throws Exception;
-    
+    List<CourseSession> getSessions(String id) throws Exception;
+
 }

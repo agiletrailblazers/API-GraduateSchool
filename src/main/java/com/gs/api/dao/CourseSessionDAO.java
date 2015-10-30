@@ -33,21 +33,21 @@ public class CourseSessionDAO {
     public void setDataSource(DataSource dataSource) {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
-    
+
     /**
      * Get course object from database
-     * @param id
+     * @param id Load this course by this ID
      * @return Course
      */
     public List<CourseSession> getSessions(String id) {
         logger.debug("Getting course competency from database for course id {}", id);
         logger.debug(sql);
         try {
-            final List<CourseSession> sessions = this.jdbcTemplate.query(sql, new Object[] { id, id }, 
+            final List<CourseSession> sessions = this.jdbcTemplate.query(sql, new Object[] { id, id },
                     new SessionsRowMapper());
             logger.debug("Found {} session matchs for {}", sessions.size(), id);
             return sessions;
-        } 
+        }
         catch (EmptyResultDataAccessException e) {
             logger.warn("Sessions not found for id {} - {}", id, e);
             return null;
@@ -57,7 +57,7 @@ public class CourseSessionDAO {
             throw e;
         }
     }
-    
+
     /**
      * Maps a course result to a Course object
      */

@@ -6,7 +6,7 @@ import java.util.Map;
 public class CourseIntervalConvertor {
 
     private static final Map<String, String> intervalMap;
-    
+
     static {
         intervalMap = new HashMap<String, String>();
         intervalMap.put("DY", "Day");
@@ -20,11 +20,11 @@ public class CourseIntervalConvertor {
 
     /**
      * Convert an interval value to a real value
-     * @param interval
+     * @param interval the item to convert
      * @return String
      */
-    public final static String getInterval(String interval) {
+    public static String getInterval(String interval) {
         return intervalMap.get(interval);
     }
-    
+
 }

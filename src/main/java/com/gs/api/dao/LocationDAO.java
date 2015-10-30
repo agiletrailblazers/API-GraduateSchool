@@ -31,10 +31,9 @@ public class LocationDAO {
     public void setDataSource(DataSource dataSource) {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
-    
+
     /**
      * Get course object from database
-     * @param id
      * @return Course
      */
     @Cacheable(cacheName="locationByCityStateCache")
@@ -42,11 +41,10 @@ public class LocationDAO {
         logger.debug("Getting course locations from database");
         logger.debug(sql);
         try {
-            final List<Location> locations = this.jdbcTemplate.query(sql,
-                    new LocationRowMapper());
+            final List<Location> locations = this.jdbcTemplate.query(sql, new LocationRowMapper());
             logger.debug("Found {} locations", locations.size());
             return locations;
-        } 
+        }
         catch (EmptyResultDataAccessException e) {
             logger.warn("Locations not found - {}", e);
             return null;
@@ -56,7 +54,7 @@ public class LocationDAO {
             throw e;
         }
     }
-    
+
     /**
      * Maps a course result to a Course object
      */

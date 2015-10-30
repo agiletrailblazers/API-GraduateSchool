@@ -28,21 +28,21 @@ public class CourseCompetencyDAO {
     public void setDataSource(DataSource dataSource) {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
-    
+
     /**
      * Get course object from database
-     * @param id
+     * @param id Load this course by ID
      * @return Course
      */
     public List<String> getCompetency(String id) {
         logger.debug("Getting course competency from database for course id {}", id);
         logger.debug(sql);
         try {
-            final List<String> competency = this.jdbcTemplate.query(sql, new Object[] { id, "%" + id }, 
+            final List<String> competency = this.jdbcTemplate.query(sql, new Object[] { id, "%" + id },
                     new CompetencyRowMapper());
             logger.debug("Found {} competency matches for {}", competency.size(), id);
             return competency;
-        } 
+        }
         catch (EmptyResultDataAccessException e) {
             logger.warn("Course not found for id {} - {}", id, e);
             return null;
@@ -52,7 +52,7 @@ public class CourseCompetencyDAO {
             throw e;
         }
     }
-    
+
     /**
      * Maps a course result to a Course object
      */

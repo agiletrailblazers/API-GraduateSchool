@@ -11,7 +11,7 @@ public class HttpRequestBuilder {
 
     @Value("${search.solr.credentials}")
     private String solrCredentials;
-    
+
     /**
      * Create the Request Header for the Solr using the solr credentials
      */
@@ -22,8 +22,7 @@ public class HttpRequestBuilder {
         String base64Creds = new String(base64CredsBytes);
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "Basic " + base64Creds);
-        HttpEntity<String> request = new HttpEntity<String>(headers);
-        return request;
+        return new HttpEntity<String>(headers);
     }
-    
+
 }

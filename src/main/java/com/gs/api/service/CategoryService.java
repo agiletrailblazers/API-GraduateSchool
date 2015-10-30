@@ -9,6 +9,5 @@ public interface CategoryService {
      * @return List of course categories and subjects
      * @throws Exception
      */
-    public CourseCategory[] getCategories() throws Exception;
-    
+    CourseCategory[] getCategories() throws Exception;
 }
