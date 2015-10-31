@@ -156,7 +156,7 @@ public class CourseControllerTest {
         mockMvc.perform(get("/courses/1").accept(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentType("application/json"))
-                .andExpect(jsonPath("$.message").value(is("No course found for course id 1")));
+                .andExpect(jsonPath("$.message").value(is("No course found for course courseId 1")));
         verify(courseService, times(1)).getCourse(anyString());
     }
     
@@ -166,7 +166,7 @@ public class CourseControllerTest {
         mockMvc.perform(get("/courses/1").accept(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentType("application/json"))
-                .andExpect(jsonPath("$.message").value(is("No course found for course id 1")));
+                .andExpect(jsonPath("$.message").value(is("No course found for course courseId 1")));
         verify(courseService, times(1)).getCourse(anyString());
     }
     
