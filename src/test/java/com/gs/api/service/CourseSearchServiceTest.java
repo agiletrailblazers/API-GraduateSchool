@@ -31,7 +31,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.client.RestOperations;
 
-import com.gs.api.domain.CourseCategory;
 import com.gs.api.domain.CourseSearchResponse;
 import com.gs.api.exception.NotFoundException;
 import com.gs.api.rest.object.CourseSearchContainer;
@@ -350,26 +349,7 @@ public class CourseSearchServiceTest {
                 any(Class.class), any(Map.class));
 
     }
-    
-    @Test
-    public void testCategorySubjectFacet() throws Exception {
-        List<String> categorySubjectFilter = new ArrayList<String>();
-        categorySubjectFilter.add("CategoryA/SubjectA");
-        categorySubjectFilter.add("12");
-        categorySubjectFilter.add("CategoryA/SubjectB");
-        categorySubjectFilter.add("4");
-        categorySubjectFilter.add("CategoryA/SubjectA|CategoryA/CategoryB");
-        categorySubjectFilter.add("12");
-        categorySubjectFilter.add("CategoryB/SubjectA");
-        categorySubjectFilter.add("101");
-        CourseCategory[] category = courseSearchService.getCategorySubjectFacets(categorySubjectFilter);
-        assertEquals(2, category.length);
-        assertEquals("CategoryA", category[0].getCategory());
-        assertEquals(2, category[0].getSubjectCount());
-        assertEquals("CategoryB", category[1].getCategory());
-        assertEquals(1, category[1].getSubjectCount());
-    }
-
+  
     private CourseSearchContainer createCourseContainerNothing() {
         final CourseSearchContainer container = new CourseSearchContainer();
         final CourseSearchGrouped grouped = new CourseSearchGrouped();
