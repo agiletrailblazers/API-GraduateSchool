@@ -157,12 +157,11 @@ public class CourseSearchServiceImpl implements CourseSearchService {
         return response;
     }
 
-    /**
-     * To get the list of categories from the category subject filters list
-     * @param categorySubjectFilter filter by this subject list
-     * @return CourseCategory
+    /*
+     * (non-Javadoc)
+     * @see com.gs.api.service.CourseSearchService#getCategorySubjectFacets(java.util.List)
      */
-    private CourseCategory[] getCategorySubjectFacets(List<String> categorySubjectFilter) {
+    public CourseCategory[] getCategorySubjectFacets(List<String> categorySubjectFilter) {
         List<CourseCategory> categories = new ArrayList<>();
         List<CourseSubject> subjects = new ArrayList<>();
         CourseCategory courseCategory = null;
@@ -171,7 +170,8 @@ public class CourseSearchServiceImpl implements CourseSearchService {
             //split the category and subject by the forward slash
             String[] categorySubjectItem = StringUtils.split(String.valueOf(categorySubjectFilter.get(categorySubject)), "/");
             //only add subject if it has a category/subject description
-            if (categorySubjectItem.length > 0) {
+            //exclude anything with a pipe (|) as this is an invalid facet from SOLR
+            if (categorySubjectItem.length > 0 && !categorySubjectItem[1].contains("|")) {
                 int subjectCount = Integer.valueOf(categorySubjectFilter.get(categorySubject + 1));
                 if (subjectCount > 0) {
                     //create a new subject if count is more than zero
