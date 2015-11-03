@@ -164,7 +164,7 @@
 		{
 			"id": "87953285-3873-c150-ffe7-54702e87ff3d",
 			"headers": "",
-			"url": "http://{{url}}:{{port}}/api/categories",
+			"url": "http://{{url}}:{{port}}/api/courses/categories",
 			"preRequestScript": "",
 			"pathVariables": {},
 			"method": "GET",
@@ -174,7 +174,7 @@
 			"tests": "tests[\"Status code is 200\"] = responseCode.code === 200;\n\n\nvar data = JSON.parse(responseBody);\ntests[\"An array is returned\"] = data.length > 0;\ntests[\"First item has a category\"] = data[0].category.length > 0;\ntests[\"First item has a subject array\"] = data[0].courseSubject.length > 0;",
 			"currentHelper": "normal",
 			"helperAttributes": {},
-			"time": 1445611454364,
+			"time": 1446572385866,
 			"name": "Categories",
 			"description": "Get course categories with a list o subjects in each category",
 			"collectionId": "9d1162ea-a7c2-3c92-20e3-44348f6407bb",

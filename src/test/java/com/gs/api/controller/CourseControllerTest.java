@@ -14,9 +14,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,14 +33,10 @@ import org.springframework.web.context.WebApplicationContext;
 
 import com.gs.api.domain.Course;
 import com.gs.api.domain.CourseSearchResponse;
-import com.gs.api.domain.Location;
-import com.gs.api.domain.SitePagesSearchResponse;
 import com.gs.api.helper.CourseTestHelper;
 import com.gs.api.service.CategoryService;
 import com.gs.api.service.CourseSearchService;
 import com.gs.api.service.CourseService;
-import com.gs.api.service.LocationService;
-import com.gs.api.service.SiteSearchService;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
@@ -65,13 +58,7 @@ public class CourseControllerTest {
     
     @Mock
     private CourseService courseService;
-    
-    @Mock
-    private LocationService locationService;
-    
-    @Mock
-    private SiteSearchService siteSearchService;
-    
+            
     @Mock
     private CategoryService categoryService;
     
@@ -83,12 +70,6 @@ public class CourseControllerTest {
 
     @After
     public void tearDown() throws Exception {
-    }
-
-    @Test
-    public void testPing() throws Exception {
-        mockMvc.perform(get("/ping").accept(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(status().isOk());
     }
 
     @Test
@@ -195,17 +176,6 @@ public class CourseControllerTest {
         String response = courseController.handleException(new Exception("test"));
         assertEquals("{\"message\":\"test\"}", response);
     }
-    
-    @Test
-    public void testGetLocations() throws Exception {
-        when(locationService.getLocations())
-            .thenReturn(createLocationResponse());
-        mockMvc.perform(get("/locations").accept(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].city").value(is("Washington")))
-                .andExpect(jsonPath("$[0].state").value(is("DC")));
-        verify(locationService, times(1)).getLocations();
-    }
 
     @Test
     public void testCourseGetActive() throws Exception {
@@ -246,35 +216,18 @@ public class CourseControllerTest {
                 .andExpect(jsonPath("$.numFound").value(is(1)));
         verify(courseSearchService, times(1)).searchCourses(anyString(), anyInt(), anyInt(), any(String[].class));
     }
-    
-    @Test
-    public void testSiteSearch() throws Exception {
-        when(siteSearchService.searchSite(anyString(), anyInt(), anyInt(), any(String[].class))).thenReturn(new SitePagesSearchResponse());
-        mockMvc.perform(get("/site?search=xxx").accept(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType("application/json"));
-        verify(siteSearchService, times(1)).searchSite(anyString(), anyInt(), anyInt(), any(String[].class));
-    }
-    
+        
     @Test
     public void testGetCategories() throws Exception {
         when(categoryService.getCategories())
             .thenReturn(CourseTestHelper.createCategoryResponse());
-        mockMvc.perform(get("/categories").accept(MediaType.APPLICATION_JSON_VALUE))
+        mockMvc.perform(get("/courses/categories").accept(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].category").value(is("Math")))
                 .andExpect(jsonPath("$[0].courseSubject[0].subject").value(is("Addition")));
         verify(categoryService, times(1)).getCategories();
     }
-    
-    //create object for mocks
-    private List<Location> createLocationResponse() {
-        List<Location> expect  = new ArrayList<Location>();
-        expect.add(new Location("Washington", "DC"));
-        expect.add(new Location("Philadelphia", "PA"));
-        return expect;
-    }
-
+  
     //create object for mocks
     private CourseSearchResponse createSearchResponse() {
         final CourseSearchResponse response = new CourseSearchResponse();
