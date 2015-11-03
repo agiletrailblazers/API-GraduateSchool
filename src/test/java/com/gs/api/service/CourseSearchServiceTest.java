@@ -349,7 +349,7 @@ public class CourseSearchServiceTest {
                 any(Class.class), any(Map.class));
 
     }
-
+  
     private CourseSearchContainer createCourseContainerNothing() {
         final CourseSearchContainer container = new CourseSearchContainer();
         final CourseSearchGrouped grouped = new CourseSearchGrouped();
