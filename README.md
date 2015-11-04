@@ -1,4 +1,4 @@
-# API-GraduateSchool
+# API-GraduateSchool [![Build Status](http://ec2-54-165-8-77.compute-1.amazonaws.com/buildStatus/icon?job=Dev-Env-API-GraduateSchool)](http://ec2-54-165-8-77.compute-1.amazonaws.com/job/Dev-Env-API-GraduateSchool)
 Java/Spring API Layer for Graduate School
 
 <h2>Runs on</h2>
