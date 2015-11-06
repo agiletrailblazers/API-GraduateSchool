@@ -19,6 +19,8 @@ public class Course {
     private CourseLength length;
     private String segment;
     private CourseDescription description;
+    private String[] category;
+    private String[] categorySubject;
 
     public Course() {
     }
@@ -123,6 +125,22 @@ public class Course {
 
     public void setDescription(CourseDescription description) {
         this.description = description;
+    }
+
+    public String[] getCategory() {
+        return category;
+    }
+
+    public void setCategory(String[] category) {
+        this.category = category;
+    }
+
+    public String[] getCategorySubject() {
+        return categorySubject;
+    }
+
+    public void setCategorySubject(String[] categorySubject) {
+        this.categorySubject = categorySubject;
     }
 
 }

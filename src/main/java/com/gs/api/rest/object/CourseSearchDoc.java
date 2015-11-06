@@ -11,7 +11,9 @@ public class CourseSearchDoc {
     private String course_desc_obj;
     private String course_description;
     private String course_notes;
-
+    private String[] category_subject;
+    private String[] category;
+    
     public String getCourse_name() {
         return course_name;
     }
@@ -58,6 +60,22 @@ public class CourseSearchDoc {
 
     public void setCourse_code(String course_code) {
         this.course_code = course_code;
+    }
+
+    public String[] getCategory_subject() {
+        return category_subject;
+    }
+
+    public void setCategory_subject(String[] category_subject) {
+        this.category_subject = category_subject;
+    }
+
+    public String[] getCategory() {
+        return category;
+    }
+
+    public void setCategory(String[] category) {
+        this.category = category;
     }
 
 }

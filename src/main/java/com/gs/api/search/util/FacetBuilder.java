@@ -3,8 +3,10 @@ package com.gs.api.search.util;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,7 +36,7 @@ public class FacetBuilder {
             String[] categorySubjectItem = StringUtils.split(String.valueOf(categorySubjectFilter.get(categorySubject)), "/");
             //only add subject if it has a category/subject description
             //exclude anything with a pipe (|) as this is an invalid facet from SOLR
-            if (categorySubjectItem.length > 0 && !categorySubjectItem[1].contains("|")) {
+            if (categorySubjectItem.length > 0 && !categorySubjectConsideredInvalid(categorySubjectItem[1])) {
                 int subjectCount = Integer.valueOf(categorySubjectFilter.get(categorySubject + 1));
                 if (subjectCount > 0) {
                     //create a new subject if count is more than zero
@@ -87,6 +89,42 @@ public class FacetBuilder {
             }
         }
         return out;
+    }
+    
+    /**
+     * For reasons unknown, SOLR when it creates a multivalued field by
+     * splitting a delimited field leaves the original un-split value in the
+     * array. Since for category subject we are delimited by a pipe we therefore
+     * need to remove any element of the array that has a pipe.
+     * 
+     * @param categorySubjectItem
+     * @return boolean
+     */
+    private boolean categorySubjectConsideredInvalid(String categorySubject) {
+        if (null != categorySubject) {
+            return categorySubject.contains("|");
+        }
+        return false;
+    }
+    
+    /**
+     * Removes any invalid category subject elements - see categorySubjectConsideredInvalid() for details.
+     * Also, this removes duplicates
+     * @param categorySubject
+     * @return String[]
+     */
+    public String[] removeInvalidEntryAndDups(String[] categorySubject) {
+        Set<String> set = new HashSet<String>();
+        if (null != categorySubject && categorySubject.length > 0) {
+            
+            for (String string : categorySubject) {
+                if (!categorySubjectConsideredInvalid(string)) {
+                    set.add(string);
+                }
+            }
+        }
+        String[] result = new String[set.size()];
+        return set.toArray(result);
     }
     
 }
