@@ -1,9 +1,12 @@
 package com.gs.api.search.util;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.After;
 import org.junit.Before;
@@ -51,6 +54,42 @@ public class FacetBuilderTest {
         assertEquals(2, category[0].getSubjectCount());
         assertEquals("CategoryB", category[1].getCategory());
         assertEquals(1, category[1].getSubjectCount());
+    }
+    
+    @Test
+    public void testBuildLocationFacets() throws Exception {
+        Map<String, Integer> map = new HashMap<>();
+        map.put("Washington, DC", 10);
+        map.put("Philadelphia, PA", 13);
+        map.put("Hazelton, PA", 0);
+        map.put("Exclude,PA", 999);
+        Map<String, Integer> result = facetBuilder.buildLocationFacets(map);
+        assertNotNull(result);
+        assertEquals(2, result.size());
+    }  
+    
+    @Test
+    public void testRemoveInvalidEntryAndDups() throws Exception {      
+        String[] categorySubject = new String[] {"Dog","Cat","Dog","Dog|Cat", null};
+        String[] result = facetBuilder.removeInvalidEntryAndDups(categorySubject);
+        assertNotNull(result);
+        assertEquals(3, result.length);
+    }
+    
+    @Test
+    public void testRemoveInvalidEntryAndDups_Null() throws Exception {
+        String[] categorySubject = null;
+        String[] result = facetBuilder.removeInvalidEntryAndDups(categorySubject);
+        assertNotNull(result);
+        assertEquals(0, result.length);
+    }
+    
+    @Test
+    public void testRemoveInvalidEntryAndDups_EmptyArray() throws Exception {
+        String[] categorySubject = new String[0];
+        String[] result = facetBuilder.removeInvalidEntryAndDups(categorySubject);
+        assertNotNull(result);
+        assertEquals(0, result.length);
     }
     
 }

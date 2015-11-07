@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestOperations;
 
 import com.gs.api.domain.Course;
+import com.gs.api.domain.CourseDescription;
 import com.gs.api.domain.CourseSearchResponse;
 import com.gs.api.exception.NotFoundException;
 import com.gs.api.rest.object.CourseSearchContainer;
@@ -108,8 +109,14 @@ public class CourseSearchServiceImpl implements CourseSearchService {
         if (CollectionUtils.isNotEmpty(docs)) {
             for (CourseSearchDoc doc : docs) {
                 String courseId = doc.getCourse_id();
-                Course newCourse = new Course(courseId, doc.getCourse_code(), doc.getCourse_name(),
-                        doc.getCourse_description());
+                Course newCourse = new Course();
+                newCourse.setId(courseId);
+                newCourse.setCode(doc.getCourse_code());
+                newCourse.setTitle(doc.getCourse_name());
+                CourseDescription description = new CourseDescription(doc.getCourse_description(), null);
+                newCourse.setDescription(description);
+                newCourse.setCategory(facetBuilder.removeInvalidEntryAndDups(doc.getCategory()));
+                newCourse.setCategorySubject(facetBuilder.removeInvalidEntryAndDups(doc.getCategory_subject()));
                 courses.add(newCourse);
 
                 // if the course id returned is exactly the same as the search
@@ -142,8 +149,9 @@ public class CourseSearchServiceImpl implements CourseSearchService {
         // Add a set facets (create method to populate facets, take response and
         // iterate through... build and populate.
         if (null != container.getRestFacetCount()) {
-            response.setLocationFacets(facetBuilder.buildLocationFacets(
-                    arrayToMap(container.getRestFacetCount().getRestFacetFields().getCityState())));
+            Map<String,Integer> locatonMap = arrayToMap(container.getRestFacetCount().getRestFacetFields().getCityState());
+            locatonMap = facetBuilder.buildLocationFacets(locatonMap);
+            response.setLocationFacets(locatonMap);
             response.setStatusFacets(
                     arrayToMap(container.getRestFacetCount().getRestFacetFields().getStatus()));
             if (null != container.getRestFacetCount().getRestFacetFields().getCategorysubject()) {

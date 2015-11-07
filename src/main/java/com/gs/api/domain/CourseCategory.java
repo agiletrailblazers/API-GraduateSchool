@@ -33,12 +33,29 @@ public class CourseCategory {
     }
     
     /**
-     * Convenience getter for the count
-     * @return int
+     * Convenience getter for the count of the number of subjects (not to be confused with count)
+     * @return int subject count
      */
     public int getSubjectCount() {
         if (null != courseSubject) {
             return courseSubject.length;
+        }
+        else {
+            return 0;
+        }
+    }
+    
+    /**
+     * Get a total count of the number of courses for all subjects in this category
+     * @return int count
+     */
+    public int getCount() {
+        if (null != courseSubject) {
+            int count = 0;
+            for (CourseSubject subject : courseSubject) {
+                count = count + subject.getCount();
+            }
+            return count;
         }
         else {
             return 0;

@@ -232,7 +232,7 @@ public class CourseSearchServiceTest {
         assertEquals(1, response.getNumFound());
         assertEquals("government", response.getCourses()[0].getId());
         assertTrue(response.isExactMatch());
-        assertEquals(response.getLocationFacets().size(), 2);
+        assertEquals(2, response.getLocationFacets().size());
         verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class), any(Map.class));
     }
     
@@ -253,7 +253,7 @@ public class CourseSearchServiceTest {
         assertEquals(1, response.getNumFound());
         assertEquals("government", response.getCourses()[0].getId());
         assertTrue(response.isExactMatch());
-        assertEquals(response.getLocationFacets().size(), 2);
+        assertEquals(2, response.getLocationFacets().size());
         verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class), any(Map.class));
     }
     
@@ -274,7 +274,7 @@ public class CourseSearchServiceTest {
         assertEquals(1, response.getNumFound());
         assertEquals("government", response.getCourses()[0].getId());
         assertTrue(response.isExactMatch());
-        assertEquals(response.getLocationFacets().size(), 2);
+        assertEquals(2, response.getLocationFacets().size());
         verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class), any(Map.class));
     }
     
@@ -349,7 +349,7 @@ public class CourseSearchServiceTest {
                 any(Class.class), any(Map.class));
 
     }
-  
+        
     private CourseSearchContainer createCourseContainerNothing() {
         final CourseSearchContainer container = new CourseSearchContainer();
         final CourseSearchGrouped grouped = new CourseSearchGrouped();
