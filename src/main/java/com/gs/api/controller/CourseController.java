@@ -1,6 +1,5 @@
 package com.gs.api.controller;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -11,39 +10,28 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.beans.propertyeditors.StringArrayPropertyEditor;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.gs.api.domain.Course;
 import com.gs.api.domain.CourseCategory;
 import com.gs.api.domain.CourseSearchResponse;
 import com.gs.api.domain.CourseSession;
-import com.gs.api.domain.Location;
-import com.gs.api.domain.SitePagesSearchResponse;
 import com.gs.api.exception.NotFoundException;
 import com.gs.api.service.CategoryService;
 import com.gs.api.service.CourseSearchService;
 import com.gs.api.service.CourseService;
-import com.gs.api.service.LocationService;
-import com.gs.api.service.SiteSearchService;
 
 @Configuration
 @RestController
-public class CourseController {
+@RequestMapping("/courses")
+public class CourseController extends BaseController {
 
     static final Logger logger = LoggerFactory.getLogger(CourseController.class);
 
@@ -54,43 +42,10 @@ public class CourseController {
     private CourseService courseService;
 
     @Autowired
-    private LocationService locationService;
-
-    @Autowired
-    private SiteSearchService siteSearchService;
-
-    @Autowired
     private CategoryService categoryService;
 
     @Value("${course.search.page.size}")
     private int searchPageSize;
-    
-    @Value("${property.name}")
-    private String propertyName;
-    
-
-    /**
-     * A simple "is alive" API.
-     *
-     * @return Empty response with HttpStatus of OK
-     * @throws Exception
-     */
-    @RequestMapping(value = "/ping", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<HttpStatus> ping() throws Exception {
-        logger.debug("Service ping initiated");
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    /**
-     * A simple API to tell us which environment it is 
-     * @return
-     * @throws Exception
-     */
-    @RequestMapping(value = "/env", method = RequestMethod.GET, produces = MediaType.TEXT_PLAIN_VALUE)
-    public @ResponseBody String env() throws Exception {
-        logger.debug("Service env initiated");
-        return propertyName;
-    }
     
     /**
      * Given search criteria for a course return the results.
@@ -98,7 +53,7 @@ public class CourseController {
      * @return SearchResponse
      * @throws Exception
      */
-    @RequestMapping(value = "/courses", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody CourseSearchResponse searchCourse(
             @RequestParam Map<String,String> allRequestParams,
             @RequestParam(required = false) String search,
@@ -136,7 +91,7 @@ public class CourseController {
      * @return Course
      * @throws Exception
      */
-    @RequestMapping(value = "/courses/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody Course getCourse(@PathVariable("id") String id) throws Exception {
         logger.debug("Course details initiated with  course courseId: " + id);
         final Course course = courseService.getCourse(id);
@@ -153,7 +108,7 @@ public class CourseController {
      * @return List of Course Sessions
      * @throws Exception
      */
-    @RequestMapping(value = "/courses/{id}/sessions", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/{id}/sessions", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody List<CourseSession> getSessions(@PathVariable("id") String id) throws Exception {
         logger.debug("Course sessions initiated with  course courseId: " + id);
         final List<CourseSession> sessions = courseService.getSessions(id);
@@ -162,18 +117,6 @@ public class CourseController {
             throw new NotFoundException("No sessions found for course courseId " + id);
         }
         return sessions;
-    }
-
-    /**
-     * Get a list of active locations
-     *
-     * @return SearchResponse
-     * @throws Exception
-     */
-    @RequestMapping(value = "/locations", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody List<Location> getLocations() throws Exception {
-        logger.debug("Location search initiated");
-        return locationService.getLocations();
     }
 
     /**
@@ -188,75 +131,4 @@ public class CourseController {
         return categoryService.getCategories();
     }
 
-    /**
-     * Search site by keyword
-     * @param search what is my keyword search
-     * @param page what page of results am I on
-     * @param numRequested number of results requested
-     * @return Site Search Response
-     * @throws Exception
-     */
-    @RequestMapping(value = "/site", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody SitePagesSearchResponse searchSite(
-            @RequestParam(required = false) String search,
-            @RequestParam(required = false) String page,
-            @RequestParam(required = false) String numRequested,
-            @RequestParam(required = false) String[] filter) throws Exception {
-        logger.info("Site Search API initiated");
-        return siteSearchService.searchSite(search,
-                NumberUtils.toInt(page, 1),
-                NumberUtils.toInt(numRequested, searchPageSize),
-                filter);
-    }
-
-    /**
-     * Return json formatted error response for any custom "not found" errors
-     * @return ResponseBody
-     */
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    @ExceptionHandler({ NotFoundException.class })
-    @ResponseBody
-    public String handleNotFoundException(Exception ex) {
-        logger.error(ex.getMessage());
-        final StringBuffer response = new StringBuffer();
-        response.append("{\"message\":\"");
-        response.append(ex.getMessage());
-        response.append("\"}");
-        return response.toString();
-    }
-
-    /**
-     * Return json formatted error response for any internal server errors
-     * @return ResponseBody
-     */
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    @ExceptionHandler({ Exception.class })
-    @ResponseBody
-    public String handleException(Exception ex) {
-        logger.error(ex.getMessage());
-        final StringBuffer response = new StringBuffer();
-        response.append("{\"message\":\"");
-        response.append(ex.getMessage());
-        response.append("\"}");
-        return response.toString();
-    }
-
-    /**
-     * Return json formatted error response for bad request
-     *
-     * @return ResponseBody
-     */
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler({ HttpMessageNotReadableException.class })
-    @ResponseBody
-    public String handleValidationException(HttpMessageNotReadableException ex) throws IOException {
-        // method called when a input validation failure occurs
-        return "{\"message\": \"Invalid Request \"}";
-    }
-
-    @InitBinder
-    public void initBinder(WebDataBinder binder) {
-        binder.registerCustomEditor(
-            String[].class, new StringArrayPropertyEditor(null));
-    }
 }
