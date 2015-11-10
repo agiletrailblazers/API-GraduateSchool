@@ -42,7 +42,7 @@ public class SiteController {
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String page,
             @RequestParam(required = false) String numRequested,
-            @RequestParam(required = false) String[] filter) throws Exception {
+            @RequestParam(required = false) String filter) throws Exception {
         logger.info("Site Search API initiated");
         return siteSearchService.searchSite(search,
                 NumberUtils.toInt(page, 1),

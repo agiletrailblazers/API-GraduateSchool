@@ -19,8 +19,10 @@ public class SearchUrlBuilder {
         StringBuffer filterString = new StringBuffer();
         if (null != filter) {
             for (String filterParam : filter) {
-                filterParam = StringUtils.replace(filterParam,":",":\"");
-                filterString.append("&fq=").append(filterParam).append("\"");
+                if (filterParam != null) {
+                    filterParam = StringUtils.replace(filterParam,":",":\"");
+                    filterString.append("&fq=").append(filterParam).append("\"");
+                }
             }
         }
 

@@ -65,11 +65,11 @@ public class SiteControllerTest {
     
     @Test
     public void testSiteSearch() throws Exception {
-        when(siteSearchService.searchSite(anyString(), anyInt(), anyInt(), any(String[].class))).thenReturn(new SitePagesSearchResponse());
+        when(siteSearchService.searchSite(anyString(), anyInt(), anyInt(), any(String.class))).thenReturn(new SitePagesSearchResponse());
         mockMvc.perform(get("/site?search=xxx").accept(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/json"));
-        verify(siteSearchService, times(1)).searchSite(anyString(), anyInt(), anyInt(), any(String[].class));
+        verify(siteSearchService, times(1)).searchSite(anyString(), anyInt(), anyInt(), any(String.class));
     }
     
 }

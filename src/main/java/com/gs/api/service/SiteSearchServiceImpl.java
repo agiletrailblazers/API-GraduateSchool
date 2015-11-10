@@ -58,11 +58,11 @@ public class SiteSearchServiceImpl implements SiteSearchService {
      *
      * @return SearchResponse
     */
-    public SitePagesSearchResponse searchSite(String search, int currentPage, int numRequested, String[] filter)
+    public SitePagesSearchResponse searchSite(String search, int currentPage, int numRequested, String filter)
             throws NotFoundException {
         int numFound = 0;
         int pageSize = 0;
-        String searchString = searchServiceHelper.build(siteSearchSolrQuery,search, currentPage, numRequested, filter);
+        String searchString = searchServiceHelper.build(siteSearchSolrQuery,search, currentPage, numRequested, new String[] {filter});
         logger.info(searchString);
         HttpEntity<String> request = httpRequestBuilder.createRequestHeader();
         ResponseEntity<SiteSearchContainer> responseEntity;
