@@ -63,7 +63,7 @@ public class SiteSearchServiceTest {
                 createSiteContainer("ABC123", 0, 224, 100), HttpStatus.OK);
         when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
                 .thenReturn(responseEntity);
-        SitePagesSearchResponse response = siteSearchService.searchSite("", 1, 100, new String[0]);
+        SitePagesSearchResponse response = siteSearchService.searchSite("", 1, 100, new String());
         assertNotNull(response);
         assertEquals(224, response.getNumFound());
         assertEquals(1, response.getCurrentPage());
@@ -82,7 +82,7 @@ public class SiteSearchServiceTest {
                 createSiteContainerNothing(), HttpStatus.OK);
         when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
                 .thenReturn(responseEntity);
-        SitePagesSearchResponse response = siteSearchService.searchSite("find-nothing", 0, 0, new String[0]);
+        SitePagesSearchResponse response = siteSearchService.searchSite("find-nothing", 0, 0, new String());
         assertNotNull(response);
         assertEquals(0, response.getNumFound());
         assertEquals(0, response.getCurrentPage());
@@ -100,7 +100,7 @@ public class SiteSearchServiceTest {
                 createSiteContainer("XYZ", 0, 2, 2), HttpStatus.OK);
         when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
                 .thenReturn(responseEntity);
-        SitePagesSearchResponse response = siteSearchService.searchSite("ABC123", 0, 100, new String[0]);
+        SitePagesSearchResponse response = siteSearchService.searchSite("ABC123", 0, 100, new String());
         assertNotNull(response);
         assertEquals(2, response.getNumFound());
         verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class),
@@ -116,7 +116,7 @@ public class SiteSearchServiceTest {
                 createSiteContainer("ABC123", 100, 162, 100), HttpStatus.OK);
         when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
                 .thenReturn(responseEntity);
-        SitePagesSearchResponse response = siteSearchService.searchSite("stuff", 2, 100, new String[0]);
+        SitePagesSearchResponse response = siteSearchService.searchSite("stuff", 2, 100, new String());
         assertNotNull(response);
         assertEquals(162, response.getNumFound());
         assertEquals(2, response.getCurrentPage());
@@ -132,7 +132,7 @@ public class SiteSearchServiceTest {
         when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
                 .thenThrow(new RuntimeException("I didn't expect this to happen"));
         try {
-            siteSearchService.searchSite("find-nothing", 0, 100, new String[0]);
+            siteSearchService.searchSite("find-nothing", 0, 100, new String());
             assertTrue(false);   //fail test as we should not get here
         } catch (Exception e) {
             assertTrue(e instanceof NotFoundException);
@@ -151,7 +151,7 @@ public class SiteSearchServiceTest {
                 createSiteContainerWithNullPageTitle("ABC123", 0, 1, 1), HttpStatus.OK);
         when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class)))
                 .thenReturn(responseEntity);
-        SitePagesSearchResponse response = siteSearchService.searchSite("stuff", 2, 100, new String[0]);
+        SitePagesSearchResponse response = siteSearchService.searchSite("stuff", 2, 100, new String());
         assertNotNull(response);
         assertEquals(1, response.getNumFound());
         assertEquals(2, response.getCurrentPage());
