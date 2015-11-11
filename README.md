@@ -47,7 +47,16 @@ API-GraduateSchool/src/doc/local.postman_environment
 ```
 - Set your Environment (upper right corner - local, dev, etc)
 - Run any of the APIs
-
+<h3>Running API Tests using Newman</h3>
+Newman is the command line runner for Postman tests (Postman tests require jetpacks addon).
+```
+> cd src/doc
+> newman -c GraduateSchool-API.json.postman_collection -e local.postman_environment
+```
+To install newman run:
+```
+> brew install newman -g
+```
 
 <h2>Solr Installation for Tomcat 7 and JDK8</h2>
 -Please follow the steps in this document to install Solr
