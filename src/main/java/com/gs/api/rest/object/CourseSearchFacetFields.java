@@ -12,6 +12,8 @@ public class CourseSearchFacetFields {
     private List<String> status;
     @JsonProperty("category_subject")
     private List<String> categorysubject;
+    @JsonProperty("delivery_method")
+    private List<String> deliveryMethod;
 
     public List<String> getCityState() {
         return cityState;
@@ -35,6 +37,14 @@ public class CourseSearchFacetFields {
 
     public void setCategorysubject(List<String> categorysubject) {
         this.categorysubject = categorysubject;
+    }
+
+    public List<String> getDeliveryMethod() {
+        return deliveryMethod;
+    }
+
+    public void setDeliveryMethod(List<String> deliveryMethod) {
+        this.deliveryMethod = deliveryMethod;
     }
 
 

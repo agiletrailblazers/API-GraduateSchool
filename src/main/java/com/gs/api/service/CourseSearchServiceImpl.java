@@ -158,6 +158,10 @@ public class CourseSearchServiceImpl implements CourseSearchService {
                 response.setCategorySubjectFacets(facetBuilder.buildCategorySubjectFacets(
                         container.getRestFacetCount().getRestFacetFields().getCategorysubject()));
             }
+            if (null != container.getRestFacetCount().getRestFacetFields().getDeliveryMethod()) {
+                response.setDilveryMethodFacets(
+                        arrayToMap(container.getRestFacetCount().getRestFacetFields().getDeliveryMethod()));
+            }
         }
         return response;
     }    

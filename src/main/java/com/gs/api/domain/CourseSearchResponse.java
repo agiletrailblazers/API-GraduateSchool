@@ -24,6 +24,8 @@ public class CourseSearchResponse {
     private Map<String, Integer> locationFacets;
     private Map<String, Integer> statusFacets;
     private CourseCategory[] categorySubjectFacets;
+
+    private Map<String, Integer> deliveryMethodFacets;
     public boolean isExactMatch() {
         return exactMatch;
     }
@@ -90,6 +92,14 @@ public class CourseSearchResponse {
 
     public Map<String, Integer> getStatusFacets() {
         return statusFacets;
+    }
+
+    public Map<String, Integer> getDeliveryMethodFacets() {
+        return deliveryMethodFacets;
+    }
+
+    public void setDilveryMethodFacets(Map<String, Integer> deliveryMethodFacets) {
+        this.deliveryMethodFacets = deliveryMethodFacets;
     }
 
     public void setStatusFacets(Map<String, Integer> statusFacets) {
