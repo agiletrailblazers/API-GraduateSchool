@@ -77,7 +77,8 @@ public class CourseSearchServiceTest {
         assertEquals("ABC123", response.getCourses()[0].getId());
         assertFalse(response.isExactMatch());
         assertEquals(3, response.getTotalPages());
-        verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class), any(Map.class));
+        verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class),
+                any(Class.class), any(Map.class));
 
     }
 
@@ -349,7 +350,45 @@ public class CourseSearchServiceTest {
                 any(Class.class), any(Map.class));
 
     }
-        
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testSearch_WithDeliveryMethodParams() throws Exception {
+
+        ResponseEntity<CourseSearchContainer> responseEntity = new ResponseEntity<CourseSearchContainer>(
+                createCourseContainerwithDeliveryMethodFacet("ABC123001", 0, 1), HttpStatus.OK);
+        String[] facetParams = {"delivery_method:Classroom - Daytime"};
+        when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class), any(Map.class)))
+                .thenReturn(responseEntity);
+        CourseSearchResponse response = courseSearchService.searchCourses("ABC123", 0, 100,facetParams);
+        assertNotNull(response);
+        assertEquals(1, response.getNumFound());
+        assertEquals("ABC123001", response.getCourses()[0].getId());
+        assertTrue(response.isExactMatch());
+        verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class), any(Map.class));
+
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testSearch_WithEmptyDeliveryMethodFacetParams() throws Exception {
+
+        ResponseEntity<CourseSearchContainer> responseEntity = new ResponseEntity<CourseSearchContainer>(
+                createCourseContainerwithEmptyDilveryMethodFacet("ABC123001", 0, 1), HttpStatus.OK);
+        String[] facetParams = { "delivery_method:" };
+        when(restTemplate
+                .exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class), any(Map.class)))
+                .thenReturn(responseEntity);
+        CourseSearchResponse response = courseSearchService.searchCourses("ABC123", 0, 100, facetParams);
+        assertNotNull(response);
+        assertEquals(1, response.getNumFound());
+        assertEquals("ABC123001", response.getCourses()[0].getId());
+        assertTrue(response.isExactMatch());
+        verify(restTemplate, times(1))
+                .exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class), any(Map.class));
+    }
+
+
     private CourseSearchContainer createCourseContainerNothing() {
         final CourseSearchContainer container = new CourseSearchContainer();
         final CourseSearchGrouped grouped = new CourseSearchGrouped();
@@ -424,6 +463,7 @@ public class CourseSearchServiceTest {
     private CourseSearchContainer createCourseContainerwithCategorySubjectFacet(String id, int start, int numFound) {
         final CourseSearchContainer container = new CourseSearchContainer();
         final CourseSearchGrouped grouped = new CourseSearchGrouped();
+
         final CourseSearchGroup group = new CourseSearchGroup();
         final CourseSearchDocList docList = new CourseSearchDocList();
         final CourseSearchRestFacetCount restFacetCount = new CourseSearchRestFacetCount();
@@ -440,6 +480,77 @@ public class CourseSearchServiceTest {
         courseCategoryList.add("Math/Subtraction");
         courseCategoryList.add("0");
         restFacetFields.setCategorysubject(courseCategoryList);
+        restFacetCount.setCourseRestFacetFields(restFacetFields);
+        List<CourseSearchDoc> docs = new ArrayList<CourseSearchDoc>();
+        for (int i = 0; i < numFound; i++) {
+            CourseSearchDoc doc = new CourseSearchDoc();
+            doc.setCourse_id(id);
+            doc.setCourse_name("Course Name for " + id);
+            docs.add(doc);
+        }
+        docList.setDocs(docs);
+        docList.setNumFound(numFound);
+        docList.setStart(start);
+        group.setDoclist(docList);
+        group.setMatches(numFound);
+        group.setNgroups(numFound);
+        grouped.setGroup(group);
+        container.setGrouped(grouped);
+        container.setCourseRestFacetCount(restFacetCount);
+        return container;
+    }
+
+    private CourseSearchContainer createCourseContainerwithEmptyDilveryMethodFacet(String id, int start, int numFound) {
+        final CourseSearchContainer container = new CourseSearchContainer();
+        final CourseSearchGrouped grouped = new CourseSearchGrouped();
+        final CourseSearchGroup group = new CourseSearchGroup();
+        final CourseSearchDocList docList = new CourseSearchDocList();
+        final CourseSearchRestFacetCount restFacetCount = new CourseSearchRestFacetCount();
+        CourseSearchFacetFields   restFacetFields= new CourseSearchFacetFields();
+        List<String> list = new ArrayList<String>();
+        list.add("");
+        list.add("");
+        list.add("");
+        list.add("");
+        list.add("");
+        list.add("");
+        restFacetFields.setDeliveryMethod(list);
+        restFacetCount.setCourseRestFacetFields(restFacetFields);
+        List<CourseSearchDoc> docs = new ArrayList<CourseSearchDoc>();
+        for (int i = 0; i < numFound; i++) {
+            CourseSearchDoc doc = new CourseSearchDoc();
+            doc.setCourse_id(id);
+            doc.setCourse_name("Course Name for " + id);
+            docs.add(doc);
+        }
+        docList.setDocs(docs);
+        docList.setNumFound(numFound);
+        docList.setStart(start);
+        group.setDoclist(docList);
+        group.setMatches(numFound);
+        group.setNgroups(numFound);
+        grouped.setGroup(group);
+        container.setGrouped(grouped);
+        container.setCourseRestFacetCount(restFacetCount);
+        return container;
+    }
+
+    private CourseSearchContainer createCourseContainerwithDeliveryMethodFacet(String id, int start, int numFound) {
+        final CourseSearchContainer container = new CourseSearchContainer();
+        final CourseSearchGrouped grouped = new CourseSearchGrouped();
+
+        final CourseSearchGroup group = new CourseSearchGroup();
+        final CourseSearchDocList docList = new CourseSearchDocList();
+        final CourseSearchRestFacetCount restFacetCount = new CourseSearchRestFacetCount();
+        CourseSearchFacetFields   restFacetFields= new CourseSearchFacetFields();
+        List<String> list = new ArrayList<String>();
+        list.add("Classroom - Daytime");
+        list.add("1");
+        list.add("Classroom - Evening");
+        list.add("2");
+        list.add("Online Learning");
+        list.add("3");
+        restFacetFields.setDeliveryMethod(list);
         restFacetCount.setCourseRestFacetFields(restFacetFields);
         List<CourseSearchDoc> docs = new ArrayList<CourseSearchDoc>();
         for (int i = 0; i < numFound; i++) {
@@ -490,6 +601,5 @@ public class CourseSearchServiceTest {
         container.setCourseRestFacetCount(restFacetCount);
         return container;
     }
-
 
 }
