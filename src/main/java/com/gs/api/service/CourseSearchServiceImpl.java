@@ -158,6 +158,10 @@ public class CourseSearchServiceImpl implements CourseSearchService {
                 response.setCategorySubjectFacets(facetBuilder.buildCategorySubjectFacets(
                         container.getRestFacetCount().getRestFacetFields().getCategorysubject()));
             }
+            if (null != container.getRestFacetCount().getRestFacetFields().getDeliveryMethod()) {
+                response.setDilveryMethodFacets(
+                        arrayToMap(container.getRestFacetCount().getRestFacetFields().getDeliveryMethod()));
+            }
         }
         return response;
     }    
@@ -173,7 +177,9 @@ public class CourseSearchServiceImpl implements CourseSearchService {
         Map<String, Integer> locations = new HashMap<>();
         if (list != null) {
             for (int i = 0; i < list.size(); i = i + 2) {
-                locations.put(String.valueOf(list.get(i)), Integer.valueOf(list.get(i + 1)));
+                if (StringUtils.isNotEmpty(list.get(i + 1))) {
+                    locations.put(String.valueOf(list.get(i)), Integer.valueOf(list.get(i + 1)));
+                }
             }
         }
         return locations;
