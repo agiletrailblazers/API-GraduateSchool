@@ -33,7 +33,7 @@ public class FacetBuilder {
         CourseSubject subject;
         for (int categorySubject = 0; categorySubject < categorySubjectFilter.size(); categorySubject = categorySubject + 2) {
             //split the category and subject by the forward slash
-            String[] categorySubjectItem = StringUtils.split(String.valueOf(categorySubjectFilter.get(categorySubject)), "/");
+            String[] categorySubjectItem = StringUtils.split(String.valueOf(categorySubjectFilter.get(categorySubject)), "~");
             //only add subject if it has a category/subject description
             //exclude anything with a pipe (|) as this is an invalid facet from SOLR
             if (categorySubjectItem.length > 0 && !categorySubjectConsideredInvalid(categorySubjectItem[1])) {

@@ -40,13 +40,13 @@ public class FacetBuilderTest {
     @Test
     public void testCategorySubjectFacet() throws Exception {
         List<String> categorySubjectFilter = new ArrayList<String>();
-        categorySubjectFilter.add("CategoryA/SubjectA");
+        categorySubjectFilter.add("CategoryA~SubjectA");
         categorySubjectFilter.add("12");
-        categorySubjectFilter.add("CategoryA/SubjectB");
+        categorySubjectFilter.add("CategoryA~SubjectB");
         categorySubjectFilter.add("4");
-        categorySubjectFilter.add("CategoryA/SubjectA|CategoryA/CategoryB");
+        categorySubjectFilter.add("CategoryA~SubjectA|CategoryA~CategoryB");
         categorySubjectFilter.add("12");
-        categorySubjectFilter.add("CategoryB/SubjectA");
+        categorySubjectFilter.add("CategoryB~SubjectA");
         categorySubjectFilter.add("101");
         CourseCategory[] category = facetBuilder.buildCategorySubjectFacets(categorySubjectFilter);
         assertEquals(2, category.length);
