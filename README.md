@@ -55,7 +55,7 @@ Newman is the command line runner for Postman tests (Postman tests require jetpa
 ```
 To install newman run:
 ```
-> brew install newman -g
+> npm install -g newman
 ```
 
 <h2>Solr Installation for Tomcat 7 and JDK8</h2>
