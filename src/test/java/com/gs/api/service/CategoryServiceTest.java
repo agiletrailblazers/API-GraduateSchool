@@ -1,6 +1,10 @@
 package com.gs.api.service;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -16,8 +20,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.gs.api.dao.CategoryDAO;
 import com.gs.api.domain.CourseCategory;
+import com.gs.api.domain.CourseSearchResponse;
 import com.gs.api.helper.CourseTestHelper;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -29,7 +33,7 @@ public class CategoryServiceTest {
     private CategoryService categoryService;
     
     @Mock
-    private CategoryDAO categoryDAO;
+    private CourseSearchService courseSearchService;
 
     @Before
     public void setUp() throws Exception {
@@ -42,13 +46,23 @@ public class CategoryServiceTest {
 
     @Test
     public void testGetCategory_ResultsFound() throws Exception {
-        when(categoryDAO.getCategories()).thenReturn(CourseTestHelper.createCategoryResponse());
+        CourseSearchResponse response = new CourseSearchResponse();
+        response.setCategorySubjectFacets(CourseTestHelper.createCategoryResponse());
+        when(courseSearchService.searchCourses(anyString(), anyInt(), anyInt(), any())).thenReturn(response);
         CourseCategory[] actual = categoryService.getCategories();
         assertEquals(1, actual.length);
         assertEquals(actual[0].getCategory(), "Math");
         assertEquals(actual[0].getCourseSubject()[0].getSubject(), "Addition");
-        verify(categoryDAO, times(1)).getCategories();
-
+        verify(courseSearchService, times(1)).searchCourses(anyString(), anyInt(), anyInt(), any());
+    }
+    
+    @Test
+    public void testGetCategory_NoResultsFound() throws Exception {
+        when(courseSearchService.searchCourses(anyString(), anyInt(), anyInt(), any())).thenReturn(null);
+        CourseCategory[] actual = categoryService.getCategories();
+        assertNotNull(actual);
+        assertEquals(0, actual.length);
+        verify(courseSearchService, times(1)).searchCourses(anyString(), anyInt(), anyInt(), any());
     }
 
 }
