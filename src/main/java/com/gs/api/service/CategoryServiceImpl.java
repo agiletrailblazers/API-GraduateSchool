@@ -3,21 +3,32 @@ package com.gs.api.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.gs.api.dao.CategoryDAO;
+import com.googlecode.ehcache.annotations.Cacheable;
 import com.gs.api.domain.CourseCategory;
+import com.gs.api.domain.CourseSearchResponse;
 
 @Service
 public class CategoryServiceImpl implements CategoryService {
     
+    //@Autowired
+    //private CategoryDAO categoryDAO;
+    
     @Autowired
-    private CategoryDAO categoryDAO;
+    private CourseSearchService courseSearchService;
+    
 
     /*
      * (non-Javadoc)
      * @see com.gs.api.service.CategoryService#getCategories()
      */
+    @Cacheable(cacheName="subjectCategoryCache")
     public CourseCategory[] getCategories() throws Exception {
-        return categoryDAO.getCategories();
+        CourseCategory[] categories = new CourseCategory[0]; 
+        CourseSearchResponse response = courseSearchService.searchCourses("", 1, 10, null);
+        if (null != response) {
+            categories = response.getCategorySubjectFacets();
+        }
+        return categories;
     }
 
 }

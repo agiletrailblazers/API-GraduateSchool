@@ -10,8 +10,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.junit.After;
 import org.junit.Before;
@@ -29,9 +27,7 @@ import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.gs.api.dao.LocationDAO.LocationRowMapper;
 import com.gs.api.domain.CourseCategory;
-import com.gs.api.domain.Location;
 import com.gs.api.helper.CourseTestHelper;
 
 @RunWith(SpringJUnit4ClassRunner.class)

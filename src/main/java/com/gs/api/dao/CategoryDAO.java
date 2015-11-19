@@ -22,6 +22,7 @@ import com.gs.api.domain.CourseCategory;
 import com.gs.api.domain.CourseSubject;
 
 @Repository
+@Deprecated
 public class CategoryDAO {
 
     private static final Logger logger = LoggerFactory.getLogger(CategoryDAO.class);
