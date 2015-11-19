@@ -320,7 +320,7 @@ public class CourseSearchServiceTest {
 
         ResponseEntity<CourseSearchContainer> responseEntity = new ResponseEntity<CourseSearchContainer>(
                 createCourseContainerwithCategorySubjectFacet("ABC123001", 0, 1), HttpStatus.OK);
-        String[] facetParams = {"category_subject:Accounting, Budgeting and Financial Management/Auditing"};
+        String[] facetParams = {"category_subject:Accounting, Budgeting and Financial Management~Auditing"};
         when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), any(Class.class), any(Map.class)))
                 .thenReturn(responseEntity);
         CourseSearchResponse response = courseSearchService.searchCourses("ABC123", 0, 100,facetParams);
@@ -469,15 +469,15 @@ public class CourseSearchServiceTest {
         final CourseSearchRestFacetCount restFacetCount = new CourseSearchRestFacetCount();
         CourseSearchFacetFields   restFacetFields= new CourseSearchFacetFields();
         List<String> courseCategoryList = new ArrayList<String>();
-        courseCategoryList.add("Accounting, Budgeting and Financial Management/Auditing");
+        courseCategoryList.add("Accounting, Budgeting and Financial Management~Auditing");
         courseCategoryList.add("1");
-        courseCategoryList.add("Acquisition/Acquisition");
+        courseCategoryList.add("Acquisition~Acquisition");
         courseCategoryList.add("2");
-        courseCategoryList.add("Acquisition/Fraud Detection");
+        courseCategoryList.add("Acquisition~Fraud Detection");
         courseCategoryList.add("3");
-        courseCategoryList.add("Acquisition/Irony Studies");
+        courseCategoryList.add("Acquisition~Irony Studies");
         courseCategoryList.add("0");
-        courseCategoryList.add("Math/Subtraction");
+        courseCategoryList.add("Math~Subtraction");
         courseCategoryList.add("0");
         restFacetFields.setCategorysubject(courseCategoryList);
         restFacetCount.setCourseRestFacetFields(restFacetFields);
