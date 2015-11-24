@@ -29,7 +29,7 @@ public class UtilController extends BaseController {
      */
     @RequestMapping(value = "/ping", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<HttpStatus> ping() throws Exception {
-        logger.debug("Service ping initiated");
+        logger.trace("Service ping initiated");
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -40,7 +40,7 @@ public class UtilController extends BaseController {
      */
     @RequestMapping(value = "/env", method = RequestMethod.GET, produces = MediaType.TEXT_PLAIN_VALUE)
     public @ResponseBody String env() throws Exception {
-        logger.debug("Service env initiated");
+        logger.trace("Service env initiated");
         return propertyName;
     }
     
