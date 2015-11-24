@@ -30,7 +30,7 @@ public abstract class BaseController {
     @ExceptionHandler({ NotFoundException.class })
     @ResponseBody
     public String handleNotFoundException(Exception ex) {
-        logger.error(ex.getMessage());
+        logger.error("API not found", ex);
         final StringBuffer response = new StringBuffer();
         response.append("{\"message\":\"");
         response.append(ex.getMessage());
@@ -46,7 +46,7 @@ public abstract class BaseController {
     @ExceptionHandler({ Exception.class })
     @ResponseBody
     public String handleException(Exception ex) {
-        logger.error(ex.getMessage());
+        logger.error("Exception occured", ex);
         final StringBuffer response = new StringBuffer();
         response.append("{\"message\":\"");
         response.append(ex.getMessage());
