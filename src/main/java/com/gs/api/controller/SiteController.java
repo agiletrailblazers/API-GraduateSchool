@@ -19,7 +19,7 @@ import com.gs.api.service.SiteSearchService;
 @Configuration
 @RestController
 @RequestMapping("/site")
-public class SiteController {
+public class SiteController extends BaseController {
 
     static final Logger logger = LoggerFactory.getLogger(SiteController.class);
 

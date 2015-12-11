@@ -21,7 +21,6 @@ import org.springframework.web.client.RestOperations;
 import com.gs.api.domain.Course;
 import com.gs.api.domain.CourseDescription;
 import com.gs.api.domain.CourseSearchResponse;
-import com.gs.api.exception.NotFoundException;
 import com.gs.api.rest.object.CourseSearchContainer;
 import com.gs.api.rest.object.CourseSearchDoc;
 import com.gs.api.rest.object.CourseSearchGroup;
@@ -68,7 +67,7 @@ public class CourseSearchServiceImpl implements CourseSearchService {
      * @return SearchResponse
      */
     public CourseSearchResponse searchCourses(String search, int currentPage, int numRequested, String[] filter)
-            throws NotFoundException {
+            throws Exception {
 
         boolean exactMatch = false;
         int numFound = 0;
@@ -91,7 +90,7 @@ public class CourseSearchServiceImpl implements CourseSearchService {
            responseEntity = restTemplate.exchange(searchString, HttpMethod.POST, request, CourseSearchContainer.class, uriParams);
         } catch (Exception e) {
             logger.error("Failed to get search results from SOLR", e);
-            throw new NotFoundException("No search results found");
+            throw new Exception("No search results found");
         }
         CourseSearchContainer container = responseEntity.getBody();
         // get docs from withing the grouped response
