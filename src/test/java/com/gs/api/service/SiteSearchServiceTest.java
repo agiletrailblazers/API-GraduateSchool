@@ -1,15 +1,11 @@
 package com.gs.api.service;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.gs.api.domain.Page;
+import com.gs.api.domain.SitePagesSearchResponse;
+import com.gs.api.exception.NotFoundException;
+import com.gs.api.rest.object.SiteSearchContainer;
+import com.gs.api.rest.object.SiteSearchDoc;
+import com.gs.api.rest.object.SiteSearchResponse;
 
 import org.junit.After;
 import org.junit.Before;
@@ -27,12 +23,17 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.client.RestOperations;
 
-import com.gs.api.domain.Page;
-import com.gs.api.domain.SitePagesSearchResponse;
-import com.gs.api.exception.NotFoundException;
-import com.gs.api.rest.object.SiteSearchContainer;
-import com.gs.api.rest.object.SiteSearchDoc;
-import com.gs.api.rest.object.SiteSearchResponse;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -135,9 +136,8 @@ public class SiteSearchServiceTest {
             siteSearchService.searchSite("find-nothing", 0, 100, new String());
             assertTrue(false);   //fail test as we should not get here
         } catch (Exception e) {
-            assertTrue(e instanceof NotFoundException);
-            NotFoundException nfe = (NotFoundException) e;
-            assertEquals("No search results found", nfe.getMessage());
+            assertTrue(e instanceof Exception);
+            assertEquals("No search results found", e.getMessage());
         }
         verify(restTemplate, times(1)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class),
                 any(Class.class));
