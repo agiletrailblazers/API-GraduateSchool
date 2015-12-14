@@ -1,8 +1,12 @@
 package com.gs.api.service;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import com.gs.api.domain.Page;
+import com.gs.api.domain.SitePagesSearchResponse;
+import com.gs.api.rest.object.SiteSearchContainer;
+import com.gs.api.rest.object.SiteSearchDoc;
+import com.gs.api.search.util.HttpRequestBuilder;
+import com.gs.api.search.util.NavRangeBuilder;
+import com.gs.api.search.util.SearchUrlBuilder;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -16,14 +20,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestOperations;
 
-import com.gs.api.domain.Page;
-import com.gs.api.domain.SitePagesSearchResponse;
-import com.gs.api.exception.NotFoundException;
-import com.gs.api.rest.object.SiteSearchContainer;
-import com.gs.api.rest.object.SiteSearchDoc;
-import com.gs.api.search.util.HttpRequestBuilder;
-import com.gs.api.search.util.NavRangeBuilder;
-import com.gs.api.search.util.SearchUrlBuilder;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 @Service
 public class SiteSearchServiceImpl implements SiteSearchService {
@@ -59,7 +58,7 @@ public class SiteSearchServiceImpl implements SiteSearchService {
      * @return SearchResponse
     */
     public SitePagesSearchResponse searchSite(String search, int currentPage, int numRequested, String filter)
-            throws NotFoundException {
+            throws Exception {
         int numFound = 0;
         int pageSize = 0;
         String searchString = searchServiceHelper.build(siteSearchSolrQuery,search, currentPage, numRequested, new String[] {filter});
@@ -72,7 +71,7 @@ public class SiteSearchServiceImpl implements SiteSearchService {
 
         } catch (Exception e) {
             logger.error("Failed to get search results from SOLR", e);
-            throw new NotFoundException("No search results found");
+            throw new Exception("No search results found");
         }
 
         SiteSearchContainer container = responseEntity.getBody();
