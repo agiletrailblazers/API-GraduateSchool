@@ -163,8 +163,8 @@ public class CourseDAO {
              String interval = calculateCourseInterval(rs.getString("TX_CRS_INTERVAL"));
              course.setLength(new CourseLength(rs.getInt("TM_CD_DUR"), interval));
              course.setCredit(calculateCourseCredit(rs));
-             course.setObjective(rs.getString("ABSTRACT"));
-             course.setPrerequisites(rs.getString("PREREQUISITES"));
+             course.setObjective(cleanupNewlines(rs.getString("ABSTRACT")));
+             course.setPrerequisites(cleanupNewlines(rs.getString("PREREQUISITES")));
              course.setSegment(rs.getString("CD_SEG"));
              return course;
         }
