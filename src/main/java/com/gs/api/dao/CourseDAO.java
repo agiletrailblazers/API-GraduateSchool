@@ -159,7 +159,7 @@ public class CourseDAO {
         @Override
         public Course mapRow(ResultSet rs, int rowNum) throws SQLException {
              Course course = super.mapRow(rs, rowNum);
-             course.setDescription(new CourseDescription(rs.getString("DESC_FORMAT")));
+             course.setDescription(new CourseDescription(cleanupNewlines(rs.getString("DESC_FORMAT"))));
              String interval = calculateCourseInterval(rs.getString("TX_CRS_INTERVAL"));
              course.setLength(new CourseLength(rs.getInt("TM_CD_DUR"), interval));
              course.setCredit(calculateCourseCredit(rs));
@@ -169,6 +169,16 @@ public class CourseDAO {
              return course;
         }
 
+        /**
+         * Remove newline chars
+         * @param in
+         * @return clean string
+         */
+        private String cleanupNewlines(String in) {
+            return StringUtils.remove(StringUtils.remove(in, "\n"), "\r");
+        }
+        
     }
+   
 
 }
