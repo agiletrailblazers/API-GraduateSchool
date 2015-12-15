@@ -36,7 +36,7 @@ public class CourseServiceImpl implements CourseService {
         //get course object and outcomes
         final Course course = courseDao.getCourse(id);
         if (null != course) {
-            course.setOutcomes(competencyDao.getCompetency(id));
+            course.setOutcomes(competencyDao.getCompetency(course.getId()));
         }
         return course;
     }
