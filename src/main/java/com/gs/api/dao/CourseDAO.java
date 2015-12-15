@@ -49,21 +49,21 @@ public class CourseDAO {
      * @param id load this course by ID
      * @return Course
      */
-    public Course getCourse(String id) {
-        logger.debug("Getting course from database for course id {}", id);
+    public Course getCourse(String idOrCode) {
+        logger.debug("Getting course from database for course id {}", idOrCode);
         logger.debug(singleCourseSql);
         try {
-            final Course course = this.jdbcTemplate.queryForObject(singleCourseSql, new Object[] { id, id },
+            final Course course = this.jdbcTemplate.queryForObject(singleCourseSql, new Object[] { idOrCode, idOrCode },
                     new CourseDetailRowMapper());
-            logger.debug("Found course match for {}", id);
+            logger.debug("Found course match for {}", idOrCode);
             return course;
         }
         catch (EmptyResultDataAccessException e) {
-            logger.warn("Course not found for id {} - {}", id, e);
+            logger.warn("Course not found for id {} - {}", idOrCode, e);
             return null;
         }
         catch (Exception e) {
-            logger.error("Error retrieving Course for id {} - {}", id, e);
+            logger.error("Error retrieving Course for id {} - {}", idOrCode, e);
             throw e;
         }
     }

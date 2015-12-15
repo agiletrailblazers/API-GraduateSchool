@@ -32,9 +32,9 @@ public class CourseServiceImpl implements CourseService {
      * @see com.gs.api.service.CourseService#getCourse(java.lang.String)
      */
     @Override
-    public Course getCourse(String id) throws Exception {
+    public Course getCourse(String idOrCode) throws Exception {
         //get course object and outcomes
-        final Course course = courseDao.getCourse(id);
+        final Course course = courseDao.getCourse(idOrCode);
         if (null != course) {
             course.setOutcomes(competencyDao.getCompetency(course.getId()));
         }
