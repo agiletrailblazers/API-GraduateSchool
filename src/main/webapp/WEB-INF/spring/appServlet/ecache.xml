@@ -14,16 +14,16 @@
 
     <cache name="locationByCityStateCache" eternal="false"
         maxElementsInMemory="1000" overflowToDisk="false" diskPersistent="false"
-        timeToIdleSeconds="0" timeToLiveSeconds="30000"
+        timeToIdleSeconds="0" timeToLiveSeconds="1800"
         memoryStoreEvictionPolicy="LRU" />
         
     <cache name="subjectCategoryCache" eternal="false"
         maxElementsInMemory="1000" overflowToDisk="false" diskPersistent="false"
-        timeToIdleSeconds="0" timeToLiveSeconds="30000"
+        timeToIdleSeconds="0" timeToLiveSeconds="1800"
         memoryStoreEvictionPolicy="LRU" />
         
     <cache name="allCourses" eternal="false"
         maxElementsInMemory="5000" overflowToDisk="false" diskPersistent="false"
-        timeToIdleSeconds="0" timeToLiveSeconds="30000"
+        timeToIdleSeconds="0" timeToLiveSeconds="1800"
         memoryStoreEvictionPolicy="LRU" />
 </ehcache>
