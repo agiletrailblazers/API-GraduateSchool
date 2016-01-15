@@ -27,7 +27,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import com.gs.api.domain.Location;
+import com.gs.api.domain.course.Location;
 import com.gs.api.service.LocationService;
 
 @RunWith(SpringJUnit4ClassRunner.class)

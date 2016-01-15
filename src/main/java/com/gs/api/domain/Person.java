@@ -13,10 +13,8 @@ public class Person {
     private String firstName;
     private String middleName;
     private String lastName;
-    private String homePhone;
-    private List<Location> personAddresses;
-    private String primaryPhone;
-    private String secondaryPhone;
+    private List<Address> personAddresses;
+    private List<String> phones;
 
     /*  All properties from stored procedure */
     /*(id, time_stamp, title, person_no, fname, lname, mname, homephone,
@@ -32,17 +30,15 @@ public class Person {
 
     public Person() { }
 
-    public Person(String id, String timeStamp, String firstName, String middleName, String lastName, String homePhone,
-                  List<Location> personAddresses, String primaryPhone, String secondaryPhone) {
+    public Person(String id, String timeStamp, String firstName, String middleName, String lastName,
+                  List<Address> personAddresses, List<String> phoneNumbers) {
         this.id = id;
         this.timeStamp = timeStamp;
         this.firstName = firstName;
         this.middleName = middleName;
         this.lastName = lastName;
-        this.homePhone = homePhone;
         this.personAddresses = personAddresses;
-        this.primaryPhone = primaryPhone;
-        this.secondaryPhone = secondaryPhone;
+        this.phones = phoneNumbers;
     }
 
     public String getId() {
@@ -85,35 +81,20 @@ public class Person {
         this.lastName = lastName;
     }
 
-    public String getHomePhone() {
-        return homePhone;
-    }
-
-    public void setHomePhone(String homePhone) {
-        this.homePhone = homePhone;
-    }
-
-    public List<Location> getPersonAddresses() {
+    public List<Address> getPersonAddresses() {
         return personAddresses;
     }
 
-    public void setPersonAddresses(List<Location> personAddresses) {
+    public void setPersonAddresses(List<Address> personAddresses) {
         this.personAddresses = personAddresses;
     }
 
-    public String getPrimaryPhone() {
-        return primaryPhone;
+    public List<String> getPhones() {
+        return phones;
     }
 
-    public void setPrimaryPhone(String primaryPhone) {
-        this.primaryPhone = primaryPhone;
+    public void setPrimaryPhone(List<String> phones) {
+        this.phones = phones;
     }
 
-    public String getSecondaryPhone() {
-        return secondaryPhone;
-    }
-
-    public void setSecondaryPhone(String secondaryPhone) {
-        this.secondaryPhone = secondaryPhone;
-    }
 }

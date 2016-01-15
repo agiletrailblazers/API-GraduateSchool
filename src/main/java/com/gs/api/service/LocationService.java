@@ -2,7 +2,7 @@ package com.gs.api.service;
 
 import java.util.List;
 
-import com.gs.api.domain.Location;
+import com.gs.api.domain.course.Location;
 
 public interface LocationService {
 

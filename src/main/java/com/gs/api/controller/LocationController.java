@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.gs.api.domain.Location;
+import com.gs.api.domain.course.Location;
 import com.gs.api.service.LocationService;
 
 @Configuration
