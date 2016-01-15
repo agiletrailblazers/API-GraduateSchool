@@ -1,11 +1,9 @@
 package com.gs.api.dao.registration;
 
-import java.util.Date;
-import java.util.Map;
-
-import javax.sql.DataSource;
-
+import com.gs.api.domain.Address;
+import com.gs.api.domain.Person;
 import com.gs.api.domain.registration.User;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +13,12 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.stereotype.Repository;
+
+import java.util.Date;
+import java.util.Map;
+import java.util.TimeZone;
+
+import javax.sql.DataSource;
 
 @Repository
 public class UserDAO {
@@ -101,10 +105,34 @@ public class UserDAO {
     }
 
     /**
-     * Insert user into the database
-     * @return Return results
+     *
+     * @param user the user information for the user to be created.
+     * @return the id of the newley created user.
+     * @throws Exception error creating user.
      */
-    public Map<String,Object> insertNewUser(String usernameEmail, String firstName, String middleName, String lastName, boolean veteranStatus,
+    public String insertNewUser(final User user) throws Exception {
+
+        /*
+            TODO
+              remove hard coded veteran status and timezone when/if it gets collected
+              in the UI and passed back as a part of the person?
+         */
+        final boolean veteran = false;
+        final TimeZone timezone = TimeZone.getTimeZone("US/Eastern");
+
+        Person person = user.getPerson();
+        Address address = person.getPrimaryAddress();
+        return insertNewUser(user.getUsername(), person.getFirstName(), person.getMiddleName(), person.getLastName(),
+                veteran, null, address.getAddress2(), address.getAddress1(), address.getCity(), address.getState(),
+                address.getPostalCode(), null, null, null, null, null, null, person.getPrimaryPhone(), null,
+                user.getPassword(), timezone.getID());
+    }
+
+    /**
+     * Insert user into the database
+     * @return Return the unique id of the user that was created.
+     */
+    private String insertNewUser(String usernameEmail, String firstName, String middleName, String lastName, boolean veteranStatus,
                                  String address1Office, String address1SteMailStop, String address1StreetPoBox, String address1City,
                                  String address1State, String address1Zip, String address2Office, String address2SteMailStop,
                                  String address2StreetPoBox, String address2City, String address2State, String address2Zip,
@@ -140,16 +168,20 @@ public class UserDAO {
                 .addValue("xnewts", millis);
 
         logger.debug("Inserting new user");
+
         Map<String, Object> insertUserResults = executeUserStoredProcedure(in, insertStoredProceudreName);
 
-        return insertUserProfile(createdByName, "createdById", "sysLov1Id", "entryTypeId", "resulting person id from above",
+        Map<String, Object> insertProfileResults = insertUserProfile(createdByName, "createdById", "sysLov1Id", "entryTypeId", "resulting person id from above",
                 "locale id");
+
+        return "IDofCreatedUser";
     }
 
     /**
      * Likely deprecated, delete if unused
      */
-    public Map<String,Object> insertNewUserFull(char id, String ts, String title, String personNo, String firstName, String lastName,
+    
+    private Map<String,Object> insertNewUserFull(char id, String ts, String title, String personNo, String firstName, String lastName,
                                  String middleName, String homePhone, String workPhone, String fax, String createdBy,
                                  Date createdOn, String updatedBy, Date updatedOn, String custom0, String custom1,
                                  String custom2, char companyId, String address1,String address2, String address3,
@@ -231,7 +263,7 @@ public class UserDAO {
     }
 
 
-    public Map<String, Object> insertUserProfile(String createdBy, String createdById, String sysLov1Id, String entryTypeId,
+    private Map<String, Object> insertUserProfile(String createdBy, String createdById, String sysLov1Id, String entryTypeId,
                                   String profiledId, String localeId) throws Exception {
         Date currentDate = new Date();
         String createdByName = "RegistrationSystem";
@@ -279,7 +311,7 @@ public class UserDAO {
         UserDAO userDAO = new UserDAO();
         try {
 
-            Map<String, Object> actualResults = userDAO.insertNewUser("test@test.gov", "firstName", "middle",
+            String actualResults = userDAO.insertNewUser("test@test.gov", "firstName", "middle",
                     "lastName", false, "Test Office", "123 Test Street", null, "testCity", "MD", "12345", null, null, null,
                     null, null, null, "1234561234", null, "password1", null);
         }

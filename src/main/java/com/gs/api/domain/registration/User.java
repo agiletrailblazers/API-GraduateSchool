@@ -9,20 +9,13 @@ public class User {
 
     private String id;
     private String username;
+    private String dateOfBirth;
+    private String lastFourSSN;
     private String password;
     private Person person;
 
     /* From Main Insert Query */
     /* (xid, xcurrency_id, xsplit, xxlgen_account_no, xnewts */
-
-    public User() {}
-
-    public User(String id, String username, String password, Person person) {
-        this.id = id;
-        this.username = username;
-        this.password = password;
-        this.person = person;
-    }
 
     public String getId() {
         return id;
@@ -38,6 +31,22 @@ public class User {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public String getDateOfBirth() {
+        return dateOfBirth;
+    }
+
+    public void setDateOfBirth(String dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
+    }
+
+    public String getLastFourSSN() {
+        return lastFourSSN;
+    }
+
+    public void setLastFourSSN(String lastFourSSN) {
+        this.lastFourSSN = lastFourSSN;
     }
 
     public String getPassword() {

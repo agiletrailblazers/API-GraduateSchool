@@ -17,15 +17,6 @@ public class Address {
     /* (id, time_stamp, owner_id, addr1, addr2, addr3, city, state, zip, country, tag,
     ci_city,ci_state,ci_country)*/
 
-    public Address() {
-        //default
-    }
-
-    public Address(String city, String state) {
-        this.city = city;
-        this.state = state;
-    }
-
     public String getId() {
         return id;
     }

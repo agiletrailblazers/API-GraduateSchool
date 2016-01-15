@@ -3,18 +3,18 @@ package com.gs.api.domain;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
-import java.util.List;
-
 @JsonInclude(Include.ALWAYS)
 public class Person {
 
     private String id;
-    private String timeStamp;
     private String firstName;
     private String middleName;
     private String lastName;
-    private List<Address> personAddresses;
-    private List<String> phones;
+    private String emailAddress;
+    private String primaryPhone;
+    private String secondaryPhone;
+    private Address primaryAddress;
+    private Address secondaryAddress;
 
     /*  All properties from stored procedure */
     /*(id, time_stamp, title, person_no, fname, lname, mname, homephone,
@@ -28,33 +28,12 @@ public class Person {
          location_id, home_domain, allow_nonbuddies, gender, started_on, terminated_on,
         date_of_birth,religion,ethnicity, secret_question, secret_answer, type)       */
 
-    public Person() { }
-
-    public Person(String id, String timeStamp, String firstName, String middleName, String lastName,
-                  List<Address> personAddresses, List<String> phoneNumbers) {
-        this.id = id;
-        this.timeStamp = timeStamp;
-        this.firstName = firstName;
-        this.middleName = middleName;
-        this.lastName = lastName;
-        this.personAddresses = personAddresses;
-        this.phones = phoneNumbers;
-    }
-
     public String getId() {
         return id;
     }
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    public String getTimeStamp() {
-        return timeStamp;
-    }
-
-    public void setTimeStamp(String timeStamp) {
-        this.timeStamp = timeStamp;
     }
 
     public String getFirstName() {
@@ -81,20 +60,43 @@ public class Person {
         this.lastName = lastName;
     }
 
-    public List<Address> getPersonAddresses() {
-        return personAddresses;
+    public String getEmailAddress() {
+        return emailAddress;
     }
 
-    public void setPersonAddresses(List<Address> personAddresses) {
-        this.personAddresses = personAddresses;
+    public void setEmailAddress(String emailAddress) {
+        this.emailAddress = emailAddress;
     }
 
-    public List<String> getPhones() {
-        return phones;
+    public String getPrimaryPhone() {
+        return primaryPhone;
     }
 
-    public void setPrimaryPhone(List<String> phones) {
-        this.phones = phones;
+    public void setPrimaryPhone(String primaryPhone) {
+        this.primaryPhone = primaryPhone;
     }
 
+    public String getSecondaryPhone() {
+        return secondaryPhone;
+    }
+
+    public void setSecondaryPhone(String secondaryPhone) {
+        this.secondaryPhone = secondaryPhone;
+    }
+
+    public Address getPrimaryAddress() {
+        return primaryAddress;
+    }
+
+    public void setPrimaryAddress(Address primaryAddress) {
+        this.primaryAddress = primaryAddress;
+    }
+
+    public Address getSecondaryAddress() {
+        return secondaryAddress;
+    }
+
+    public void setSecondaryAddress(Address secondaryAddress) {
+        this.secondaryAddress = secondaryAddress;
+    }
 }
