@@ -1,5 +1,6 @@
-package com.gs.api.dao.registration;
+package com.gs.api.service.registration;
 
+import com.gs.api.dao.registration.UserDAO;
 import com.gs.api.domain.Address;
 import com.gs.api.domain.Person;
 import com.gs.api.domain.registration.User;
@@ -11,24 +12,16 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.namedparam.SqlParameterSource;
-import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.util.HashMap;
-
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "classpath:spring/test-root-context.xml" })
-public class UserDAOTest {
+public class UserServiceTest {
 
     private static final String FIRST_NAME = "Joe";
     private static final String MIDDLE_NAME = "Bob";
@@ -41,20 +34,18 @@ public class UserDAOTest {
     private static final String ADDRESS_ZIP = "55555";
     private static final String PHONE = "555-555-5555";
     private static final String PASSWORD_CLEAR = "test1234";
+    private static final String PASSWORD_ENCRYPTED = "937E8D5FBB48BD4949536CD65B8D35C426B80D2F830C5C308E2CDEC422AE2244";
     private static final String DOB = "05/05/1955";
     private static final String LAST_FOUR_SSN = "5555";
 
     private User user;
 
+    @Mock
+    private UserDAO userDao;
+
     @InjectMocks
     @Autowired
-    private UserDAO userDAO;
-
-    @Mock
-    private JdbcTemplate jdbcTemplate;
-
-    @Mock
-    private SimpleJdbcCall personInsertActor;
+    private UserServiceImpl userService;
 
     @Before
     public void setUp() throws Exception {
@@ -85,43 +76,17 @@ public class UserDAOTest {
     }
 
     @Test
-    public void testInsertUser() throws Exception {
-        String expectedResults = "IDofCreatedUser";
-        HashMap<String, Object> sqlResult = new HashMap();
+    public void testCreateUser() throws Exception {
 
-        // TODO you will want to update this test it doesn't actual verify anything relevant
-        //      It needs to capture the values passed to the jdbc template and assert that the
-        //      expected data is being passed to the stored procedure.
+        final String id = "test-55555";
+        when(userDao.insertNewUser(user)).thenReturn(id);
 
-        doReturn(sqlResult).when(personInsertActor).execute(any(SqlParameterSource.class));
-        String actualResults = userDAO.insertNewUser(user);
+        userService.createUser(user);
 
-        assertNotNull(actualResults);
-        assertEquals(expectedResults, actualResults);
+        verify(userDao).insertNewUser(user);
+
+        assertEquals("ID not set on user", id, user.getId());
+        assertEquals("Encrypted password not set on user", PASSWORD_ENCRYPTED, user.getPassword());
     }
 
-    @Test
-    public void testFailToInsertUser() throws Exception {
-        when(personInsertActor.execute(any(SqlParameterSource.class)))
-                .thenThrow(new IllegalArgumentException("BAD SQL"));
-
-        try {
-            userDAO.insertNewUser(user);
-            assertTrue(false); //Should never reach this line
-        }
-        catch (IllegalArgumentException iE) {
-            assertNotNull(iE);
-            assertTrue(iE instanceof Exception);
-        }
-    }
-
-    @Test
-    public void testGetAccount() throws Exception {
-
-    }
-
-    @Test
-    public void testFailToGetAccount() throws Exception {
-
-    }
 }
