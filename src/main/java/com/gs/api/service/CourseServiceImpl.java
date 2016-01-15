@@ -10,8 +10,8 @@ import org.springframework.stereotype.Service;
 import com.gs.api.dao.CourseCompetencyDAO;
 import com.gs.api.dao.CourseDAO;
 import com.gs.api.dao.CourseSessionDAO;
-import com.gs.api.domain.Course;
-import com.gs.api.domain.CourseSession;
+import com.gs.api.domain.course.Course;
+import com.gs.api.domain.course.CourseSession;
 
 @Service
 public class CourseServiceImpl implements CourseService {

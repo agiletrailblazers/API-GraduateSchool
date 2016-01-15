@@ -1,6 +1,6 @@
 package com.gs.api.service;
 
-import com.gs.api.domain.CourseCategory;
+import com.gs.api.domain.course.CourseCategory;
 
 public interface CategoryService {
 

@@ -18,9 +18,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestOperations;
 
-import com.gs.api.domain.Course;
-import com.gs.api.domain.CourseDescription;
-import com.gs.api.domain.CourseSearchResponse;
+import com.gs.api.domain.course.Course;
+import com.gs.api.domain.course.CourseDescription;
+import com.gs.api.domain.course.CourseSearchResponse;
 import com.gs.api.rest.object.CourseSearchContainer;
 import com.gs.api.rest.object.CourseSearchDoc;
 import com.gs.api.rest.object.CourseSearchGroup;

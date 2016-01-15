@@ -1,6 +1,6 @@
 package com.gs.api.service;
 
-import com.gs.api.domain.CourseSearchResponse;
+import com.gs.api.domain.course.CourseSearchResponse;
 
 public interface CourseSearchService {
 

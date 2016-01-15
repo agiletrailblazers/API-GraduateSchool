@@ -1,9 +1,10 @@
-package com.gs.api.domain;
+package com.gs.api.domain.course;
 
 import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.gs.api.domain.Location;
 
 @JsonInclude(Include.ALWAYS)
 public class CourseSession {

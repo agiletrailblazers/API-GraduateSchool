@@ -12,8 +12,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.gs.api.domain.CourseCategory;
-import com.gs.api.domain.CourseSubject;
+import com.gs.api.domain.course.CourseCategory;
+import com.gs.api.domain.course.CourseSubject;
 
 @Service
 public class FacetBuilder {
