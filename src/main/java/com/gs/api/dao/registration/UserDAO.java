@@ -20,14 +20,90 @@ import org.springframework.stereotype.Repository;
 public class UserDAO {
     private static final Logger logger = LoggerFactory.getLogger(UserDAO.class);
     private JdbcTemplate jdbcTemplate;
-    private SimpleJdbcCall personInsertActor;
+    private SimpleJdbcCall personActor;
+
+    private static final String insertStoredProceudreName = "tpp_person_ins";
+    private static final String insertProfileStoredProceudreName = "cmp_profile_entry_ins";
 
     @Autowired
     public void setDataSource(DataSource dataSource) {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
-        this.personInsertActor = new SimpleJdbcCall(this.jdbcTemplate).withProcedureName("tpp_person_ins");
+        this.personActor = new SimpleJdbcCall(this.jdbcTemplate);
     }
 
+    /**
+     * Get user object from database
+     * @param personId person id for specified user
+     * @return specified User
+     */
+    public User getUserById(String personId) {
+        logger.debug("Getting user for ID {}", personId);
+        try {
+            User user = new User();
+            //this.jdbcTemplate.query("stub");
+            logger.debug("Found user");
+            return user;
+        }
+        catch (EmptyResultDataAccessException e) {
+            logger.warn("User not found - {}", e);
+            return null;
+        }
+        catch (Exception e) {
+            logger.error("Error retrieving account - {}", e);
+            throw e;
+        }
+    }
+
+    /**
+     * Get user object from database
+     * @param personNo person number for specified user
+     * @return specified User
+     */
+    public User getUserByPersonNo(String personNo) {
+        logger.debug("Getting user for person number {}", personNo);
+        try {
+            User user = new User();
+            //this.jdbcTemplate.query("stub");
+            logger.debug("Found user");
+            return user;
+        }
+        catch (EmptyResultDataAccessException e) {
+            logger.warn("User not found - {}", e);
+            return null;
+        }
+        catch (Exception e) {
+            logger.error("Error retrieving account - {}", e);
+            throw e;
+        }
+    }
+
+    /**
+     * Get user object from database
+     * @param username username for specified user
+     * @return specified User
+     */
+    public User getUserByUsername(String username) {
+        logger.debug("Getting user for username {}", username);
+        try {
+            User user = new User();
+            //this.jdbcTemplate.query("stub");
+            logger.debug("Found user");
+            return user;
+        }
+        catch (EmptyResultDataAccessException e) {
+            logger.warn("User not found - {}", e);
+            return null;
+        }
+        catch (Exception e) {
+            logger.error("Error retrieving account - {}", e);
+            throw e;
+        }
+    }
+
+    /**
+     * Insert user into the database
+     * @return Return results
+     */
     public Map<String,Object> insertNewUser(String usernameEmail, String firstName, String middleName, String lastName, boolean veteranStatus,
                                  String address1Office, String address1SteMailStop, String address1StreetPoBox, String address1City,
                                  String address1State, String address1Zip, String address2Office, String address2SteMailStop,
@@ -37,8 +113,10 @@ public class UserDAO {
         Date currentDate = new Date();
         String createdByName = "RegistrationSystem";
         long millis = new Date().getTime();
+        String id = "pers" + "someNumbers";
 
         SqlParameterSource in = new MapSqlParameterSource()
+                .addValue("xid", id)
                 .addValue("xusername", usernameEmail)
                 .addValue("xfname", firstName)
                 .addValue("xmname", middleName)
@@ -62,9 +140,15 @@ public class UserDAO {
                 .addValue("xnewts", millis);
 
         logger.debug("Inserting new user");
-        return executeInsertStoredProcedure(in);
+        Map<String, Object> insertUserResults = executeUserStoredProcedure(in, insertStoredProceudreName);
+
+        return insertUserProfile(createdByName, "createdById", "sysLov1Id", "entryTypeId", "resulting person id from above",
+                "locale id");
     }
 
+    /**
+     * Likely deprecated, delete if unused
+     */
     public Map<String,Object> insertNewUserFull(char id, String ts, String title, String personNo, String firstName, String lastName,
                                  String middleName, String homePhone, String workPhone, String fax, String createdBy,
                                  Date createdOn, String updatedBy, Date updatedOn, String custom0, String custom1,
@@ -143,43 +227,46 @@ public class UserDAO {
                 .addValue("xnewts", newTs);
 
         logger.debug("Inserting user with full parameters");
-        return executeInsertStoredProcedure(in);
+        return executeUserStoredProcedure(in, insertStoredProceudreName);
     }
 
-    public User getUserById(String accountId) {
-        logger.debug("Getting account for ID {}", accountId);
+
+    public Map<String, Object> insertUserProfile(String createdBy, String createdById, String sysLov1Id, String entryTypeId,
+                                  String profiledId, String localeId) throws Exception {
+        Date currentDate = new Date();
+        String createdByName = "RegistrationSystem";
+        long millis = new Date().getTime();
+        String id = "pp" + "someIdentifier" + "someNumbers";
+
+        SqlParameterSource in = new MapSqlParameterSource()
+                .addValue("xid", id)
+                .addValue("xcreated_on", currentDate)
+                .addValue("xcreated_by", createdByName)
+                .addValue("xcreated_id", createdById) //id of user who created
+                .addValue("xupdated_on", currentDate)
+                .addValue("xupdated_by", createdByName)
+                .addValue("xtime_stamp", millis)
+                .addValue("xsyslov1_id", sysLov1Id)
+                .addValue("xentry_type_id", entryTypeId)
+                .addValue("xprofiled_id", profiledId)
+                .addValue("xlocale_id", localeId);
+
+
+        logger.debug("Inserting user profile");
+        return executeUserStoredProcedure(in, insertProfileStoredProceudreName);
+    }
+
+    private Map<String,Object> executeUserStoredProcedure(SqlParameterSource inParameters, String procedureToExecute) throws Exception {
         try {
-            User user = new User();
-            //this.jdbcTemplate.query("stub");
-            logger.debug("Found user");
-            return user;
-        }
-        catch (EmptyResultDataAccessException e) {
-            logger.warn("User not found - {}", e);
-            return null;
-        }
-        catch (Exception e) {
-            logger.error("Error retrieving account - {}", e);
-            throw e;
-        }
-    }
+            logger.debug(jdbcTemplate.toString()); //debug issue this is null with main below
+            logger.debug(personActor.toString()); //debug issue
 
-    public boolean updateUser() {
-        //stub - need to investigate update procedure
-        return false;
-    }
+            logger.debug("Executing stored procedure ", procedureToExecute);
 
-    public void updateUserProfile() {
+            personActor.withProcedureName(procedureToExecute);
+            Map<String,Object> out = personActor.execute(inParameters);
 
-
-    }
-
-    private Map<String,Object> executeInsertStoredProcedure(SqlParameterSource inParameters) throws Exception {
-        try {
-            logger.debug(jdbcTemplate.toString());
-            logger.debug(personInsertActor.toString());
-            Map<String,Object> out = personInsertActor.execute(inParameters);
-            logger.debug("New user successfully added");
+            logger.debug("Stored Procedure {} executed successfully", procedureToExecute);
             return out;
         }
         catch (Exception e) {
