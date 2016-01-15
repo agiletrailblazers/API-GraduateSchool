@@ -1,4 +1,4 @@
-package com.gs.api.domain;
+package com.gs.api.domain.course;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 

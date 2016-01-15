@@ -17,12 +17,12 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 import com.googlecode.ehcache.annotations.Cacheable;
-import com.gs.api.domain.Course;
-import com.gs.api.domain.CourseCredit;
-import com.gs.api.domain.CourseCreditType;
-import com.gs.api.domain.CourseDescription;
-import com.gs.api.domain.CourseIntervalConvertor;
-import com.gs.api.domain.CourseLength;
+import com.gs.api.domain.course.Course;
+import com.gs.api.domain.course.CourseCredit;
+import com.gs.api.domain.course.CourseCreditType;
+import com.gs.api.domain.course.CourseDescription;
+import com.gs.api.domain.course.CourseIntervalConvertor;
+import com.gs.api.domain.course.CourseLength;
 
 @Repository
 public class CourseDAO {

@@ -31,8 +31,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import com.gs.api.domain.Course;
-import com.gs.api.domain.CourseSearchResponse;
+import com.gs.api.domain.course.Course;
+import com.gs.api.domain.course.CourseSearchResponse;
 import com.gs.api.helper.CourseTestHelper;
 import com.gs.api.service.CategoryService;
 import com.gs.api.service.CourseSearchService;

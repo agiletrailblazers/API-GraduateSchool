@@ -20,8 +20,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.gs.api.domain.CourseCategory;
-import com.gs.api.domain.CourseSearchResponse;
+import com.gs.api.domain.course.CourseCategory;
+import com.gs.api.domain.course.CourseSearchResponse;
 import com.gs.api.helper.CourseTestHelper;
 
 @RunWith(SpringJUnit4ClassRunner.class)
