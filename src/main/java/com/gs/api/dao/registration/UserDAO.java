@@ -169,10 +169,10 @@ public class UserDAO {
 
         logger.debug("Inserting new user");
 
-        Map<String, Object> insertUserResults = executeUserStoredProcedure(in, insertStoredProceudreName);
-
-        Map<String, Object> insertProfileResults = insertUserProfile(createdByName, "createdById", "sysLov1Id", "entryTypeId", "resulting person id from above",
-                "locale id");
+//        Map<String, Object> insertUserResults = executeUserStoredProcedure(in, insertStoredProceudreName);
+//
+//        Map<String, Object> insertProfileResults = insertUserProfile(createdByName, "createdById", "sysLov1Id", "entryTypeId", "resulting person id from above",
+//                "locale id");
 
         return "IDofCreatedUser";
     }
@@ -180,7 +180,7 @@ public class UserDAO {
     /**
      * Likely deprecated, delete if unused
      */
-    
+
     private Map<String,Object> insertNewUserFull(char id, String ts, String title, String personNo, String firstName, String lastName,
                                  String middleName, String homePhone, String workPhone, String fax, String createdBy,
                                  Date createdOn, String updatedBy, Date updatedOn, String custom0, String custom1,
