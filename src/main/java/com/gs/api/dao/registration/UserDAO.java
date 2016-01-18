@@ -7,7 +7,6 @@ import com.gs.api.domain.registration.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
@@ -23,9 +22,11 @@ import javax.sql.DataSource;
 public class UserDAO {
     private static final Logger logger = LoggerFactory.getLogger(UserDAO.class);
     private JdbcTemplate jdbcTemplate;
-    private SimpleJdbcCall personActor;
 
-    private static final String insertStoredProceudreName = "tpp_person_ins";
+    private SimpleJdbcCall userInsertActor;
+    private SimpleJdbcCall profileInsertActor;
+
+    private static final String insertUserStoredProceudreName = "tpp_person_ins";
     private static final String insertProfileStoredProceudreName = "cmp_profile_entry_ins";
     private static final String getPersIdSequenceQuery = "select lpad(ltrim(rtrim(to_char(tpt_person_seq.nextval))), 15, '0') id from dual";
     private static final String getProfileIdSequenceQuery = "select lpad(ltrim(rtrim(to_char(cmt_profile_entry_seq.nextval))), 15, '0') id from dual";
@@ -33,76 +34,8 @@ public class UserDAO {
     @Autowired
     public void setDataSource(DataSource dataSource) {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
-        this.personActor = new SimpleJdbcCall(this.jdbcTemplate);
-    }
-
-    /**
-     * Get user object from database
-     * @param personId person id for specified user
-     * @return specified User
-     */
-    public User getUserById(String personId) {
-        logger.debug("Getting user for ID {}", personId);
-        try {
-            User user = new User();
-            //this.jdbcTemplate.query("stub");
-            logger.debug("Found user");
-            return user;
-        }
-        catch (EmptyResultDataAccessException e) {
-            logger.warn("User not found - {}", e);
-            return null;
-        }
-        catch (Exception e) {
-            logger.error("Error retrieving account - {}", e);
-            throw e;
-        }
-    }
-
-    /**
-     * Get user object from database
-     * @param personNo person number for specified user
-     * @return specified User
-     */
-    public User getUserByPersonNo(String personNo) {
-        logger.debug("Getting user for person number {}", personNo);
-        try {
-            User user = new User();
-            //this.jdbcTemplate.query("stub");
-            logger.debug("Found user");
-            return user;
-        }
-        catch (EmptyResultDataAccessException e) {
-            logger.warn("User not found - {}", e);
-            return null;
-        }
-        catch (Exception e) {
-            logger.error("Error retrieving account - {}", e);
-            throw e;
-        }
-    }
-
-    /**
-     * Get user object from database
-     * @param username username for specified user
-     * @return specified User
-     */
-    public User getUserByUsername(String username) {
-        logger.debug("Getting user for username {}", username);
-        try {
-            User user = new User();
-            //this.jdbcTemplate.query("stub");
-            logger.debug("Found user");
-            return user;
-        }
-        catch (EmptyResultDataAccessException e) {
-            logger.warn("User not found - {}", e);
-            return null;
-        }
-        catch (Exception e) {
-            logger.error("Error retrieving account - {}", e);
-            throw e;
-        }
+        this.userInsertActor = new SimpleJdbcCall(this.jdbcTemplate).withProcedureName(insertUserStoredProceudreName);
+        this.profileInsertActor = new SimpleJdbcCall(this.jdbcTemplate).withProcedureName(insertProfileStoredProceudreName);
     }
 
     /**
@@ -113,21 +46,8 @@ public class UserDAO {
      */
     public String insertNewUser(final User user) throws Exception {
         Person person = user.getPerson();
-        Address address = person.getPrimaryAddress();
-        return insertNewUser(user.getUsername(), person.getFirstName(), person.getMiddleName(), person.getLastName(),
-                person.getVeteran(), null, address.getAddress2(), address.getAddress1(), address.getCity(), address.getState(),
-                address.getPostalCode(), person.getPrimaryPhone(), null, user.getPassword(), user.getTimezoneId(),
-                person.getEmailAddress());
-    }
+        Address sabaFormattedAddress = mapAddressToSabaFormat(person.getPrimaryAddress());
 
-    /**
-     * Insert user into the database
-     * @return Return the unique id of the user that was created.
-     */
-    private String insertNewUser(String username, String firstName, String middleName, String lastName, boolean veteranStatus,
-                                 String address1Office, String address1SteMailStop, String address1StreetPoBox, String address1City,
-                                 String address1State, String address1Zip, String primaryPhone, String secondaryPhone,
-                                 String password, String timeZone, String email) throws Exception {
         //Setup audit data
         Date currentDate = new Date();
         long millis = currentDate.getTime();
@@ -144,22 +64,22 @@ public class UserDAO {
 
         SqlParameterSource in = new MapSqlParameterSource()
                 .addValue("xid", personId)
-                .addValue("xusername", username)
-                .addValue("xfname", firstName)
-                .addValue("xmname", middleName)
-                .addValue("xlname", lastName)
-                .addValue("xemail", email)
-                .addValue("custom2", veteranStatus)
-                .addValue("xaddr1", address1Office)
-                .addValue("xaddr2", address1SteMailStop)
-                .addValue("xaddr3", address1StreetPoBox)
-                .addValue("xcity", address1City)
-                .addValue("xstate", address1State) //TODO this must be a two letter state
-                .addValue("xzip", address1Zip)
-                .addValue("xhomephone", primaryPhone)
-                .addValue("xworkphone", secondaryPhone)
-                .addValue("xpassword", password)
-                .addValue("xtimezone_id", timeZone)
+                .addValue("xusername", user.getUsername())
+                .addValue("xfname", person.getFirstName())
+                .addValue("xmname", person.getMiddleName())
+                .addValue("xlname", person.getLastName())
+                .addValue("xemail", person.getEmailAddress())
+                .addValue("xcustom2", person.getVeteran())
+                .addValue("xaddr1", sabaFormattedAddress.getAddress1())
+                .addValue("xaddr2", sabaFormattedAddress.getAddress2())
+                .addValue("xaddr3", sabaFormattedAddress.getAddress3())
+                .addValue("xcity", sabaFormattedAddress.getCity())
+                .addValue("xstate", sabaFormattedAddress.getState())
+                .addValue("xzip", sabaFormattedAddress.getPostalCode())
+                .addValue("xhomephone", person.getPrimaryPhone())
+                .addValue("xworkphone", person.getSecondaryPhone())
+                .addValue("xpassword", user.getPassword())
+                .addValue("xtimezone_id", user.getTimezoneId())
                 .addValue("xcreated_on", currentDate)
                 .addValue("xcreated_by", createdByName)
                 .addValue("xupdated_on", currentDate)
@@ -173,12 +93,12 @@ public class UserDAO {
                 .addValue("xhome_domain", homeDomain)
                 .addValue("xcurrency_id", currency);
 
-        logger.debug("Inserting new user");
+        logger.debug("Inserting new user. Executing stored procedure", insertUserStoredProceudreName);
 
-//        Map<String, Object> insertUserResults = executeUserStoredProcedure(in, insertStoredProceudreName);
-//
-//        Map<String, Object> insertProfileResults = insertUserProfile(createdByName, createdById, "resulting person id from above",
-//                split);
+        Map<String, Object> insertUserResults = executeUserStoredProcedure(in, userInsertActor);
+
+        Map<String, Object> insertProfileResults = insertUserProfile(createdByName, createdById, personId,
+                split); //TODO this should be wrapped in a transaction, if the second query fails roll back the first
 
         return personId;
     }
@@ -207,23 +127,39 @@ public class UserDAO {
                 .addValue("xflags", flags)
                 .addValue("xsplit", split);
 
-        logger.debug("Inserting user profile");
-        return executeUserStoredProcedure(in, insertProfileStoredProceudreName);
+        logger.debug("Inserting user profile. Executing stored procedure", insertProfileStoredProceudreName);
+        return executeUserStoredProcedure(in, profileInsertActor);
     }
 
-    private Map<String,Object> executeUserStoredProcedure(SqlParameterSource inParameters, String procedureToExecute) throws Exception {
+    private Map<String,Object> executeUserStoredProcedure(SqlParameterSource inParameters, SimpleJdbcCall spCallToExecute) throws Exception {
         try {
-            logger.debug("Executing stored procedure ", procedureToExecute);
+            Map<String,Object> out = spCallToExecute.execute(inParameters);
 
-            personActor.withProcedureName(procedureToExecute);
-            Map<String,Object> out = personActor.execute(inParameters);
-
-            logger.debug("Stored Procedure {} executed successfully", procedureToExecute);
+            logger.debug("Stored Procedure executed successfully");
             return out;
         }
         catch (Exception e) {
-            logger.error("Error inserting user - {}", e);
+            logger.error("Error calling stored procedure - {}", e);
             throw e;
         }
+    }
+
+    /**
+     * In SABA, when entering a new user, address1 = Office/Dept, address2 = Ste/Mail Stop, and address3 = Street/PO Box
+     * The new database will use address1 = Street/PO Box, then additional optional address2 and address3 fields
+     * @param addressToChange the address formatted for new database
+     * @return the Address formatted for SABA
+     */
+    private Address mapAddressToSabaFormat(Address addressToChange) {
+        Address sabaFomattedAddress = new Address();
+        sabaFomattedAddress.setId(addressToChange.getId());
+        sabaFomattedAddress.setAddress1(addressToChange.getAddress2());
+        sabaFomattedAddress.setAddress2(addressToChange.getAddress3());
+        sabaFomattedAddress.setAddress3(addressToChange.getAddress1());
+        sabaFomattedAddress.setCity(addressToChange.getCity());
+        sabaFomattedAddress.setState(addressToChange.getState());
+        sabaFomattedAddress.setPostalCode(addressToChange.getPostalCode());
+
+        return sabaFomattedAddress;
     }
 }

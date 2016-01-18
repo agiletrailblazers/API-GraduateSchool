@@ -7,11 +7,14 @@ import com.gs.api.domain.registration.User;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.SqlParameter;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.test.context.ContextConfiguration;
@@ -24,11 +27,15 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "classpath:spring/test-root-context.xml" })
 public class UserDAOTest {
+    private static final String getPersIdSequenceQuery = "select lpad(ltrim(rtrim(to_char(tpt_person_seq.nextval))), 15, '0') id from dual";
+    private static final String getProfileIdSequenceQuery = "select lpad(ltrim(rtrim(to_char(cmt_profile_entry_seq.nextval))), 15, '0') id from dual";
 
     private static final String FIRST_NAME = "Joe";
     private static final String MIDDLE_NAME = "Bob";
@@ -36,7 +43,8 @@ public class UserDAOTest {
     private static final String USERNAME = "FOO@BAR.COM";
     private static final String EMAIL_ADDRESS = "foo@bar.com";
     private static final String ADDRESS_1 = "42 Some Street";
-    private static final String ADDRESS_2 = "#2";
+    private static final String ADDRESS_2 = "Dept of Something";
+    private static final String ADDRESS_3 = "#2";
     private static final String ADDRESS_CITY = "Boston";
     private static final String ADDRESS_STATE = "MA";
     private static final String ADDRESS_ZIP = "55555";
@@ -57,7 +65,16 @@ public class UserDAOTest {
     private JdbcTemplate jdbcTemplate;
 
     @Mock
-    private SimpleJdbcCall personInsertActor;
+    private SimpleJdbcCall userInsertActor;
+
+    @Mock
+    private SimpleJdbcCall profileInsertActor;
+
+    @Captor
+    private ArgumentCaptor<SqlParameterSource> insertUserCaptor;
+
+    @Captor
+    private ArgumentCaptor<SqlParameterSource> insertProfileCaptor;
 
     @Before
     public void setUp() throws Exception {
@@ -81,6 +98,7 @@ public class UserDAOTest {
         Address address = new Address();
         address.setAddress1(ADDRESS_1);
         address.setAddress2(ADDRESS_2);
+        address.setAddress3(ADDRESS_3);
         address.setCity(ADDRESS_CITY);
         address.setState(ADDRESS_STATE);
         address.setPostalCode(ADDRESS_ZIP);
@@ -91,25 +109,54 @@ public class UserDAOTest {
 
     @Test
     public void testInsertUser() throws Exception {
-        String expectedResults = "IDofCreatedUser";
         HashMap<String, Object> sqlResult = new HashMap();
+        String expectedPersonId = "persn100";
+        String expectedProfileId = "ppcor1000";
+        Person person = user.getPerson();
 
-        // TODO you will want to update this test it doesn't actual verify anything relevant
-        //      It needs to capture the values passed to the jdbc template and assert that the
-        //      expected data is being passed to the stored procedure.
+        when(jdbcTemplate.queryForObject(getPersIdSequenceQuery, String.class)).thenReturn("100");
+        doReturn(sqlResult).when(userInsertActor).execute(any(SqlParameterSource.class));
 
-        doReturn(sqlResult).when(personInsertActor).execute(any(SqlParameterSource.class));
-        String actualResults = userDAO.insertNewUser(user);
+        when(jdbcTemplate.queryForObject(getProfileIdSequenceQuery, String.class)).thenReturn("1000");
+        doReturn(sqlResult).when(profileInsertActor).execute(any(SqlParameterSource.class));
 
-        assertNotNull(actualResults);
-        assertEquals(expectedResults, actualResults);
+        String actualUserId = userDAO.insertNewUser(user);
+
+        verify(userInsertActor).execute(insertUserCaptor.capture());
+        SqlParameterSource userParameters = insertUserCaptor.getValue();
+        assertEquals(expectedPersonId, actualUserId);
+        assertEquals(actualUserId, userParameters.getValue("xid"));
+        assertEquals(user.getUsername(), userParameters.getValue("xusername"));
+        assertEquals(user.getPassword(), userParameters.getValue("xpassword"));
+        assertEquals(user.getTimezoneId(), userParameters.getValue("xtimezone_id"));
+
+        Person userPerson = user.getPerson();
+        assertEquals(userPerson.getFirstName(), userParameters.getValue("xfname"));
+        assertEquals(userPerson.getMiddleName(), userParameters.getValue("xmname"));
+        assertEquals(userPerson.getLastName(), userParameters.getValue("xlname"));
+        assertEquals(userPerson.getVeteran(), userParameters.getValue("xcustom2"));
+        assertEquals(userPerson.getPrimaryPhone(), userParameters.getValue("xhomephone"));
+        assertEquals(userPerson.getEmailAddress(), userParameters.getValue("xemail"));
+
+        Address personPrimaryAddress = userPerson.getPrimaryAddress();
+        assertEquals(personPrimaryAddress.getAddress1(), userParameters.getValue("xaddr3"));
+        assertEquals(personPrimaryAddress.getAddress2(), userParameters.getValue("xaddr1"));
+        assertEquals(personPrimaryAddress.getAddress3(), userParameters.getValue("xaddr2"));
+        assertEquals(personPrimaryAddress.getCity(), userParameters.getValue("xcity"));
+        assertEquals(personPrimaryAddress.getState(), userParameters.getValue("xstate"));
+        assertEquals(personPrimaryAddress.getPostalCode(), userParameters.getValue("xzip"));
+
+        verify(profileInsertActor).execute(insertProfileCaptor.capture());
+        SqlParameterSource profileParameters = insertProfileCaptor.getValue();
+
+        assertEquals(expectedProfileId, profileParameters.getValue("xid"));
+        assertEquals(expectedPersonId, profileParameters.getValue("xprofiled_id"));
     }
 
     @Test
     public void testFailToInsertUser() throws Exception {
-        when(personInsertActor.execute(any(SqlParameterSource.class)))
-                .thenThrow(new IllegalArgumentException("BAD SQL"));
-
+        when(jdbcTemplate.queryForObject(getPersIdSequenceQuery, String.class)).thenReturn("100");
+        when(userInsertActor.execute(any(SqlParameterSource.class))).thenThrow(new IllegalArgumentException("BAD SQL"));
         try {
             userDAO.insertNewUser(user);
             assertTrue(false); //Should never reach this line
@@ -121,12 +168,24 @@ public class UserDAOTest {
     }
 
     @Test
-    public void testGetAccount() throws Exception {
+    public void testFailToInsertProfile() throws Exception {
+        HashMap<String, Object> sqlResult = new HashMap();
 
-    }
+        //Mock successful User insert
+        when(jdbcTemplate.queryForObject(getPersIdSequenceQuery, String.class)).thenReturn("100");
+        doReturn(sqlResult).when(userInsertActor).execute(any(SqlParameterSource.class));
 
-    @Test
-    public void testFailToGetAccount() throws Exception {
+        when(jdbcTemplate.queryForObject(getProfileIdSequenceQuery, String.class)).thenReturn("1000");
+        when(profileInsertActor.execute(any(SqlParameterSource.class)))
+                .thenThrow(new IllegalArgumentException("BAD SQL"));
 
+        try {
+            userDAO.insertNewUser(user);
+            assertTrue(false); //Should never reach this line
+        }
+        catch (IllegalArgumentException iE) {
+            assertNotNull(iE);
+            assertTrue(iE instanceof Exception);
+        }
     }
 }
