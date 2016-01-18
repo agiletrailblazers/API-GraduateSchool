@@ -67,6 +67,7 @@ public class UserDAOTest {
         user.setUsername(USERNAME);
         user.setPassword(PASSWORD_CLEAR);
         user.setTimezoneId(TIMEZONE_ID);
+        user.setLastFourSSN(LAST_FOUR_SSN);
 
         Person person = new Person();
         person.setFirstName(FIRST_NAME);
@@ -76,7 +77,6 @@ public class UserDAOTest {
         person.setPrimaryPhone(PHONE);
         person.setVeteran(VETERAN_STATUS);
         person.setDateOfBirth(DOB);
-        person.setLastFourSSN(LAST_FOUR_SSN);
 
         Address address = new Address();
         address.setAddress1(ADDRESS_1);

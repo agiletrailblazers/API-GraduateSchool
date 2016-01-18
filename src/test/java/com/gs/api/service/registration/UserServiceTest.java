@@ -54,7 +54,6 @@ public class UserServiceTest {
         user = new User();
         user.setUsername(EMAIL_ADDRESS);
         user.setPassword(PASSWORD_CLEAR);
-        user.setDateOfBirth(DOB);
         user.setLastFourSSN(LAST_FOUR_SSN);
 
         Person person = new Person();
@@ -63,6 +62,7 @@ public class UserServiceTest {
         person.setLastName(LAST_NAME);
         person.setEmailAddress(EMAIL_ADDRESS);
         person.setPrimaryPhone(PHONE);
+        person.setDateOfBirth(DOB);
 
         Address address = new Address();
         address.setAddress1(ADDRESS_1);

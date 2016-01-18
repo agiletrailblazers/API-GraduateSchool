@@ -10,6 +10,7 @@ public class User {
     private String id;
     private String username;
     private String password;
+    private String lastFourSSN;
     private Person person;
     private String timezoneId;
 
@@ -35,6 +36,14 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getLastFourSSN() {
+        return lastFourSSN;
+    }
+
+    public void setLastFourSSN(String lastFourSSN) {
+        this.lastFourSSN = lastFourSSN;
     }
 
     public Person getPerson() {

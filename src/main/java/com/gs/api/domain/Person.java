@@ -17,7 +17,6 @@ public class Person {
     private Address secondaryAddress;
     private Boolean veteran;
     private String dateOfBirth;
-    private String lastFourSSN;
 
     public String getId() {
         return id;
@@ -105,13 +104,5 @@ public class Person {
 
     public void setDateOfBirth(String dateOfBirth) {
         this.dateOfBirth = dateOfBirth;
-    }
-
-    public String getLastFourSSN() {
-        return lastFourSSN;
-    }
-
-    public void setLastFourSSN(String lastFourSSN) {
-        this.lastFourSSN = lastFourSSN;
     }
 }
