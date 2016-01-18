@@ -127,7 +127,7 @@ public class UserDAO {
                 .addValue("xflags", flags)
                 .addValue("xsplit", split);
 
-        logger.debug("Inserting user profile. Executing stored procedure", insertProfileStoredProceudreName);
+        logger.debug("Inserting user profile. Executing stored procedure: {}", insertProfileStoredProceudreName);
         return executeUserStoredProcedure(in, profileInsertActor);
     }
 
@@ -139,7 +139,7 @@ public class UserDAO {
             return out;
         }
         catch (Exception e) {
-            logger.error("Error calling stored procedure - {}", e);
+            logger.error("Error calling stored procedure", e);
             throw e;
         }
     }
