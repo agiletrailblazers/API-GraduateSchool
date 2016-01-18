@@ -91,7 +91,43 @@ public class UserDAO {
                 .addValue("xcorres_pref3", '0')
                 .addValue("xsplit", split)
                 .addValue("xhome_domain", homeDomain)
-                .addValue("xcurrency_id", currency);
+                .addValue("xcurrency_id", currency)
+
+                //Insert lots of nulls
+                .addValue("xaccount_no", null)
+                .addValue("xcompany_id", null)
+                .addValue("xcountry", null)
+                .addValue("xcustom0", null)
+                .addValue("xcustom1", null)
+                .addValue("xcustom3", null)
+                .addValue("xcustom4", null)
+                .addValue("xcustom5", null)
+                .addValue("xcustom6", null)
+                .addValue("xcustom7", null)
+                .addValue("xcustom8", null)
+                .addValue("xcustom9", null)
+                .addValue("xdate_of_birth", null)
+                .addValue("xdes_jbtyp_id", null)
+                .addValue("xethnicity", null)
+                .addValue("xfax", null)
+                .addValue("xjob_title", null)
+                .addValue("xjobtype_id", null)
+                .addValue("xlocale_id", null)
+                .addValue("xlocation_id", null)
+                .addValue("xmanager_id", null)
+                .addValue("xpassword_changed", null)
+                .addValue("xperson_no", null)
+                .addValue("xperson_type", null)
+                .addValue("xreligion", null)
+                .addValue("xsecret_answer", null)
+                .addValue("xsecret_question", null)
+                .addValue("xss_no", null)
+                .addValue("xstarted_on", null)
+                .addValue("xstatus", null)
+                .addValue("xsuffix", null)
+                .addValue("xterminated_on", null)
+                .addValue("xtitle", null)
+                .addValue("xts", null);
 
         logger.debug("Inserting new user. Executing stored procedure", insertUserStoredProceudreName);
 
@@ -125,7 +161,60 @@ public class UserDAO {
                 .addValue("xprofiled_id", personId)
                 .addValue("xlocale_id", locale)
                 .addValue("xflags", flags)
-                .addValue("xsplit", split);
+                .addValue("xsplit", split)
+
+                //Insert lots of nulls
+                .addValue("xcustom0", null)
+                .addValue("xcustom1", null)
+                .addValue("xcustom3", null)
+                .addValue("xcustom4", null)
+                .addValue("xcustom5", null)
+                .addValue("xcustom6", null)
+                .addValue("xcustom7", null)
+                .addValue("xcustom8", null)
+                .addValue("xcustom9", null)
+                .addValue("xcustom0", null)
+                .addValue("xorganization_id", null)
+                .addValue("xlocation_id", null)
+                .addValue("xperson_id", null)
+                .addValue("xsyslov1_id", null)
+                .addValue("xsyslov2_id", null)
+                .addValue("xsyslov3_id", null)
+                .addValue("xsyslov4_id", null)
+                .addValue("xsyslov5_id", null)
+                .addValue("xuserlov1_id", null)
+                .addValue("xuserlov2_id", null)
+                .addValue("xuserlov3_id", null)
+                .addValue("xuserlov4_id", null)
+                .addValue("xuserlov5_id", null)
+                .addValue("xlongtext0_1", null)
+                .addValue("xlongtext0_2", null)
+                .addValue("xlongtext0_3", null)
+                .addValue("xlongtext0_4", null)
+                .addValue("xlongtext0_5", null)
+                .addValue("xlongtext0_6", null)
+                .addValue("xlongtext0_7", null)
+                .addValue("xlongtext0_8", null)
+                .addValue("xlongtext1_1", null)
+                .addValue("xlongtext1_2", null)
+                .addValue("xlongtext1_3", null)
+                .addValue("xlongtext1_4", null)
+                .addValue("xlongtext1_5", null)
+                .addValue("xlongtext1_6", null)
+                .addValue("xlongtext1_7", null)
+                .addValue("xlongtext1_8", null)
+                .addValue("xtext1", null)
+                .addValue("xtext2", null)
+                .addValue("xtext3", null)
+                .addValue("xtext4", null)
+                .addValue("xtext5", null)
+                .addValue("xdate1", null)
+                .addValue("xdate2", null)
+                .addValue("xdate3", null)
+                .addValue("xint1", null)
+                .addValue("xint2", null)
+                .addValue("xint3", null)
+                .addValue("xnewts", null);
 
         logger.debug("Inserting user profile. Executing stored procedure: {}", insertProfileStoredProceudreName);
         return executeUserStoredProcedure(in, profileInsertActor);
@@ -151,15 +240,15 @@ public class UserDAO {
      * @return the Address formatted for SABA
      */
     private Address mapAddressToSabaFormat(Address addressToChange) {
-        Address sabaFomattedAddress = new Address();
-        sabaFomattedAddress.setId(addressToChange.getId());
-        sabaFomattedAddress.setAddress1(addressToChange.getAddress2());
-        sabaFomattedAddress.setAddress2(addressToChange.getAddress3());
-        sabaFomattedAddress.setAddress3(addressToChange.getAddress1());
-        sabaFomattedAddress.setCity(addressToChange.getCity());
-        sabaFomattedAddress.setState(addressToChange.getState());
-        sabaFomattedAddress.setPostalCode(addressToChange.getPostalCode());
+        Address sabaFormattedAddress = new Address();
+        sabaFormattedAddress.setId(addressToChange.getId());
+        sabaFormattedAddress.setAddress1(addressToChange.getAddress2());
+        sabaFormattedAddress.setAddress2(addressToChange.getAddress3());
+        sabaFormattedAddress.setAddress3(addressToChange.getAddress1());
+        sabaFormattedAddress.setCity(addressToChange.getCity());
+        sabaFormattedAddress.setState(addressToChange.getState());
+        sabaFormattedAddress.setPostalCode(addressToChange.getPostalCode());
 
-        return sabaFomattedAddress;
+        return sabaFormattedAddress;
     }
 }
