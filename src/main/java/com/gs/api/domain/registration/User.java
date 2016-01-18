@@ -9,13 +9,9 @@ public class User {
 
     private String id;
     private String username;
-    private String dateOfBirth;
-    private String lastFourSSN;
     private String password;
     private Person person;
-
-    /* From Main Insert Query */
-    /* (xid, xcurrency_id, xsplit, xxlgen_account_no, xnewts */
+    private String timezoneId;
 
     public String getId() {
         return id;
@@ -33,22 +29,6 @@ public class User {
         this.username = username;
     }
 
-    public String getDateOfBirth() {
-        return dateOfBirth;
-    }
-
-    public void setDateOfBirth(String dateOfBirth) {
-        this.dateOfBirth = dateOfBirth;
-    }
-
-    public String getLastFourSSN() {
-        return lastFourSSN;
-    }
-
-    public void setLastFourSSN(String lastFourSSN) {
-        this.lastFourSSN = lastFourSSN;
-    }
-
     public String getPassword() {
         return password;
     }
@@ -63,5 +43,13 @@ public class User {
 
     public void setPerson(Person person) {
         this.person = person;
+    }
+
+    public String getTimezoneId() {
+        return timezoneId;
+    }
+
+    public void setTimezoneId(String timezoneId) {
+        this.timezoneId = timezoneId;
     }
 }
