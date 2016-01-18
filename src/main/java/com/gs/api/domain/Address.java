@@ -13,10 +13,6 @@ public class Address {
     private String state;
     private String postalCode;
 
-    /*  All properties from stored procedure to insert users */
-    /* (id, time_stamp, owner_id, addr1, addr2, addr3, city, state, zip, country, tag,
-    ci_city,ci_state,ci_country)*/
-
     public String getId() {
         return id;
     }

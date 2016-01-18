@@ -33,6 +33,7 @@ public class UserDAOTest {
     private static final String FIRST_NAME = "Joe";
     private static final String MIDDLE_NAME = "Bob";
     private static final String LAST_NAME = "Smith";
+    private static final String USERNAME = "FOO@BAR.COM";
     private static final String EMAIL_ADDRESS = "foo@bar.com";
     private static final String ADDRESS_1 = "42 Some Street";
     private static final String ADDRESS_2 = "#2";
@@ -43,6 +44,8 @@ public class UserDAOTest {
     private static final String PASSWORD_CLEAR = "test1234";
     private static final String DOB = "05/05/1955";
     private static final String LAST_FOUR_SSN = "5555";
+    private static final String TIMEZONE_ID = "tzone000000000000007";
+    private static final Boolean VETERAN_STATUS = false;
 
     private User user;
 
@@ -61,10 +64,9 @@ public class UserDAOTest {
         MockitoAnnotations.initMocks(this);
 
         user = new User();
-        user.setUsername(EMAIL_ADDRESS);
+        user.setUsername(USERNAME);
         user.setPassword(PASSWORD_CLEAR);
-        user.setDateOfBirth(DOB);
-        user.setLastFourSSN(LAST_FOUR_SSN);
+        user.setTimezoneId(TIMEZONE_ID);
 
         Person person = new Person();
         person.setFirstName(FIRST_NAME);
@@ -72,6 +74,9 @@ public class UserDAOTest {
         person.setLastName(LAST_NAME);
         person.setEmailAddress(EMAIL_ADDRESS);
         person.setPrimaryPhone(PHONE);
+        person.setVeteran(VETERAN_STATUS);
+        person.setDateOfBirth(DOB);
+        person.setLastFourSSN(LAST_FOUR_SSN);
 
         Address address = new Address();
         address.setAddress1(ADDRESS_1);
