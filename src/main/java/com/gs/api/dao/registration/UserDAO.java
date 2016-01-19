@@ -28,9 +28,9 @@ public class UserDAO {
     private SimpleJdbcCall profileInsertActor;
     private SimpleJdbcCall listEntryActor;
 
-    private static final String insertUserStoredProceudreName = "tpp_person_ins";
-    private static final String insertProfileStoredProceudreName = "cmp_profile_entry_ins";
-    private static final String insertfgtListEntryStoredProceudreName = "fgp_listel_ins";
+    private static final String insertUserStoredProcedureName = "tpp_person_ins";
+    private static final String insertProfileStoredProcedureName = "cmp_profile_entry_ins";
+    private static final String insertfgtListEntryStoredProcedureName = "fgp_listel_ins";
     private static final String getPersIdSequenceQuery = "select lpad(ltrim(rtrim(to_char(tpt_person_seq.nextval))), 15, '0') id from dual";
     private static final String getProfileIdSequenceQuery = "select lpad(ltrim(rtrim(to_char(cmt_profile_entry_seq.nextval))), 15, '0') id from dual";
     private static final String getListEntryIdSequenceQuery = "select lpad(ltrim(rtrim(to_char(fgt_list_entry_seq.nextval))), 15, '0') id from dual";
@@ -38,9 +38,9 @@ public class UserDAO {
     @Autowired
     public void setDataSource(DataSource dataSource) {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
-        this.userInsertActor = new SimpleJdbcCall(this.jdbcTemplate).withProcedureName(insertUserStoredProceudreName);
-        this.profileInsertActor = new SimpleJdbcCall(this.jdbcTemplate).withProcedureName(insertProfileStoredProceudreName);
-        this.listEntryActor = new SimpleJdbcCall(this.jdbcTemplate).withProcedureName(insertfgtListEntryStoredProceudreName);
+        this.userInsertActor = new SimpleJdbcCall(this.jdbcTemplate).withProcedureName(insertUserStoredProcedureName);
+        this.profileInsertActor = new SimpleJdbcCall(this.jdbcTemplate).withProcedureName(insertProfileStoredProcedureName);
+        this.listEntryActor = new SimpleJdbcCall(this.jdbcTemplate).withProcedureName(insertfgtListEntryStoredProcedureName);
     }
 
     /**
@@ -141,7 +141,7 @@ public class UserDAO {
                 .addValue("xtitle", null, OracleTypes.VARCHAR)
                 .addValue("xts", null, OracleTypes.VARCHAR);
 
-        logger.debug("Inserting new user. Executing stored procedure", insertUserStoredProceudreName);
+        logger.debug("Inserting new user. Executing stored procedure: {}", insertUserStoredProcedureName);
 
         //TODO Can this  be wrapped in a transaction, if the latter queries fail roll back the first
         Map<String, Object> insertUserResults = executeUserStoredProcedure(in, userInsertActor);
@@ -235,7 +235,7 @@ public class UserDAO {
                 .addValue("xint2", null, OracleTypes.INTEGER)
                 .addValue("xint3", null, OracleTypes.INTEGER);
 
-        logger.debug("Inserting user profile. Executing stored procedure: {}", insertProfileStoredProceudreName);
+        logger.debug("Inserting user profile. Executing stored procedure: {}", insertProfileStoredProcedureName);
 
         //This results in one row in the profile table with an active flag. However, Saba inserts 6 additional rows, the
         //only difference is entry_type_id and the acronym in the profile id. Might need to execute additional times
@@ -246,7 +246,7 @@ public class UserDAO {
     private Map<String, Object> insertListEntry(String personId, String listId) throws Exception {
         long millis = new Date().getTime();
 
-        String listEntryId = "liste" +  (String) this.jdbcTemplate.queryForObject(getListEntryIdSequenceQuery, String.class);
+        String listEntryId = "liste" +  this.jdbcTemplate.queryForObject(getListEntryIdSequenceQuery, String.class);
 
         SqlParameterSource in = new MapSqlParameterSource()
                 .addValue("xid", listEntryId, OracleTypes.FIXED_CHAR)
@@ -256,7 +256,7 @@ public class UserDAO {
                 .addValue("xgroup_label", null, OracleTypes.VARCHAR)
                 .addValue("xnewts", millis, OracleTypes.VARCHAR);
 
-        logger.debug("Inserting user profile. Executing stored procedure: {}", insertfgtListEntryStoredProceudreName);
+        logger.debug("Inserting user profile. Executing stored procedure: {}", insertfgtListEntryStoredProcedureName);
         return executeUserStoredProcedure(in, listEntryActor);
     }
 

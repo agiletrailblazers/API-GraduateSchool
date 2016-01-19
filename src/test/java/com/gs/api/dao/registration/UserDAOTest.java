@@ -20,12 +20,14 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.HashMap;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -52,8 +54,10 @@ public class UserDAOTest {
     private static final String PASSWORD_CLEAR = "test1234";
     private static final String DOB = "05/05/1955";
     private static final String LAST_FOUR_SSN = "5555";
-    private static final String TIMEZONE_ID = "tzone000000000000007";
-    private static final Boolean VETERAN_STATUS = false;
+    private static final String TIMEZONE_ID = "testId";
+    private static final String TIMEZONE_ID_DEFAULT = "tzone000000000000007";
+    private static final Boolean VETERAN_STATUS = true;
+    private static final Boolean VETERAN_STATUS_DEFAULT = false;
 
     private User user;
 
@@ -118,6 +122,7 @@ public class UserDAOTest {
         HashMap<String, Object> sqlResult = new HashMap();
         String expectedPersonId = "persn100";
         String expectedProfileId = "ppcor1000";
+        String expectedListEntryId = "liste1000";
 
         when(jdbcTemplate.queryForObject(getPersIdSequenceQuery, String.class)).thenReturn("100");
         doReturn(sqlResult).when(userInsertActor).execute(any(SqlParameterSource.class));
@@ -137,12 +142,14 @@ public class UserDAOTest {
         assertEquals(user.getUsername(), userParameters.getValue("xusername"));
         assertEquals(user.getPassword(), userParameters.getValue("xpassword"));
         assertEquals(user.getTimezoneId(), userParameters.getValue("xtimezone_id"));
+        assertEquals(TIMEZONE_ID, userParameters.getValue("xtimezone_id"));
 
         Person userPerson = user.getPerson();
         assertEquals(userPerson.getFirstName(), userParameters.getValue("xfname"));
         assertEquals(userPerson.getMiddleName(), userParameters.getValue("xmname"));
         assertEquals(userPerson.getLastName(), userParameters.getValue("xlname"));
         assertEquals(userPerson.getVeteran(), userParameters.getValue("xcustom2"));
+        assertEquals(VETERAN_STATUS, userParameters.getValue("xcustom2"));
         assertEquals(userPerson.getPrimaryPhone(), userParameters.getValue("xhomephone"));
         assertEquals(userPerson.getEmailAddress(), userParameters.getValue("xemail"));
 
@@ -160,13 +167,53 @@ public class UserDAOTest {
         assertEquals(expectedProfileId, profileParameters.getValue("xid"));
         assertEquals(expectedPersonId, profileParameters.getValue("xprofiled_id"));
 
-        //make list entry tests pass when I'm less sleepy
-        //verify(listEntryActor).execute(any(SqlParameterSource.class));
-        //SqlParameterSource listEntryParameters = insertListEntryCaptor.getValue();
+        verify(listEntryActor, times(3)).execute(insertListEntryCaptor.capture());
+        List<SqlParameterSource> listEntryParameters = insertListEntryCaptor.getAllValues();
 
-        //assertEquals(expectedListEntryId, listEntryParameters.getValue("xid")); cannot test this right now, different values each call
-       // assertEquals(expectedPersonId, listEntryParameters.getValue("xperson_id"));
+        assertTrue(listEntryParameters.size() == 3);
+        assertEquals(expectedListEntryId, listEntryParameters.get(0).getValue("xid"));
+        assertEquals(expectedPersonId, listEntryParameters.get(0).getValue("xperson_id"));
+        assertEquals("lista000000000000101", listEntryParameters.get(0).getValue("xlist_id"));
+
+        assertEquals(expectedListEntryId, listEntryParameters.get(1).getValue("xid"));
+        assertEquals(expectedPersonId, listEntryParameters.get(1).getValue("xperson_id"));
+        assertEquals("listl000000000000101", listEntryParameters.get(1).getValue("xlist_id"));
+
+        assertEquals(expectedListEntryId, listEntryParameters.get(2).getValue("xid"));
+        assertEquals(expectedPersonId, listEntryParameters.get(2).getValue("xperson_id"));
+        assertEquals("listl000000000001004", listEntryParameters.get(2).getValue("xlist_id"));
     }
+
+    @Test
+    public void testInsertUserNoTimezoneNoVeteranStatus() throws Exception {
+        HashMap<String, Object> sqlResult = new HashMap();
+        String expectedPersonId = "persn100";
+        String expectedProfileId = "ppcor1000";
+
+        user.setTimezoneId(null);
+        user.getPerson().setVeteran(null);
+
+        when(jdbcTemplate.queryForObject(getPersIdSequenceQuery, String.class)).thenReturn("100");
+        doReturn(sqlResult).when(userInsertActor).execute(any(SqlParameterSource.class));
+
+        when(jdbcTemplate.queryForObject(getProfileIdSequenceQuery, String.class)).thenReturn("1000");
+        doReturn(sqlResult).when(profileInsertActor).execute(any(SqlParameterSource.class));
+
+        when(jdbcTemplate.queryForObject(getListEntryIdSequenceQuery, String.class)).thenReturn("1000");
+        doReturn(sqlResult).when(listEntryActor).execute(any(SqlParameterSource.class));
+
+        String actualUserId = userDAO.insertNewUser(user);
+
+        verify(userInsertActor).execute(insertUserCaptor.capture());
+        SqlParameterSource userParameters = insertUserCaptor.getValue();
+        assertEquals(user.getTimezoneId(), userParameters.getValue("xtimezone_id"));
+        assertEquals(TIMEZONE_ID_DEFAULT, userParameters.getValue("xtimezone_id"));
+
+        Person userPerson = user.getPerson();
+        assertEquals(userPerson.getVeteran(), userParameters.getValue("xcustom2"));
+        assertEquals(VETERAN_STATUS_DEFAULT, userParameters.getValue("xcustom2"));
+    }
+
 
     @Test
     public void testFailToInsertUser() throws Exception {
