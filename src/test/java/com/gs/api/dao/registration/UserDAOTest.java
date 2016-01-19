@@ -57,7 +57,6 @@ public class UserDAOTest {
     private static final String TIMEZONE_ID = "testId";
     private static final String TIMEZONE_ID_DEFAULT = "tzone000000000000007";
     private static final Boolean VETERAN_STATUS = true;
-    private static final Boolean VETERAN_STATUS_DEFAULT = false;
 
     private User user;
 
@@ -148,8 +147,8 @@ public class UserDAOTest {
         assertEquals(userPerson.getFirstName(), userParameters.getValue("xfname"));
         assertEquals(userPerson.getMiddleName(), userParameters.getValue("xmname"));
         assertEquals(userPerson.getLastName(), userParameters.getValue("xlname"));
-        assertEquals(userPerson.getVeteran(), userParameters.getValue("xcustom2"));
-        assertEquals(VETERAN_STATUS, userParameters.getValue("xcustom2"));
+        assertEquals(userPerson.getVeteran(), userParameters.getValue("xcustom9"));
+        assertEquals(VETERAN_STATUS, userParameters.getValue("xcustom9"));
         assertEquals(userPerson.getPrimaryPhone(), userParameters.getValue("xhomephone"));
         assertEquals(userPerson.getEmailAddress(), userParameters.getValue("xemail"));
 
@@ -167,21 +166,18 @@ public class UserDAOTest {
         assertEquals(expectedProfileId, profileParameters.getValue("xid"));
         assertEquals(expectedPersonId, profileParameters.getValue("xprofiled_id"));
 
-        verify(listEntryActor, times(3)).execute(insertListEntryCaptor.capture());
+        verify(listEntryActor, times(2)).execute(insertListEntryCaptor.capture());
         List<SqlParameterSource> listEntryParameters = insertListEntryCaptor.getAllValues();
 
-        assertTrue(listEntryParameters.size() == 3);
+        assertTrue(listEntryParameters.size() == 2);
+
         assertEquals(expectedListEntryId, listEntryParameters.get(0).getValue("xid"));
         assertEquals(expectedPersonId, listEntryParameters.get(0).getValue("xperson_id"));
-        assertEquals("lista000000000000101", listEntryParameters.get(0).getValue("xlist_id"));
+        assertEquals("listl000000000000101", listEntryParameters.get(0).getValue("xlist_id"));
 
         assertEquals(expectedListEntryId, listEntryParameters.get(1).getValue("xid"));
         assertEquals(expectedPersonId, listEntryParameters.get(1).getValue("xperson_id"));
-        assertEquals("listl000000000000101", listEntryParameters.get(1).getValue("xlist_id"));
-
-        assertEquals(expectedListEntryId, listEntryParameters.get(2).getValue("xid"));
-        assertEquals(expectedPersonId, listEntryParameters.get(2).getValue("xperson_id"));
-        assertEquals("listl000000000001004", listEntryParameters.get(2).getValue("xlist_id"));
+        assertEquals("listl000000000001004", listEntryParameters.get(1).getValue("xlist_id"));
     }
 
     @Test
@@ -191,7 +187,6 @@ public class UserDAOTest {
         String expectedProfileId = "ppcor1000";
 
         user.setTimezoneId(null);
-        user.getPerson().setVeteran(null);
 
         when(jdbcTemplate.queryForObject(getPersIdSequenceQuery, String.class)).thenReturn("100");
         doReturn(sqlResult).when(userInsertActor).execute(any(SqlParameterSource.class));
@@ -208,10 +203,6 @@ public class UserDAOTest {
         SqlParameterSource userParameters = insertUserCaptor.getValue();
         assertEquals(user.getTimezoneId(), userParameters.getValue("xtimezone_id"));
         assertEquals(TIMEZONE_ID_DEFAULT, userParameters.getValue("xtimezone_id"));
-
-        Person userPerson = user.getPerson();
-        assertEquals(userPerson.getVeteran(), userParameters.getValue("xcustom2"));
-        assertEquals(VETERAN_STATUS_DEFAULT, userParameters.getValue("xcustom2"));
     }
 
 

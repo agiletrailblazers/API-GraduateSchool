@@ -14,6 +14,7 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.stereotype.Repository;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
 
@@ -57,7 +58,7 @@ public class UserDAO {
         Date currentDate = new Date();
         long millis = currentDate.getTime();
 
-        //Use until we figure out something else
+        //Defaults to use until we figure out something else
         String createdByName = "sabaguest"; // hardcode default saba user till we decide otherwise
         String createdById = "emplo000000000000000";
         String split = "domin000000000000001";
@@ -67,12 +68,14 @@ public class UserDAO {
             user.setTimezoneId("tzone000000000000007"); //default timezone to make SP function till API is implemented
         }
 
-        if(person.getVeteran() == null) {
-            person.setVeteran(false); //Default to make SP function
-        }
-
         //Generate person id
         String personId = "persn" + (String) this.jdbcTemplate.queryForObject(getPersIdSequenceQuery, String.class);
+
+        //Convert dates to sql dates
+        SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
+        Date parsed = format.parse("20110210");
+        java.sql.Date sqlDateOfBirth = new java.sql.Date(parsed.getTime());
+        logger.debug("dob is {} sqlDate dob is {}", person.getDateOfBirth(), sqlDateOfBirth);
 
         MapSqlParameterSource in = new MapSqlParameterSource()
                 .addValue("xid", personId, OracleTypes.CHAR)
@@ -81,7 +84,9 @@ public class UserDAO {
                 .addValue("xmname", person.getMiddleName(), OracleTypes.VARCHAR)
                 .addValue("xlname", person.getLastName(), OracleTypes.VARCHAR)
                 .addValue("xemail", person.getEmailAddress(), OracleTypes.VARCHAR)
-                .addValue("xcustom2", person.getVeteran(), OracleTypes.VARCHAR)
+                .addValue("xcustom2", "false", OracleTypes.VARCHAR) //We are unsure what this represents
+                .addValue("xdate_of_birth", sqlDateOfBirth, OracleTypes.DATE)
+                .addValue("xcustom9", person.getVeteran(), OracleTypes.VARCHAR)
                 .addValue("xaddr1", sabaFormattedAddress.getAddress1(), OracleTypes.VARCHAR)
                 .addValue("xaddr2", sabaFormattedAddress.getAddress2(), OracleTypes.VARCHAR)
                 .addValue("xaddr3", sabaFormattedAddress.getAddress3(), OracleTypes.VARCHAR)
@@ -105,7 +110,7 @@ public class UserDAO {
                 .addValue("xhome_domain", homeDomain, OracleTypes.FIXED_CHAR)
                 .addValue("xcurrency_id", currency, OracleTypes.FIXED_CHAR)
 
-            //Insert lots of nulls
+                //Insert lots of nulls
                 .addValue("xaccount_no", null, OracleTypes.VARCHAR)
                 .addValue("xcompany_id", null, OracleTypes.FIXED_CHAR)
                 .addValue("xcountry", null, OracleTypes.VARCHAR)
@@ -117,8 +122,6 @@ public class UserDAO {
                 .addValue("xcustom6", null, OracleTypes.VARCHAR)
                 .addValue("xcustom7", null, OracleTypes.VARCHAR)
                 .addValue("xcustom8", null, OracleTypes.VARCHAR)
-                .addValue("xcustom9", null, OracleTypes.VARCHAR)
-                .addValue("xdate_of_birth", null, OracleTypes.DATE)
                 .addValue("xdes_jbtyp_id", null, OracleTypes.FIXED_CHAR)
                 .addValue("xethnicity", null, OracleTypes.VARCHAR)
                 .addValue("xfax", null, OracleTypes.VARCHAR)
@@ -143,15 +146,17 @@ public class UserDAO {
 
         logger.debug("Inserting new user. Executing stored procedure: {}", insertUserStoredProcedureName);
 
-        //TODO Can this  be wrapped in a transaction, if the latter queries fail roll back the first
+        //TODO Can this  be wrapped in a transaction, if the later queries fail roll back the first
         Map<String, Object> insertUserResults = executeUserStoredProcedure(in, userInsertActor);
 
         Map<String, Object> insertProfileResults = insertUserProfile(createdByName, createdById, personId,
                 split);
 
-        insertListEntry(personId, "lista000000000000101");
-        insertListEntry(personId, "listl000000000000101");
-        insertListEntry(personId, "listl000000000001004");
+        String desktopPermissionListID = "listl000000000000101"; //External security role grants permission to main saba app
+        String domainIDcprivIDListID = "listl000000000001004"; // Concat of two security tables ids [domin000000000000001][cpriv000000000000117]
+
+        insertListEntry(personId, desktopPermissionListID);
+        insertListEntry(personId, domainIDcprivIDListID);
 
 
         return personId;
@@ -182,8 +187,8 @@ public class UserDAO {
                 .addValue("xsplit", split, OracleTypes.CHAR)
                 .addValue("xnewts", millis, OracleTypes.VARCHAR)
 
-        //Insert lots of nulls
-             .addValue("xcustom0", null, OracleTypes.VARCHAR)
+                //Insert lots of nulls
+                .addValue("xcustom0", null, OracleTypes.VARCHAR)
                 .addValue("xcustom1", null, OracleTypes.VARCHAR)
                 .addValue("xcustom2", null, OracleTypes.VARCHAR)
                 .addValue("xcustom3", null, OracleTypes.VARCHAR)
@@ -237,8 +242,8 @@ public class UserDAO {
 
         logger.debug("Inserting user profile. Executing stored procedure: {}", insertProfileStoredProcedureName);
 
-        //This results in one row in the profile table with an active flag. However, Saba inserts 6 additional rows, the
-        //only difference is entry_type_id and the acronym in the profile id. Might need to execute additional times
+        /*TODO This results in one row in the profile table with an active flag. However, Saba inserts 6 additional rows,
+        the only difference is entry_type_id and the acronym in the profile id. Might need to execute additional times*/
 
         return executeUserStoredProcedure(in, profileInsertActor);
     }
