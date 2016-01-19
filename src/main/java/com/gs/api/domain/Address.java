@@ -4,25 +4,15 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 @JsonInclude(Include.NON_NULL)
-public class Location {
+public class Address {
 
     private String id;
-    private String name;
-    private String telephone;
     private String address1;
     private String address2;
+    private String address3;
     private String city;
     private String state;
     private String postalCode;
-
-    public Location() {
-        //default
-    }
-
-    public Location(String city, String state) {
-        this.city = city;
-        this.state = state;
-    }
 
     public String getId() {
         return id;
@@ -30,22 +20,6 @@ public class Location {
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getTelephone() {
-        return telephone;
-    }
-
-    public void setTelephone(String telephone) {
-        this.telephone = telephone;
     }
 
     public String getAddress1() {
@@ -88,4 +62,11 @@ public class Location {
         this.postalCode = postalCode;
     }
 
+    public String getAddress3() {
+        return address3;
+    }
+
+    public void setAddress3(String address3) {
+        this.address3 = address3;
+    }
 }

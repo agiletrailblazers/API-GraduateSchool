@@ -2,8 +2,8 @@ package com.gs.api.service;
 
 import java.util.List;
 
-import com.gs.api.domain.Course;
-import com.gs.api.domain.CourseSession;
+import com.gs.api.domain.course.Course;
+import com.gs.api.domain.course.CourseSession;
 
 public interface CourseService {
 

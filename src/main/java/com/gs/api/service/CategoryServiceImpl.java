@@ -4,8 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.googlecode.ehcache.annotations.Cacheable;
-import com.gs.api.domain.CourseCategory;
-import com.gs.api.domain.CourseSearchResponse;
+import com.gs.api.domain.course.CourseCategory;
+import com.gs.api.domain.course.CourseSearchResponse;
 
 @Service
 public class CategoryServiceImpl implements CategoryService {

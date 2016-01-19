@@ -3,15 +3,15 @@ package com.gs.api.helper;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.gs.api.domain.Course;
-import com.gs.api.domain.CourseCategory;
-import com.gs.api.domain.CourseCredit;
-import com.gs.api.domain.CourseCreditType;
-import com.gs.api.domain.CourseDescription;
-import com.gs.api.domain.CourseInstructor;
-import com.gs.api.domain.CourseLength;
-import com.gs.api.domain.CourseSession;
-import com.gs.api.domain.CourseSubject;
+import com.gs.api.domain.course.Course;
+import com.gs.api.domain.course.CourseCategory;
+import com.gs.api.domain.course.CourseCredit;
+import com.gs.api.domain.course.CourseCreditType;
+import com.gs.api.domain.course.CourseDescription;
+import com.gs.api.domain.course.CourseInstructor;
+import com.gs.api.domain.course.CourseLength;
+import com.gs.api.domain.course.CourseSession;
+import com.gs.api.domain.course.CourseSubject;
 
 public class CourseTestHelper {
 

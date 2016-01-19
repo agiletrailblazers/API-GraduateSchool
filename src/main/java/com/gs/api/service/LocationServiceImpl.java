@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.gs.api.dao.LocationDAO;
-import com.gs.api.domain.Location;
+import com.gs.api.domain.course.Location;
 
 @Service
 public class LocationServiceImpl implements LocationService {

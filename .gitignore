@@ -18,4 +18,4 @@ target/
 .metadata/
 src/main/main.iml
 src/test/test.iml
-
+src/main/resources/properties/local

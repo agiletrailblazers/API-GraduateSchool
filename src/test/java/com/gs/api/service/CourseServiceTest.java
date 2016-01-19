@@ -25,8 +25,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import com.gs.api.dao.CourseCompetencyDAO;
 import com.gs.api.dao.CourseDAO;
 import com.gs.api.dao.CourseSessionDAO;
-import com.gs.api.domain.Course;
-import com.gs.api.domain.CourseSession;
+import com.gs.api.domain.course.Course;
+import com.gs.api.domain.course.CourseSession;
 import com.gs.api.helper.CourseTestHelper;
 
 @RunWith(SpringJUnit4ClassRunner.class)

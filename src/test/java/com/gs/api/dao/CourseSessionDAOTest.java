@@ -28,7 +28,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.gs.api.dao.CourseSessionDAO.SessionsRowMapper;
-import com.gs.api.domain.CourseSession;
+import com.gs.api.domain.course.CourseSession;
 import com.gs.api.helper.CourseTestHelper;
 
 @RunWith(SpringJUnit4ClassRunner.class)

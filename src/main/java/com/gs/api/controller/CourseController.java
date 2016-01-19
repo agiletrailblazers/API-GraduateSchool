@@ -19,10 +19,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.gs.api.domain.Course;
-import com.gs.api.domain.CourseCategory;
-import com.gs.api.domain.CourseSearchResponse;
-import com.gs.api.domain.CourseSession;
+import com.gs.api.domain.course.Course;
+import com.gs.api.domain.course.CourseCategory;
+import com.gs.api.domain.course.CourseSearchResponse;
+import com.gs.api.domain.course.CourseSession;
 import com.gs.api.exception.NotFoundException;
 import com.gs.api.service.CategoryService;
 import com.gs.api.service.CourseSearchService;

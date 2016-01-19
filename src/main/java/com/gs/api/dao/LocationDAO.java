@@ -16,7 +16,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 import com.googlecode.ehcache.annotations.Cacheable;
-import com.gs.api.domain.Location;
+import com.gs.api.domain.course.Location;
 
 @Repository
 public class LocationDAO {
