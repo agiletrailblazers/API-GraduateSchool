@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Configuration
 @RestController
-@RequestMapping("/registration")
+@RequestMapping("/user")
 public class UserController extends BaseController {
 
     final Logger logger = LoggerFactory.getLogger(UserController.class);
@@ -24,7 +24,7 @@ public class UserController extends BaseController {
     @Autowired
     private UserService userService;
 
-    @RequestMapping(value = "/user", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public User create(@RequestBody User user) throws Exception  {
 
         logger.debug("User Create API initiated");
