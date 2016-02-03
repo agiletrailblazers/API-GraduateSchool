@@ -1,17 +1,17 @@
 package com.gs.api.service;
 
-import java.util.List;
+import com.gs.api.dao.CourseCompetencyDAO;
+import com.gs.api.dao.CourseDAO;
+import com.gs.api.dao.CourseSessionDAO;
+import com.gs.api.domain.course.Course;
+import com.gs.api.domain.course.CourseSession;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.gs.api.dao.CourseCompetencyDAO;
-import com.gs.api.dao.CourseDAO;
-import com.gs.api.dao.CourseSessionDAO;
-import com.gs.api.domain.course.Course;
-import com.gs.api.domain.course.CourseSession;
+import java.util.List;
 
 @Service
 public class CourseServiceImpl implements CourseService {
@@ -48,6 +48,15 @@ public class CourseServiceImpl implements CourseService {
     @Override
     public List<CourseSession> getSessions(String id) throws Exception {
         return sessionDao.getSessions(id);
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see com.gs.api.service.CourseService#getSession(java.lang.String, java.lang.String)
+     */
+    @Override
+    public CourseSession getSession(String courseId, String sessionId) throws Exception {
+        return sessionDao.getSession(courseId, sessionId);
     }
 
     /*

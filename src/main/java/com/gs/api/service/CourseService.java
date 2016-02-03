@@ -1,9 +1,9 @@
 package com.gs.api.service;
 
-import java.util.List;
-
 import com.gs.api.domain.course.Course;
 import com.gs.api.domain.course.CourseSession;
+
+import java.util.List;
 
 public interface CourseService {
 
@@ -26,5 +26,13 @@ public interface CourseService {
      * @return List of sessions
      */
     List<CourseSession> getSessions(String id) throws Exception;
+
+    /**
+     * Get session from database by course id and session id
+     * @param courseId the course id
+     * @param sessionId the session id
+     * @return the session
+     */
+    CourseSession getSession(String courseId, String sessionId) throws Exception;
 
 }

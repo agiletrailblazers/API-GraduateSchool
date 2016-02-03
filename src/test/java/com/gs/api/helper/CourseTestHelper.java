@@ -1,8 +1,5 @@
 package com.gs.api.helper;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.gs.api.domain.course.Course;
 import com.gs.api.domain.course.CourseCategory;
 import com.gs.api.domain.course.CourseCredit;
@@ -12,6 +9,9 @@ import com.gs.api.domain.course.CourseInstructor;
 import com.gs.api.domain.course.CourseLength;
 import com.gs.api.domain.course.CourseSession;
 import com.gs.api.domain.course.CourseSubject;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class CourseTestHelper {
 
@@ -75,7 +75,7 @@ public class CourseTestHelper {
      * @param classNumber
      * @return Session
      */
-    private static CourseSession createSession(String classNumber) {
+    public static CourseSession createSession(String classNumber) {
         CourseSession session = new CourseSession();
         session.setClassNumber(classNumber);
         CourseInstructor instructor = new CourseInstructor();
