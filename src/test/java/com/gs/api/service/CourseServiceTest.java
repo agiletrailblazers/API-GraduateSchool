@@ -107,12 +107,11 @@ public class CourseServiceTest {
     
     @Test
     public void testGetSession() throws Exception {
-        String courseId = "4444";
         String sessionId = "55555";
 
-        when(sessionDAO.getSession(courseId, sessionId)).thenReturn(CourseTestHelper.createSession(sessionId));
+        when(sessionDAO.getSession(sessionId)).thenReturn(CourseTestHelper.createSession(sessionId));
 
-        CourseSession session = courseService.getSession(courseId, sessionId);
+        CourseSession session = courseService.getSession(sessionId);
         assertNotNull("Expected a session to be found", session);
         assertEquals("Wrong session found", sessionId, session.getClassNumber());
     }

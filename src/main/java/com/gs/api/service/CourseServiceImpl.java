@@ -52,11 +52,11 @@ public class CourseServiceImpl implements CourseService {
 
     /*
      * (non-Javadoc)
-     * @see com.gs.api.service.CourseService#getSession(java.lang.String, java.lang.String)
+     * @see com.gs.api.service.CourseService#getSession(java.lang.String)
      */
     @Override
-    public CourseSession getSession(String courseId, String sessionId) throws Exception {
-        return sessionDao.getSession(courseId, sessionId);
+    public CourseSession getSession(String sessionId) throws Exception {
+        return sessionDao.getSession(sessionId);
     }
 
     /*

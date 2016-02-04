@@ -121,17 +121,16 @@ public class CourseController extends BaseController {
 
     /**
      * Get course session given a course id and session id
-     * @param courseId the course ID
      * @param sessionId the session ID
      * @return the course session
      * @throws Exception
      */
-    @RequestMapping(value = "/{courseId}/session/{sessionId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody CourseSession getSession(@PathVariable("courseId") String courseId, @PathVariable("sessionId") String sessionId) throws Exception {
-        logger.debug("Get course session by course id {}, session id {}", courseId, sessionId);
-        final CourseSession session = courseService.getSession(courseId, sessionId);
+    @RequestMapping(value = "/session/{sessionId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody CourseSession getSession(@PathVariable("sessionId") String sessionId) throws Exception {
+        logger.debug("Get course session by session id {}", sessionId);
+        final CourseSession session = courseService.getSession(sessionId);
         if (session == null) {
-            String msg = String.format("No session found for course id %s, session id %s", courseId, sessionId);
+            String msg = String.format("No session found for session id %s", sessionId);
             logger.error(msg);
             throw new NotFoundException(msg);
         }

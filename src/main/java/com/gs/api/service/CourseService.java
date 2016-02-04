@@ -28,11 +28,10 @@ public interface CourseService {
     List<CourseSession> getSessions(String id) throws Exception;
 
     /**
-     * Get session from database by course id and session id
-     * @param courseId the course id
+     * Get session from database by session id
      * @param sessionId the session id
      * @return the session
      */
-    CourseSession getSession(String courseId, String sessionId) throws Exception;
+    CourseSession getSession(String sessionId) throws Exception;
 
 }

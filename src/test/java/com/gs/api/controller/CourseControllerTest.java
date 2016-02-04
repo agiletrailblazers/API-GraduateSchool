@@ -230,12 +230,11 @@ public class CourseControllerTest {
 
     @Test
     public void testGetSession() throws Exception {
-        String courseId = "4444";
         String sessionId = "55555";
 
-        when(courseService.getSession(courseId, sessionId)).thenReturn(CourseTestHelper.createSession(sessionId));
+        when(courseService.getSession(sessionId)).thenReturn(CourseTestHelper.createSession(sessionId));
 
-        mockMvc.perform(get("/courses/{courseId}/session/{sessionId}", courseId, sessionId).accept(MediaType.APPLICATION_JSON_VALUE))
+        mockMvc.perform(get("/courses/session/{sessionId}", sessionId).accept(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("classNumber").value(is(sessionId)));
@@ -243,12 +242,11 @@ public class CourseControllerTest {
 
     @Test
     public void testGetSession_NotFound() throws Exception {
-        String courseId = "4444";
         String sessionId = "55555";
 
-        when(courseService.getSession(courseId, sessionId)).thenReturn(null);
+        when(courseService.getSession(sessionId)).thenReturn(null);
 
-        mockMvc.perform(get("/courses/{courseId}/session/{sessionId}", courseId, sessionId).accept(MediaType.APPLICATION_JSON_VALUE))
+        mockMvc.perform(get("/courses/session/{sessionId}", sessionId).accept(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentType("application/json"));
     }

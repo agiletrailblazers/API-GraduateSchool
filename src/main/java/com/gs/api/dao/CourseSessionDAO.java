@@ -63,18 +63,17 @@ public class CourseSessionDAO {
     }
 
     /**
-     * Get course session details for a specific course/session.
-     * @param courseId the course id
+     * Get course session details for a specific session.
      * @param sessionId the session id (class number)
      * @return the course session details
      */
-    public CourseSession getSession(String courseId, String sessionId) {
-        logger.debug("Getting course session information for course id {}, sessionId {}", courseId, sessionId);
+    public CourseSession getSession(String sessionId) {
+        logger.debug("Getting course session information for sessionId {}", sessionId);
         logger.debug(sql);
         try {
-            final CourseSession session = this.jdbcTemplate.queryForObject(sqlForSingleSession, new Object[] { courseId, courseId, sessionId },
+            final CourseSession session = this.jdbcTemplate.queryForObject(sqlForSingleSession, new Object[] { sessionId, sessionId, sessionId },
                     new SessionsRowMapper());
-            logger.debug("Found session for course id {}, session id {}", courseId, sessionId);
+            logger.debug("Found session for session id {}", sessionId);
             return session;
         }
         catch (IncorrectResultSizeDataAccessException e) {

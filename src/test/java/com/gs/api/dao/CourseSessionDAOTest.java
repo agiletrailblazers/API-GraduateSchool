@@ -133,13 +133,12 @@ public class CourseSessionDAOTest {
     @Test
     public void testGetSession() throws Exception {
 
-        String courseId = "4444";
         String sessionId = "55555";
-        Object[] expectedQueryParams = new Object[] {courseId, courseId, sessionId};
+        Object[] expectedQueryParams = new Object[] {sessionId, sessionId, sessionId};
 
         when(jdbcTemplate.queryForObject(anyString(), any(Object[].class), any(SessionsRowMapper.class))).thenReturn(CourseTestHelper.createSession(sessionId));
 
-        CourseSession session = sessionDAO.getSession(courseId, sessionId);
+        CourseSession session = sessionDAO.getSession(sessionId);
         assertNotNull("Expected a session to be found", session);
         assertTrue("Wrong session", sessionId.equals(session.getClassNumber()));
 
@@ -152,13 +151,12 @@ public class CourseSessionDAOTest {
     @Test
     public void testGetSession_NoSessionFound() throws Exception {
 
-        String courseId = "4444";
         String sessionId = "55555";
-        Object[] expectedQueryParams = new Object[] {courseId, courseId, sessionId};
+        Object[] expectedQueryParams = new Object[] {sessionId, sessionId, sessionId};
 
         when(jdbcTemplate.queryForObject(anyString(), any(Object[].class), any(SessionsRowMapper.class))).thenReturn(null);
 
-        CourseSession session = sessionDAO.getSession(courseId, sessionId);
+        CourseSession session = sessionDAO.getSession(sessionId);
         assertNull("No session should be found", session);
 
         verify(jdbcTemplate).queryForObject(eq(sqlForSingleSession), singleSessionQueryParamsCaptor.capture(), any(SessionsRowMapper.class));
@@ -170,13 +168,12 @@ public class CourseSessionDAOTest {
     @Test
     public void testGetSession_IncorrectResultSize() throws Exception {
 
-        String courseId = "4444";
         String sessionId = "55555";
-        Object[] expectedQueryParams = new Object[] {courseId, courseId, sessionId};
+        Object[] expectedQueryParams = new Object[] {sessionId, sessionId, sessionId};
 
         when(jdbcTemplate.queryForObject(anyString(), any(Object[].class), any(SessionsRowMapper.class))).thenThrow(new IncorrectResultSizeDataAccessException(1, 2));
 
-        CourseSession session = sessionDAO.getSession(courseId, sessionId);
+        CourseSession session = sessionDAO.getSession(sessionId);
         assertNull("No session should be returned", session);
 
         verify(jdbcTemplate).queryForObject(eq(sqlForSingleSession), singleSessionQueryParamsCaptor.capture(), any(SessionsRowMapper.class));
