@@ -227,7 +227,30 @@ public class CourseControllerTest {
                 .andExpect(jsonPath("$[0].courseSubject[0].subject").value(is("Addition")));
         verify(categoryService, times(1)).getCategories();
     }
-  
+
+    @Test
+    public void testGetSession() throws Exception {
+        String sessionId = "55555";
+
+        when(courseService.getSession(sessionId)).thenReturn(CourseTestHelper.createSession(sessionId));
+
+        mockMvc.perform(get("/courses/session/{sessionId}", sessionId).accept(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(jsonPath("classNumber").value(is(sessionId)));
+    }
+
+    @Test
+    public void testGetSession_NotFound() throws Exception {
+        String sessionId = "55555";
+
+        when(courseService.getSession(sessionId)).thenReturn(null);
+
+        mockMvc.perform(get("/courses/session/{sessionId}", sessionId).accept(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentType("application/json"));
+    }
+
     //create object for mocks
     private CourseSearchResponse createSearchResponse() {
         final CourseSearchResponse response = new CourseSearchResponse();

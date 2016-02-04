@@ -1,7 +1,13 @@
 package com.gs.api.controller;
 
-import java.util.List;
-import java.util.Map;
+import com.gs.api.domain.course.Course;
+import com.gs.api.domain.course.CourseCategory;
+import com.gs.api.domain.course.CourseSearchResponse;
+import com.gs.api.domain.course.CourseSession;
+import com.gs.api.exception.NotFoundException;
+import com.gs.api.service.CategoryService;
+import com.gs.api.service.CourseSearchService;
+import com.gs.api.service.CourseService;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -19,14 +25,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.gs.api.domain.course.Course;
-import com.gs.api.domain.course.CourseCategory;
-import com.gs.api.domain.course.CourseSearchResponse;
-import com.gs.api.domain.course.CourseSession;
-import com.gs.api.exception.NotFoundException;
-import com.gs.api.service.CategoryService;
-import com.gs.api.service.CourseSearchService;
-import com.gs.api.service.CourseService;
+import java.util.List;
+import java.util.Map;
 
 @Configuration
 @RestController
@@ -93,7 +93,7 @@ public class CourseController extends BaseController {
      */
     @RequestMapping(value = "/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody Course getCourse(@PathVariable("id") String id) throws Exception {
-        logger.debug("Course details initiated with  course courseId: " + id);
+        logger.debug("Course details initiated with  course courseId: {}",id);
         final Course course = courseService.getCourse(id);
         if (null == course || StringUtils.isEmpty(course.getId())){
             logger.error("No course found for courseId {}", id);
@@ -110,13 +110,31 @@ public class CourseController extends BaseController {
      */
     @RequestMapping(value = "/{id}/sessions", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody List<CourseSession> getSessions(@PathVariable("id") String id) throws Exception {
-        logger.debug("Course sessions initiated with  course courseId: " + id);
+        logger.debug("Course sessions initiated with  course courseId: {}", id);
         final List<CourseSession> sessions = courseService.getSessions(id);
         if (CollectionUtils.isEmpty(sessions)){
             logger.error("No sessions found for courseId {}", id);
             throw new NotFoundException("No sessions found for course courseId " + id);
         }
         return sessions;
+    }
+
+    /**
+     * Get course session given a course id and session id
+     * @param sessionId the session ID
+     * @return the course session
+     * @throws Exception
+     */
+    @RequestMapping(value = "/session/{sessionId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody CourseSession getSession(@PathVariable("sessionId") String sessionId) throws Exception {
+        logger.debug("Get course session by session id {}", sessionId);
+        final CourseSession session = courseService.getSession(sessionId);
+        if (session == null) {
+            String msg = String.format("No session found for session id %s", sessionId);
+            logger.error(msg);
+            throw new NotFoundException(msg);
+        }
+        return session;
     }
 
     /**

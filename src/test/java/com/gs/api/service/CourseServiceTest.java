@@ -1,15 +1,11 @@
 package com.gs.api.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.when;
-
-import java.util.List;
-
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.times;
+import com.gs.api.dao.CourseCompetencyDAO;
+import com.gs.api.dao.CourseDAO;
+import com.gs.api.dao.CourseSessionDAO;
+import com.gs.api.domain.course.Course;
+import com.gs.api.domain.course.CourseSession;
+import com.gs.api.helper.CourseTestHelper;
 
 import org.junit.After;
 import org.junit.Before;
@@ -22,12 +18,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.gs.api.dao.CourseCompetencyDAO;
-import com.gs.api.dao.CourseDAO;
-import com.gs.api.dao.CourseSessionDAO;
-import com.gs.api.domain.course.Course;
-import com.gs.api.domain.course.CourseSession;
-import com.gs.api.helper.CourseTestHelper;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "classpath:spring/test-root-context.xml" })
@@ -97,7 +96,7 @@ public class CourseServiceTest {
     }
     
     @Test
-    public void testSessions() throws Exception {
+    public void testGetSessions() throws Exception {
         when(sessionDAO.getSessions(anyString())).thenReturn(CourseTestHelper.createSessions());
         List<CourseSession> sessions = courseService.getSessions("12345");
         assertNotNull(sessions);
@@ -106,6 +105,17 @@ public class CourseServiceTest {
         verify(sessionDAO, times(1)).getSessions(anyString());
     }
     
-    
+    @Test
+    public void testGetSession() throws Exception {
+        String sessionId = "55555";
+
+        when(sessionDAO.getSession(sessionId)).thenReturn(CourseTestHelper.createSession(sessionId));
+
+        CourseSession session = courseService.getSession(sessionId);
+        assertNotNull("Expected a session to be found", session);
+        assertEquals("Wrong session found", sessionId, session.getClassNumber());
+    }
+
+
     
 }

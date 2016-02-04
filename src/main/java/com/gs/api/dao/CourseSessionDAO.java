@@ -1,10 +1,8 @@
 package com.gs.api.dao;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.List;
-
-import javax.sql.DataSource;
+import com.gs.api.domain.course.CourseInstructor;
+import com.gs.api.domain.course.CourseSession;
+import com.gs.api.domain.course.Location;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -12,13 +10,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
-import com.gs.api.domain.course.CourseInstructor;
-import com.gs.api.domain.course.Location;
-import com.gs.api.domain.course.CourseSession;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
+
+import javax.sql.DataSource;
 
 @Repository
 public class CourseSessionDAO {
@@ -29,6 +30,9 @@ public class CourseSessionDAO {
     @Value("${sql.course.session.query}")
     private String sql;
 
+    @Value("${sql.course.session.single.query}")
+    private String sqlForSingleSession;
+
     @Autowired
     public void setDataSource(DataSource dataSource) {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
@@ -36,25 +40,45 @@ public class CourseSessionDAO {
 
     /**
      * Get course object from database
-     * @param id Load this course by this ID
+     * @param courseId Load this course by this ID
      * @return Course
      */
-    public List<CourseSession> getSessions(String id) {
-        logger.debug("Getting course competency from database for course id {}", id);
+    public List<CourseSession> getSessions(String courseId) {
+        logger.debug("Getting course competency from database for course id {}", courseId);
         logger.debug(sql);
         try {
-            final List<CourseSession> sessions = this.jdbcTemplate.query(sql, new Object[] { id, id },
+            final List<CourseSession> sessions = this.jdbcTemplate.query(sql, new Object[] { courseId, courseId },
                     new SessionsRowMapper());
-            logger.debug("Found {} session matchs for {}", sessions.size(), id);
+            logger.debug("Found {} session matchs for {}", sessions.size(), courseId);
             return sessions;
         }
         catch (EmptyResultDataAccessException e) {
-            logger.warn("Sessions not found for id {} - {}", id, e);
+            logger.warn("Sessions not found for course id {} - {}", courseId, e);
             return null;
         }
         catch (Exception e) {
-            logger.error("Error retrieving Sessions for id {} - {}", id, e);
+            logger.error("Error retrieving Sessions for course id {} - {}", courseId, e);
             throw e;
+        }
+    }
+
+    /**
+     * Get course session details for a specific session.
+     * @param sessionId the session id (class number)
+     * @return the course session details
+     */
+    public CourseSession getSession(String sessionId) {
+        logger.debug("Getting course session information for sessionId {}", sessionId);
+        logger.debug(sql);
+        try {
+            final CourseSession session = this.jdbcTemplate.queryForObject(sqlForSingleSession, new Object[] { sessionId, sessionId, sessionId },
+                    new SessionsRowMapper());
+            logger.debug("Found session for session id {}", sessionId);
+            return session;
+        }
+        catch (IncorrectResultSizeDataAccessException e) {
+            logger.warn("Too many sessions found", e);
+            return null;
         }
     }
 
