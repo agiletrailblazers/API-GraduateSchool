@@ -13,4 +13,6 @@ public interface UserService {
      */
     void createUser(final User user) throws Exception;
 
+    void deleteUser(final String id) throws Exception;
+
 }

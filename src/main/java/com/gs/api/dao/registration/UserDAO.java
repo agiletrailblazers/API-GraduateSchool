@@ -8,12 +8,17 @@ import oracle.jdbc.OracleTypes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.stereotype.Repository;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
@@ -28,13 +33,19 @@ public class UserDAO {
     private SimpleJdbcCall userInsertActor;
     private SimpleJdbcCall profileInsertActor;
     private SimpleJdbcCall listEntryActor;
+    private SimpleJdbcCall deleteUserActor;
 
     private static final String insertUserStoredProcedureName = "tpp_person_ins";
     private static final String insertProfileStoredProcedureName = "cmp_profile_entry_ins";
     private static final String insertfgtListEntryStoredProcedureName = "fgp_listel_ins";
+    private static final String deleteUserStoredProcedureName = "tpp_person_del";
+
     private static final String getPersIdSequenceQuery = "select lpad(ltrim(rtrim(to_char(tpt_person_seq.nextval))), 15, '0') id from dual";
     private static final String getProfileIdSequenceQuery = "select lpad(ltrim(rtrim(to_char(cmt_profile_entry_seq.nextval))), 15, '0') id from dual";
     private static final String getListEntryIdSequenceQuery = "select lpad(ltrim(rtrim(to_char(fgt_list_entry_seq.nextval))), 15, '0') id from dual";
+
+    @Value("${sql.user.single.query}")
+    private String sqlForSingleUser;
 
     @Autowired
     public void setDataSource(DataSource dataSource) {
@@ -42,6 +53,50 @@ public class UserDAO {
         this.userInsertActor = new SimpleJdbcCall(this.jdbcTemplate).withProcedureName(insertUserStoredProcedureName);
         this.profileInsertActor = new SimpleJdbcCall(this.jdbcTemplate).withProcedureName(insertProfileStoredProcedureName);
         this.listEntryActor = new SimpleJdbcCall(this.jdbcTemplate).withProcedureName(insertfgtListEntryStoredProcedureName);
+        this.deleteUserActor = new SimpleJdbcCall(this.jdbcTemplate).withProcedureName(deleteUserStoredProcedureName);
+    }
+    /**
+     * Get User details for a specified user
+     * @param userId the id of the user
+     * @return the user details
+     */
+    public User getUser(String userId) {
+        logger.debug("Getting user {}", userId);
+        logger.debug(sqlForSingleUser);
+        try {
+            final User user = this.jdbcTemplate.queryForObject(sqlForSingleUser, new Object[] { userId },
+                    new UserRowMapper());
+            logger.debug("Found session for session id {}", userId);
+            return user;
+        }
+        catch (IncorrectResultSizeDataAccessException e) {
+            logger.warn("Too many users found", e);
+            return null;
+        }
+        catch (Exception e ) {
+            logger.warn("error", e);
+            return null;
+        }
+    }
+
+    /**
+     *
+     * @param userId the id of the user to be deleted.
+     * @throws Exception error deleting user.
+     */
+    public boolean deleteUser(String userId) throws Exception {
+        long millis = new Date().getTime();
+
+        SqlParameterSource in = new MapSqlParameterSource()
+                .addValue("xid", userId, OracleTypes.FIXED_CHAR)
+                .addValue("xts", millis, OracleTypes.VARCHAR);
+
+        logger.debug("Deleting user. Executing stored procedure: {}", deleteUserStoredProcedureName);
+
+        Map<String, Object> deleteUserResults = executeUserStoredProcedure(in, deleteUserActor);
+
+        //TODO get actual success/fail result
+        return true;
     }
 
     /**
@@ -109,7 +164,6 @@ public class UserDAO {
                 .addValue("xsplit", split, OracleTypes.VARCHAR)
                 .addValue("xhome_domain", homeDomain, OracleTypes.FIXED_CHAR)
                 .addValue("xcurrency_id", currency, OracleTypes.FIXED_CHAR)
-
                 //Insert lots of nulls
                 .addValue("xaccount_no", null, OracleTypes.VARCHAR)
                 .addValue("xcompany_id", null, OracleTypes.FIXED_CHAR)
@@ -158,7 +212,6 @@ public class UserDAO {
         insertListEntry(personId, desktopPermissionListID);
         insertListEntry(personId, domainIDcprivIDListID);
 
-
         return personId;
     }
 
@@ -186,7 +239,6 @@ public class UserDAO {
                 .addValue("xflags", flags, OracleTypes.CHAR)
                 .addValue("xsplit", split, OracleTypes.CHAR)
                 .addValue("xnewts", millis, OracleTypes.VARCHAR)
-
                 //Insert lots of nulls
                 .addValue("xcustom0", null, OracleTypes.VARCHAR)
                 .addValue("xcustom1", null, OracleTypes.VARCHAR)
@@ -295,5 +347,48 @@ public class UserDAO {
         sabaFormattedAddress.setPostalCode(addressToChange.getPostalCode());
 
         return sabaFormattedAddress;
+    }
+
+    /**
+     * Maps a user result to a User object
+     */
+    protected final class UserRowMapper implements RowMapper<User> {
+        /**
+         * Map row for Course object from result set
+         */
+        public User mapRow(ResultSet rs, int rowNum) throws SQLException {
+            User user = new User();
+            user.setId(rs.getString("USER_ID"));
+            user.setUsername(rs.getString("USERNAME"));
+            String ssn = rs.getString("SS_NO");
+            if (ssn != null && ssn.length() > 4) {
+                user.setLastFourSSN(ssn.substring(ssn.length() - 4, ssn.length()));
+            }
+            user.setTimezoneId(rs.getString("TIMEZONE_ID"));
+            user.setAccountId(rs.getString("ACCOUNT_ID"));
+
+            Person person = new Person();
+            person.setFirstName(rs.getString("FNAME"));
+            person.setLastName(rs.getString("LNAME"));
+            person.setEmailAddress(rs.getString("EMAIL"));
+            person.setPrimaryPhone(rs.getString("HOMEPHONE"));
+            person.setSecondaryPhone(rs.getString("WORKPHONE"));
+            if (rs.getDate("DATE_OF_BIRTH") != null) {
+                person.setDateOfBirth(rs.getDate("DATE_OF_BIRTH").toString());
+            }
+            String veteranStatus = rs.getString("VETERAN");
+            if (veteranStatus != null) {
+                if (veteranStatus.equals("y") || veteranStatus.equals("Y")) {
+                    person.setVeteran(true);
+                } else if (veteranStatus.equals("n") || veteranStatus.equals("N")) {
+                    person.setVeteran(false);
+                }
+            }
+
+            //TODO get address here
+            user.setPerson(person);
+
+            return user;
+        }
     }
 }

@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 @JsonInclude(Include.ALWAYS)
 public class Person {
 
-    private String id;
     private String firstName;
     private String middleName;
     private String lastName;
@@ -17,14 +16,6 @@ public class Person {
     private Address secondaryAddress;
     private Boolean veteran;
     private String dateOfBirth;
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
 
     public String getFirstName() {
         return firstName;

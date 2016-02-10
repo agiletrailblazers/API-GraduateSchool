@@ -13,6 +13,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
@@ -22,10 +23,10 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.util.HashMap;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -38,6 +39,9 @@ public class UserDAOTest {
     private static final String getPersIdSequenceQuery = "select lpad(ltrim(rtrim(to_char(tpt_person_seq.nextval))), 15, '0') id from dual";
     private static final String getProfileIdSequenceQuery = "select lpad(ltrim(rtrim(to_char(cmt_profile_entry_seq.nextval))), 15, '0') id from dual";
     private static final String getListEntryIdSequenceQuery = "select lpad(ltrim(rtrim(to_char(fgt_list_entry_seq.nextval))), 15, '0') id from dual";
+
+    @Value("${sql.user.single.query}")
+    private String sqlForSingleUser;
 
     private static final String FIRST_NAME = "Joe";
     private static final String MIDDLE_NAME = "Bob";
@@ -76,6 +80,9 @@ public class UserDAOTest {
     @Mock
     private SimpleJdbcCall listEntryActor;
 
+    @Mock
+    private SimpleJdbcCall deleteUserActor;
+
     @Captor
     private ArgumentCaptor<SqlParameterSource> insertUserCaptor;
 
@@ -84,6 +91,12 @@ public class UserDAOTest {
 
     @Captor
     private ArgumentCaptor<SqlParameterSource> insertListEntryCaptor;
+
+    @Captor
+    private ArgumentCaptor<SqlParameterSource> deleteUserCaptor;
+
+    @Captor
+    private ArgumentCaptor<Object[]> singleUserQueryParamsCaptor;
 
     @Before
     public void setUp() throws Exception {
@@ -265,5 +278,38 @@ public class UserDAOTest {
             assertNotNull(iE);
             assertTrue(iE instanceof Exception);
         }
+    }
+
+    @Test
+    public void testDeleteUser() throws Exception {
+        HashMap<String, Object> sqlResult = new HashMap();
+        String userId = "persn1234";
+        doReturn(sqlResult).when(deleteUserActor).execute(any(SqlParameterSource.class));
+
+        userDAO.deleteUser(userId);
+
+        verify(deleteUserActor).execute(deleteUserCaptor.capture());
+        SqlParameterSource userParameters = deleteUserCaptor.getValue();
+
+        assertEquals(userId, userParameters.getValue("xid"));
+    }
+
+    @Test
+    public void testGetUser() throws Exception {
+        String userId = "persn1234";
+        Object[] expectedQueryParams = new Object[] {userId};
+
+        when(jdbcTemplate.queryForObject(anyString(), any(Object[].class), any(UserDAO.UserRowMapper.class))).
+                thenReturn(new User(userId, "test", null, "1234", new Person(), null, null));
+
+        User user = userDAO.getUser(userId);
+
+        assertNotNull("Expected a user to be found", user);
+        assertTrue("Wrong user", userId.equals(user.getId()));
+
+        verify(jdbcTemplate).queryForObject(eq(sqlForSingleUser), singleUserQueryParamsCaptor.capture(), any(UserDAO.UserRowMapper.class));
+        Object[] capturedQueryParams = singleUserQueryParamsCaptor.getValue();
+        assertNotNull("Expected parameters", capturedQueryParams);
+        assertArrayEquals("wrong parameters", expectedQueryParams, capturedQueryParams);
     }
 }

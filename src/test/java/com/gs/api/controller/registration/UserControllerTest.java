@@ -51,4 +51,11 @@ public class UserControllerTest {
         verify(userService).createUser(user);
      }
 
+    @Test
+    public void testDelete() throws Exception {
+
+        String id = "persn0001234";
+        userController.deleteUser(id);
+        verify(userService).deleteUser(id);
+    }
 }

@@ -9,10 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Configuration
 @RestController
@@ -37,4 +34,14 @@ public class UserController extends BaseController {
         return user;
     }
 
+    @RequestMapping(value = "/delete/{id}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    public void deleteUser(@PathVariable("id") String id) throws Exception  {
+
+        logger.debug("Delete User {}", id);
+
+        // TODO basic input validation
+
+        // create the user
+        userService.deleteUser(id);
+    }
 }
