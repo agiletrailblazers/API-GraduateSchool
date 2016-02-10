@@ -34,7 +34,7 @@ public class UserController extends BaseController {
         return user;
     }
 
-    @RequestMapping(value = "/delete/{id}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
     public void deleteUser(@PathVariable("id") String id) throws Exception  {
 
         logger.debug("Delete User {}", id);

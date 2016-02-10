@@ -142,10 +142,6 @@ public class RegistrationDAO {
         String registrationId = "regdw" + this.jdbcTemplate.queryForObject(getRegistrationSequenceQuery, String.class);
         long millis = new Date().getTime();
 
-        if (session.getOfferingSessionId() == null) {
-            session.setOfferingSessionId("fake123123123123"); //TODO Remove if not needed
-        }
-
         MapSqlParameterSource in = new MapSqlParameterSource()
                 .addValue("xid", registrationId, OracleTypes.FIXED_CHAR)
                 .addValue("xclass_id", session.getOfferingSessionId(), OracleTypes.FIXED_CHAR)
@@ -189,10 +185,6 @@ public class RegistrationDAO {
         //Setup audit data
         Date currentDate = new Date();
         long millis = currentDate.getTime();
-
-        if (student.getAccountId() == null) {
-            student.setAccountId("fake123123123123"); //TODO This must be retrieved from the student's account
-        }
 
         //These could be retrieved from the user
         String split = "domin000000000000001";

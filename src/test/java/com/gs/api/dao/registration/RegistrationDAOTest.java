@@ -115,7 +115,7 @@ public class RegistrationDAOTest {
     public void testRegister() throws Exception {
         HashMap<String, Object> sqlResult = new HashMap();
 
-        String expectedOfferingActionProfileId = "ofpar100";
+        String expectedOfferingActionProfileId = "ofapr100";
         String expectedRegistrationId = "regdw1000";
         String expectedOrderId = "intor100";
         String expectedOrderItemId = "ioreg1000";
