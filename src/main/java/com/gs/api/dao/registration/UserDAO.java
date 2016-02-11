@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -35,14 +34,21 @@ public class UserDAO {
     private SimpleJdbcCall listEntryActor;
     private SimpleJdbcCall deleteUserActor;
 
-    private static final String insertUserStoredProcedureName = "tpp_person_ins";
-    private static final String insertProfileStoredProcedureName = "cmp_profile_entry_ins";
-    private static final String insertfgtListEntryStoredProcedureName = "fgp_listel_ins";
-    private static final String deleteUserStoredProcedureName = "tpp_person_del";
+    @Value("${sql.user.personInsert.procedure}")
+    private String insertUserStoredProcedureName;
+    @Value("${sql.user.profileInsert.procedure}")
+    private String insertProfileStoredProcedureName;
+    @Value("${sql.user.listEntryInsert.procedure}")
+    private String insertfgtListEntryStoredProcedureName;
+    @Value("${sql.user.deleteUser.procedure}")
+    private String deleteUserStoredProcedureName;
 
-    private static final String getPersIdSequenceQuery = "select lpad(ltrim(rtrim(to_char(tpt_person_seq.nextval))), 15, '0') id from dual";
-    private static final String getProfileIdSequenceQuery = "select lpad(ltrim(rtrim(to_char(cmt_profile_entry_seq.nextval))), 15, '0') id from dual";
-    private static final String getListEntryIdSequenceQuery = "select lpad(ltrim(rtrim(to_char(fgt_list_entry_seq.nextval))), 15, '0') id from dual";
+    @Value("${sql.user.personId.sequence}")
+    private String getPersIdSequenceQuery;
+    @Value("${sql.user.profileId.sequence}")
+    private String getProfileIdSequenceQuery;
+    @Value("${sql.user.listEntry.sequence}")
+    private String getListEntryIdSequenceQuery;
 
     @Value("${sql.user.single.query}")
     private String sqlForSingleUser;
@@ -63,20 +69,10 @@ public class UserDAO {
     public User getUser(String userId) {
         logger.debug("Getting user {}", userId);
         logger.debug(sqlForSingleUser);
-        try {
-            final User user = this.jdbcTemplate.queryForObject(sqlForSingleUser, new Object[] { userId },
-                    new UserRowMapper());
-            logger.debug("Found session for session id {}", userId);
-            return user;
-        }
-        catch (IncorrectResultSizeDataAccessException e) {
-            logger.warn("Too many users found", e);
-            return null;
-        }
-        catch (Exception e ) {
-            logger.warn("error", e);
-            return null;
-        }
+        final User user = this.jdbcTemplate.queryForObject(sqlForSingleUser, new Object[] { userId },
+                new UserRowMapper());
+        logger.debug("Found session for session id {}", userId);
+        return user;
     }
 
     /**
@@ -360,6 +356,8 @@ public class UserDAO {
             }
             user.setTimezoneId(rs.getString("TIMEZONE_ID"));
             user.setAccountId(rs.getString("ACCOUNT_ID"));
+            user.setSplit(rs.getString("SPLIT"));
+            user.setCurrencyId(rs.getString("CURRENCY_ID"));
 
             Person person = new Person();
             person.setFirstName(rs.getString("FNAME"));
@@ -372,14 +370,13 @@ public class UserDAO {
             }
             String veteranStatus = rs.getString("VETERAN");
             if (veteranStatus != null) {
+                //Translate y/Y and n/N to true false
                 if (veteranStatus.equals("y") || veteranStatus.equals("Y")) {
                     person.setVeteran(true);
                 } else if (veteranStatus.equals("n") || veteranStatus.equals("N")) {
                     person.setVeteran(false);
                 }
             }
-
-            //TODO get address here
             user.setPerson(person);
 
             return user;

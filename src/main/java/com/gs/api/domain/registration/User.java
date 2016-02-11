@@ -13,12 +13,15 @@ public class User {
     private String lastFourSSN;
     private String timezoneId;
     private String accountId;
+    private String currencyId;
+    private String split;
 
     private Person person;
 
     public User() { }
 
-    public User(String id, String username, String password, String lastFourSSN, Person person, String timezoneId, String accountId) {
+    public User(String id, String username, String password, String lastFourSSN, Person person, String timezoneId, String accountId,
+                String split, String currencyId) {
         this.id = id;
         this.username = username;
         this.password = password;
@@ -26,6 +29,8 @@ public class User {
         this.person = person;
         this.timezoneId = timezoneId;
         this.accountId = accountId;
+        this.split = split;
+        this.currencyId = currencyId;
     }
 
     public String getId() {
@@ -82,5 +87,21 @@ public class User {
 
     public void setAccountId(String accountId) {
         this.accountId = accountId;
+    }
+
+    public String getCurrencyId() {
+        return currencyId;
+    }
+
+    public void setCurrencyId(String currencyId) {
+        this.currencyId = currencyId;
+    }
+
+    public String getSplit() {
+        return split;
+    }
+
+    public void setSplit(String split) {
+        this.split = split;
     }
 }

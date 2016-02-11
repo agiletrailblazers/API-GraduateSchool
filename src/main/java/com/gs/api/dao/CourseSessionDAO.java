@@ -105,12 +105,8 @@ public class CourseSessionDAO {
             session.setStartTime(rs.getString("START_TIME"));
             session.setEndTime(rs.getString("END_TIME"));
             session.setDays(rs.getString("SESSION_TEMPLATE"));
-            if (hasColumn(rs, "COURSE_ID")) {
-                session.setCourseId(rs.getString("COURSE_ID"));
-            }
-            if (hasColumn(rs, "OFFERING_SESSION_ID")) {
-                session.setOfferingSessionId(rs.getString("OFFERING_SESSION_ID"));
-            }
+            session.setCourseId(rs.getString("COURSE_ID"));
+            session.setOfferingSessionId(rs.getString("OFFERING_SESSION_ID"));
             Location location = new Location();
             location.setId(rs.getString("FACILITY_NO"));
             location.setName(rs.getString("FACILITY_NAME"));
@@ -129,17 +125,6 @@ public class CourseSessionDAO {
                 session.setInstructor(instructor);
             }
             return session;
-        }
-
-        public boolean hasColumn(ResultSet rs, String columnName) throws SQLException {
-            ResultSetMetaData rsmd = rs.getMetaData();
-            int columns = rsmd.getColumnCount();
-            for (int x = 1; x <= columns; x++) {
-                if (columnName.equals(rsmd.getColumnName(x))) {
-                    return true;
-                }
-            }
-            return false;
         }
     }
 }

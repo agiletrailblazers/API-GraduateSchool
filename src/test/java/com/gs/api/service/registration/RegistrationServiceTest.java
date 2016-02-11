@@ -4,7 +4,6 @@ import com.gs.api.dao.CourseSessionDAO;
 import com.gs.api.dao.registration.RegistrationDAO;
 import com.gs.api.dao.registration.UserDAO;
 import com.gs.api.domain.Person;
-import com.gs.api.domain.course.Course;
 import com.gs.api.domain.course.CourseSession;
 import com.gs.api.domain.registration.Registration;
 
@@ -42,7 +41,6 @@ public class RegistrationServiceTest {
     private Registration registration2;
     private CourseSession session;
 
-
     @Mock
     private RegistrationDAO registrationDao;
 
@@ -76,20 +74,32 @@ public class RegistrationServiceTest {
     @Test
     public void testRegister() throws Exception {
 
-        final String id = "reg1";
+        final String id1 = "reg1";
         final String id2 = "reg2";
 
-        when(sessionDao.getSession(any(String.class))).thenReturn(new CourseSession());
-        //when(userDao.getUser(STUDENT_ID_1)).thenReturn(new User(STUDENT_ID_1, "user1", "", "1234", new Person(), "", ""));
-        //when(userDao.getUser(STUDENT_ID_1)).thenReturn(new User(STUDENT_ID_1, "user1", "", "1234", new Person(), "", ""));
-        when(registrationDao.register(any(User.class), any(User.class), any(CourseSession.class))).thenReturn(id);
+        User user = new User(USER_ID, "user1", "", "1234", new Person(), "", "", "", "");
+        User student1 = new User(STUDENT_ID_1, "student1", "", "1234", new Person(), "", "", "", "");
+        User student2 = new User(STUDENT_ID_2, "student2", "", "1234", new Person(), "", "", "", "");
+
+        CourseSession session = new CourseSession();
+        session.setClassNumber(SESSION_ID);
+
+        when(userDao.getUser(USER_ID)).thenReturn(user);
+        when(userDao.getUser(STUDENT_ID_1)).thenReturn(student1);
+        when(userDao.getUser(STUDENT_ID_2)).thenReturn(student2);
+        when(sessionDao.getSession(SESSION_ID)).thenReturn(session);
+
+        when(registrationDao.registerForCourse(user, student1, session)).thenReturn(id1);
+        when(registrationDao.registerForCourse(user, student2, session)).thenReturn(id2);
 
         registrationService.register(USER_ID, registrations);
 
-        verify(registrationDao, times(2)).register(any(User.class), any(User.class), any(CourseSession.class));
+        verify(userDao, times(4)).getUser(any(String.class));
+        verify(sessionDao, times(2)).getSession(any(String.class));
+        verify(registrationDao, times(2)).registerForCourse(any(User.class), any(User.class), any(CourseSession.class));
 
-        assertEquals(id, registration1.getId());
-        //TODO assert the second registration is different after user lookup is done
+        assertEquals(id1, registration1.getId());
+        assertEquals(id2, registration2.getId());
     }
 
 }

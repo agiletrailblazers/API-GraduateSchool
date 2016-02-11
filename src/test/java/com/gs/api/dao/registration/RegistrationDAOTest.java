@@ -8,6 +8,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
@@ -68,12 +69,33 @@ public class RegistrationDAOTest {
     private ArgumentCaptor<SqlParameterSource> orderCompleteCaptor;
 
 
-    private static final String getOfferingActionSequenceQuery = "select lpad(ltrim(rtrim(to_char(tpt_offer_action_profile_seq.nextval))), 15, '0') id from dual";
-    private static final String getRegistrationSequenceQuery = "select lpad(ltrim(rtrim(to_char(tpt_regist_seq.nextval))), 15, '0') id from dual";
-    private static final String getOrderSequenceQuery = "select lpad(ltrim(rtrim(to_char(tpt_oe_order_seq.nextval))), 15, '0') id from dual";
-    private static final String getOrderItemSequenceQuery = "select lpad(ltrim(rtrim(to_char(tpt_oe_item_reg_seq.nextval))), 15, '0') id from dual";
-    private static final String getChargeSequenceQuery = "select lpad(ltrim(rtrim(to_char(tpt_charge_seq.nextval))), 15, '0') id from dual";
-    private static final String getPaymentSequenceQuery = "select lpad(ltrim(rtrim(to_char(let_payment_info_seq.nextval))), 15, '0') id from dual";
+    @Value("${sql.registration.offeringActionInsert.procedure}")
+    private String insertOfferingActionProcedureName;
+    @Value("${sql.registration.insertRegistration.procedure}")
+    private String insertRegistrationProcedureName;
+    @Value("${sql.registration.insertOrder.procedure}")
+    private String insertOrderProcedureName;
+    @Value("${sql.registration.insertOrderItem.procedure}")
+    private String insertOrderItemProcedureName;
+    @Value("${sql.registration.insertCharge.procedure}")
+    private String insertChargeProcedureName;
+    @Value("${sql.registration.insertPayment.procedure}")
+    private String insertPaymentProcedureName;
+    @Value("${sql.registration.orderComplete.procedure}")
+    private String orderCompleteProcedureName;
+
+    @Value("${sql.registration.offeringActionId.sequence}")
+    private String getOfferingActionSequenceQuery;
+    @Value("${sql.registration.registrationId.sequence}")
+    private String getRegistrationSequenceQuery;
+    @Value("${sql.registration.orderId.sequence}")
+    private String getOrderSequenceQuery;
+    @Value("${sql.registration.orderItemId.sequence}")
+    private String getOrderItemSequenceQuery;
+    @Value("${sql.registration.chargeId.sequence}")
+    private String getChargeSequenceQuery;
+    @Value("${sql.registration.paymentId.sequence}")
+    private String getPaymentSequenceQuery;
 
     private User loggedInUser;
 
@@ -142,7 +164,7 @@ public class RegistrationDAOTest {
 
         doReturn(sqlResult).when(orderCompleteActor).execute(any(SqlParameterSource.class));
 
-        String id = registrationDAO.register(loggedInUser, student, session);
+        String id = registrationDAO.registerForCourse(loggedInUser, student, session);
 
         verify(insertOfferingActionProfileActor).execute(insertOfferingActionCaptor.capture());
         SqlParameterSource registrationParameters = insertOfferingActionCaptor.getValue();
@@ -216,7 +238,7 @@ public class RegistrationDAOTest {
         when(jdbcTemplate.queryForObject(getOfferingActionSequenceQuery, String.class)).thenReturn("100");
         when(insertOfferingActionProfileActor.execute(any(SqlParameterSource.class))).thenThrow(new IllegalArgumentException("BAD SQL"));
         try {
-            String id = registrationDAO.register(loggedInUser, student, session);
+            String id = registrationDAO.registerForCourse(loggedInUser, student, session);
             assertTrue(false); //Should never reach this line
         }
         catch (IllegalArgumentException iE) {
@@ -235,7 +257,7 @@ public class RegistrationDAOTest {
         when(jdbcTemplate.queryForObject(getRegistrationSequenceQuery, String.class)).thenReturn("100");
         when(insertRegistrationActor.execute(any(SqlParameterSource.class))).thenThrow(new IllegalArgumentException("BAD SQL"));
         try {
-            String id = registrationDAO.register(loggedInUser, student, session);
+            String id = registrationDAO.registerForCourse(loggedInUser, student, session);
             assertTrue(false); //Should never reach this line
         }
         catch (IllegalArgumentException iE) {
@@ -258,7 +280,7 @@ public class RegistrationDAOTest {
         when(jdbcTemplate.queryForObject(getOrderSequenceQuery, String.class)).thenReturn("100");
         when(insertOrderActor.execute(any(SqlParameterSource.class))).thenThrow(new IllegalArgumentException("BAD SQL"));
         try {
-            String id = registrationDAO.register(loggedInUser, student, session);
+            String id = registrationDAO.registerForCourse(loggedInUser, student, session);
             assertTrue(false); //Should never reach this line
         }
         catch (IllegalArgumentException iE) {
@@ -286,7 +308,7 @@ public class RegistrationDAOTest {
         when(insertOrderItemActor.execute(any(SqlParameterSource.class))).thenThrow(new IllegalArgumentException("BAD SQL"));
 
         try {
-            String id = registrationDAO.register(loggedInUser, student, session);
+            String id = registrationDAO.registerForCourse(loggedInUser, student, session);
             assertTrue(false); //Should never reach this line
         }
         catch (IllegalArgumentException iE) {
@@ -318,7 +340,7 @@ public class RegistrationDAOTest {
         when(insertChargeActor.execute(any(SqlParameterSource.class))).thenThrow(new IllegalArgumentException("BAD SQL"));
 
         try {
-            String id = registrationDAO.register(loggedInUser, student, session);
+            String id = registrationDAO.registerForCourse(loggedInUser, student, session);
             assertTrue(false); //Should never reach this line
         }
         catch (IllegalArgumentException iE) {
@@ -354,7 +376,7 @@ public class RegistrationDAOTest {
         when(insertPaymentActor.execute(any(SqlParameterSource.class))).thenThrow(new IllegalArgumentException("BAD SQL"));
 
         try {
-            String id = registrationDAO.register(loggedInUser, student, session);
+            String id = registrationDAO.registerForCourse(loggedInUser, student, session);
             assertTrue(false); //Should never reach this line
         }
         catch (IllegalArgumentException iE) {
@@ -394,7 +416,7 @@ public class RegistrationDAOTest {
         when(orderCompleteActor.execute(any(SqlParameterSource.class))).thenThrow(new IllegalArgumentException("BAD SQL"));
 
         try {
-            String id = registrationDAO.register(loggedInUser, student, session);
+            String id = registrationDAO.registerForCourse(loggedInUser, student, session);
             assertTrue(false); //Should never reach this line
         }
         catch (IllegalArgumentException iE) {

@@ -24,7 +24,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.util.List;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -49,9 +48,6 @@ public class CourseSessionDAOTest {
     
     @Mock
     private JdbcTemplate jdbcTemplate;
-
-    @Mock
-    private ResultSetMetaData rsMetaData;
     
     private CourseSessionDAO.SessionsRowMapper rowMapper;
 
@@ -65,7 +61,6 @@ public class CourseSessionDAOTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         rowMapper = sessionDAO.new SessionsRowMapper();
-        rsMetaData = mock(ResultSetMetaData.class);
     }
 
     @After
@@ -117,10 +112,6 @@ public class CourseSessionDAOTest {
     public void testSessionDAO_RowMapper_WithPerson() throws Exception {
         ResultSet rs = mock(ResultSet.class);
 
-        when(rsMetaData.getColumnCount()).thenReturn(1);
-        when(rsMetaData.getColumnName(any(Integer.class))).thenReturn("");
-        when (rs.getMetaData()).thenReturn(rsMetaData);
-
         when(rs.getString("CLASS_NO")).thenReturn("12345");
         when(rs.getString("PERSON_NO")).thenReturn("55555");
         CourseSession session = rowMapper.mapRow(rs, 0);
@@ -132,10 +123,6 @@ public class CourseSessionDAOTest {
     @Test
     public void testSessionDAO_RowMapper_WithoutPerson() throws Exception {
         ResultSet rs = mock(ResultSet.class);
-        
-        when(rsMetaData.getColumnCount()).thenReturn(1);
-        when(rsMetaData.getColumnName(any(Integer.class))).thenReturn("");
-        when (rs.getMetaData()).thenReturn(rsMetaData);
 
         when(rs.getString("CLASS_NO")).thenReturn("12345");
         when(rs.getString("PERSON_NO")).thenReturn(null);

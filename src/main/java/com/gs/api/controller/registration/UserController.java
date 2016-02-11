@@ -22,6 +22,7 @@ public class UserController extends BaseController {
     @Autowired
     private UserService userService;
 
+    @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(value = "", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public User create(@RequestBody User user) throws Exception  {
 

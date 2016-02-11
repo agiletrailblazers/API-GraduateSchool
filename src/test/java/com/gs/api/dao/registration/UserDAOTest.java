@@ -36,13 +36,26 @@ import static org.mockito.Mockito.when;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "classpath:spring/test-root-context.xml" })
 public class UserDAOTest {
-    private static final String getPersIdSequenceQuery = "select lpad(ltrim(rtrim(to_char(tpt_person_seq.nextval))), 15, '0') id from dual";
-    private static final String getProfileIdSequenceQuery = "select lpad(ltrim(rtrim(to_char(cmt_profile_entry_seq.nextval))), 15, '0') id from dual";
-    private static final String getListEntryIdSequenceQuery = "select lpad(ltrim(rtrim(to_char(fgt_list_entry_seq.nextval))), 15, '0') id from dual";
-
     @Value("${sql.user.single.query}")
     private String sqlForSingleUser;
 
+    @Value("${sql.user.personInsert.procedure}")
+    private String insertUserStoredProcedureName;
+    @Value("${sql.user.profileInsert.procedure}")
+    private String insertProfileStoredProcedureName;
+    @Value("${sql.user.listEntryInsert.procedure}")
+    private String insertfgtListEntryStoredProcedureName;
+    @Value("${sql.user.deleteUser.procedure}")
+    private String deleteUserStoredProcedureName;
+
+    @Value("${sql.user.personId.sequence}")
+    private String getPersIdSequenceQuery;
+    @Value("${sql.user.profileId.sequence}")
+    private String getProfileIdSequenceQuery;
+    @Value("${sql.user.listEntry.sequence}")
+    private String getListEntryIdSequenceQuery;
+
+    private static final String USER_ID = "persn0001";
     private static final String FIRST_NAME = "Joe";
     private static final String MIDDLE_NAME = "Bob";
     private static final String LAST_NAME = "Smith";
@@ -61,6 +74,8 @@ public class UserDAOTest {
     private static final String TIMEZONE_ID = "testId";
     private static final String TIMEZONE_ID_DEFAULT = "tzone000000000000007";
     private static final Boolean VETERAN_STATUS = true;
+    private static final String SPLIT = "domin000000000000001";
+    private static final String CURRENCY_ID = "crncy000000000000167";
 
     private User user;
 
@@ -103,10 +118,13 @@ public class UserDAOTest {
         MockitoAnnotations.initMocks(this);
 
         user = new User();
+        user.setId(USER_ID);
         user.setUsername(USERNAME);
         user.setPassword(PASSWORD_CLEAR);
         user.setTimezoneId(TIMEZONE_ID);
         user.setLastFourSSN(LAST_FOUR_SSN);
+        user.setSplit(SPLIT);
+        user.setCurrencyId(CURRENCY_ID);
 
         Person person = new Person();
         person.setFirstName(FIRST_NAME);
@@ -134,7 +152,7 @@ public class UserDAOTest {
         HashMap<String, Object> sqlResult = new HashMap();
         String expectedPersonId = "persn100";
         String expectedProfileId = "ppcor1000";
-        String expectedListEntryId = "liste1000";
+        String expectedListEntryId = "liste10000";
 
         when(jdbcTemplate.queryForObject(getPersIdSequenceQuery, String.class)).thenReturn("100");
         doReturn(sqlResult).when(userInsertActor).execute(any(SqlParameterSource.class));
@@ -142,7 +160,7 @@ public class UserDAOTest {
         when(jdbcTemplate.queryForObject(getProfileIdSequenceQuery, String.class)).thenReturn("1000");
         doReturn(sqlResult).when(profileInsertActor).execute(any(SqlParameterSource.class));
 
-        when(jdbcTemplate.queryForObject(getListEntryIdSequenceQuery, String.class)).thenReturn("1000");
+        when(jdbcTemplate.queryForObject(getListEntryIdSequenceQuery, String.class)).thenReturn("10000");
         doReturn(sqlResult).when(listEntryActor).execute(any(SqlParameterSource.class));
 
         String actualUserId = userDAO.insertNewUser(user);
@@ -296,20 +314,26 @@ public class UserDAOTest {
 
     @Test
     public void testGetUser() throws Exception {
-        String userId = "persn1234";
-        Object[] expectedQueryParams = new Object[] {userId};
+        Object[] expectedQueryParams = new Object[] { USER_ID };
 
         when(jdbcTemplate.queryForObject(anyString(), any(Object[].class), any(UserDAO.UserRowMapper.class))).
-                thenReturn(new User(userId, "test", null, "1234", new Person(), null, null));
+                thenReturn(user);
 
-        User user = userDAO.getUser(userId);
+        User returnedUser = userDAO.getUser(USER_ID);
 
-        assertNotNull("Expected a user to be found", user);
-        assertTrue("Wrong user", userId.equals(user.getId()));
+        assertNotNull("Expected a user to be found", returnedUser);
+        assertTrue("Wrong user", USER_ID.equals(returnedUser.getId()));
 
         verify(jdbcTemplate).queryForObject(eq(sqlForSingleUser), singleUserQueryParamsCaptor.capture(), any(UserDAO.UserRowMapper.class));
         Object[] capturedQueryParams = singleUserQueryParamsCaptor.getValue();
         assertNotNull("Expected parameters", capturedQueryParams);
         assertArrayEquals("wrong parameters", expectedQueryParams, capturedQueryParams);
+
+        assertEquals(user.getUsername(), returnedUser.getUsername());
+        assertEquals(user.getPassword(), returnedUser.getPassword());
+        assertEquals(user.getAccountId(), returnedUser.getAccountId());
+        assertEquals(user.getCurrencyId(), returnedUser.getCurrencyId());
+        assertEquals(user.getId(), returnedUser.getId());
+        assertEquals(user.getSplit(), returnedUser.getSplit());
     }
 }

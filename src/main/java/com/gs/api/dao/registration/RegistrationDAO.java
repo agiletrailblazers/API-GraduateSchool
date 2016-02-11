@@ -7,6 +7,7 @@ import oracle.jdbc.OracleTypes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
@@ -30,20 +31,33 @@ public class RegistrationDAO {
     private SimpleJdbcCall insertPaymentActor;
     private SimpleJdbcCall orderCompleteActor;
 
-    private static final String insertOfferingActionProcedureName = "tpp_offer_action_profile_ins";
-    private static final String insertRegistrationProcedureName = "tpp_registration_ins";
-    private static final String insertOrderProcedureName = "tpp_oe_order_ins";
-    private static final String insertOrderItemProcedureName = "tpp_oe_item_reg_ins";
-    private static final String insertChargeProcedureName = "tpp_charge_ins";
-    private static final String insertPaymentProcedureName = "lep_payment_info_ins";
-    private static final String orderCompleteProcedureName = "tpp_oe_tran_complete";
+    @Value("${sql.registration.offeringActionInsert.procedure}")
+    private String insertOfferingActionProcedureName;
+    @Value("${sql.registration.insertRegistration.procedure}")
+    private String insertRegistrationProcedureName;
+    @Value("${sql.registration.insertOrder.procedure}")
+    private String insertOrderProcedureName;
+    @Value("${sql.registration.insertOrderItem.procedure}")
+    private String insertOrderItemProcedureName;
+    @Value("${sql.registration.insertCharge.procedure}")
+    private String insertChargeProcedureName;
+    @Value("${sql.registration.insertPayment.procedure}")
+    private String insertPaymentProcedureName;
+    @Value("${sql.registration.orderComplete.procedure}")
+    private String orderCompleteProcedureName;
 
-    private static final String getOfferingActionSequenceQuery = "select lpad(ltrim(rtrim(to_char(tpt_offer_action_profile_seq.nextval))), 15, '0') id from dual";
-    private static final String getRegistrationSequenceQuery = "select lpad(ltrim(rtrim(to_char(tpt_regist_seq.nextval))), 15, '0') id from dual";
-    private static final String getOrderSequenceQuery = "select lpad(ltrim(rtrim(to_char(tpt_oe_order_seq.nextval))), 15, '0') id from dual";
-    private static final String getOrderItemSequenceQuery = "select lpad(ltrim(rtrim(to_char(tpt_oe_item_reg_seq.nextval))), 15, '0') id from dual";
-    private static final String getChargeSequenceQuery = "select lpad(ltrim(rtrim(to_char(tpt_charge_seq.nextval))), 15, '0') id from dual";
-    private static final String getPaymentSequenceQuery = "select lpad(ltrim(rtrim(to_char(let_payment_info_seq.nextval))), 15, '0') id from dual";
+    @Value("${sql.registration.offeringActionId.sequence}")
+    private String getOfferingActionSequenceQuery;
+    @Value("${sql.registration.registrationId.sequence}")
+    private String getRegistrationSequenceQuery;
+    @Value("${sql.registration.orderId.sequence}")
+    private String getOrderSequenceQuery;
+    @Value("${sql.registration.orderItemId.sequence}")
+    private String getOrderItemSequenceQuery;
+    @Value("${sql.registration.chargeId.sequence}")
+    private String getChargeSequenceQuery;
+    @Value("${sql.registration.paymentId.sequence}")
+    private String getPaymentSequenceQuery;
 
     @Autowired
     public void setDataSource(DataSource dataSource) {
@@ -64,7 +78,7 @@ public class RegistrationDAO {
      * @return the id of the created registration.
      * @throws Exception error creating registration.
      */
-    public String register(User user, User student, CourseSession session) throws Exception {
+    public String registerForCourse(User user, User student, CourseSession session) throws Exception {
         logger.debug("Inserting registration into the database");
 
         String offeringActionProfileId = insertOfferingActionProfile(user, student, session);
@@ -83,6 +97,15 @@ public class RegistrationDAO {
         return registrationId;
     }
 
+    /**
+     * Inserts into the offering action profile table. This table seems to store the record of the student attending the
+     * course and has info such as grade
+     * @param user is the logged in user
+     * @param student is the student registering for a course
+     * @param session is the session the student is registering for
+     * @return the offeringActionProfileId
+     * @throws Exception
+     */
     private String insertOfferingActionProfile(User user, User student, CourseSession session) throws Exception {
         String offeringActionProfileId = "ofapr" + this.jdbcTemplate.queryForObject(getOfferingActionSequenceQuery, String.class);
 
@@ -98,15 +121,15 @@ public class RegistrationDAO {
                 .addValue("xnewts", millis, OracleTypes.VARCHAR)
                 .addValue("xadded_to_profile_on", currentDate, OracleTypes.DATE)
                 .addValue("xoffering_temp_id", session.getCourseId(), OracleTypes.FIXED_CHAR)
-                .addValue("xstart_date", session.getStartDate(), OracleTypes.DATE) //Do we need to convert date?
-                .addValue("xoffrng_start_date", session.getStartDate(), OracleTypes.DATE) //Convert date?
+                .addValue("xstart_date", session.getStartDate(), OracleTypes.DATE)
+                .addValue("xoffrng_start_date", session.getStartDate(), OracleTypes.DATE)
                 .addValue("xcreated_by", user.getUsername(), OracleTypes.VARCHAR)
                 .addValue("xcreated_id", user.getId(), OracleTypes.FIXED_CHAR)
                 .addValue("xupdated_by", user.getUsername(), OracleTypes.VARCHAR)
-                //hardcoded values
+                .addValue("xscore", 0, OracleTypes.FLOAT) //No score yet
+                //Below are hardcoded flags and statuses taken from successful insert. Saba documentation defines what the values mean
                 .addValue("xstatus", 100, OracleTypes.INTEGER)
                 .addValue("xflags", "2", OracleTypes.FIXED_CHAR)
-                .addValue("xscore", 0, OracleTypes.FLOAT)
                 .addValue("xaction_status", 100, OracleTypes.INTEGER)
                 //nulls
                 .addValue("xtime_stamp", null, OracleTypes.VARCHAR)
@@ -138,6 +161,14 @@ public class RegistrationDAO {
         return offeringActionProfileId;
     }
 
+    /**
+     * Insert the registration record into the registration table.
+     * @param student is the student registering for a course
+     * @param session is the session the student is registering for
+     * @param offeringActionProfileId is the id from the offering action profile table
+     * @return the registrationId
+     * @throws Exception
+     */
     private String insertRegistration(User student, CourseSession session, String offeringActionProfileId) throws Exception {
         String registrationId = "regdw" + this.jdbcTemplate.queryForObject(getRegistrationSequenceQuery, String.class);
         long millis = new Date().getTime();
@@ -148,9 +179,9 @@ public class RegistrationDAO {
                 .addValue("xstudent_id", student.getId(), OracleTypes.FIXED_CHAR)
                 .addValue("xnewts", millis, OracleTypes.VARCHAR)
                 .addValue("xoffer_action_id", offeringActionProfileId, OracleTypes.FIXED_CHAR)
-                //hardcode till we figure out something better
+                .addValue("xwlist_priority", 5, OracleTypes.INTEGER) //unsure what this priority is or where it comes from
+                //Below are hardcoded flags and statuses taken from successful insert. Saba documentation defines what the values mean
                 .addValue("xstatus", 100, OracleTypes.INTEGER)
-                .addValue("xwlist_priority", 5, OracleTypes.INTEGER)
                 .addValue("xreg_type", 200, OracleTypes.INTEGER)
                 .addValue("xflags", "0000000000", OracleTypes.FIXED_CHAR)
                 //nulls
@@ -179,16 +210,20 @@ public class RegistrationDAO {
         return registrationId;
     }
 
+    /**
+     * Inserts the order into the database. The order tracks multiple items, and a single order is paid off by a single payment
+     * @param user is the logged in user
+     * @param student is the student registering for a course
+     * @param session is the session the student is registering for
+     * @return the orderId
+     * @throws Exception
+     */
     private String insertOrder(User user, User student, CourseSession session) throws Exception {
         //Note: When refactoring for training officials, this will have to find the existing order's id and not insert a new one
         String orderId = "intor" + this.jdbcTemplate.queryForObject(getOrderSequenceQuery, String.class);
         //Setup audit data
         Date currentDate = new Date();
         long millis = currentDate.getTime();
-
-        //These could be retrieved from the user
-        String split = "domin000000000000001";
-        String currencyID = "crncy000000000000167";
 
         MapSqlParameterSource in = new MapSqlParameterSource()
                 .addValue("xid", orderId, OracleTypes.FIXED_CHAR)
@@ -204,9 +239,9 @@ public class RegistrationDAO {
                 .addValue("xdept_id", student.getId(), OracleTypes.FIXED_CHAR)
                 .addValue("xcontact_id", student.getId(), OracleTypes.FIXED_CHAR)
                 .addValue("xaccount_id", student.getAccountId(), OracleTypes.FIXED_CHAR)
-                .addValue("xsplit", split, OracleTypes.VARCHAR)
-                .addValue("xcurrency_id", currencyID, OracleTypes.FIXED_CHAR)
-                //Hardcoded till we get something better
+                .addValue("xsplit", student.getSplit(), OracleTypes.VARCHAR)
+                .addValue("xcurrency_id", student.getCurrencyId(), OracleTypes.FIXED_CHAR)
+                //Below are hardcoded flags and statuses taken from successful insert. Saba documentation defines what the values mean
                 .addValue("xstatus", 100, OracleTypes.INTEGER)
                 .addValue("xstatus_flag", "000010000", OracleTypes.FIXED_CHAR)
                 .addValue("xconf_type", 0, OracleTypes.INTEGER)
@@ -253,6 +288,17 @@ public class RegistrationDAO {
         return orderId;
     }
 
+    /**
+     * Insert the individual order item into the database. This represents a particular charge, such as registering for
+     * a single course. Each registration will have its own orderItemId
+     * @param user is the logged in user
+     * @param student is the student registering for a course
+     * @param session is the session the student is registering for
+     * @param registrationId is the registration id order
+     * @param orderId is the order which contains this orderItem
+     * @return the created orderItemId
+     * @throws Exception
+     */
     private String insertOrderItem(User user, User student, CourseSession session, String registrationId, String orderId) throws Exception {
         String orderItemId = "ioreg" + this.jdbcTemplate.queryForObject(getOrderItemSequenceQuery, String.class);
 
@@ -274,14 +320,15 @@ public class RegistrationDAO {
                 .addValue("xoffering_template_id", session.getCourseId(), OracleTypes.FIXED_CHAR)
                 .addValue("xcreated_id", user.getId(), OracleTypes.FIXED_CHAR)
                 .addValue("xnewts", millis, OracleTypes.VARCHAR)
-                //hardcode till we know better
-                .addValue("xstatus", 100, OracleTypes.INTEGER)
-                .addValue("xreq_qty", 1, OracleTypes.INTEGER) //Number of seats?
+                //Unsure what these are. They may come from session, or it may be related to the number of seats
+                .addValue("xreq_qty", 1, OracleTypes.INTEGER)
+                .addValue("xact_qty", 0, OracleTypes.INTEGER)
                 .addValue("xseq_no", 1, OracleTypes.INTEGER)
+                //Below are hardcoded flags and statuses taken from successful insert. Saba documentation defines what the values mean
+                .addValue("xstatus", 100, OracleTypes.INTEGER)
                 .addValue("xflags", "0000", OracleTypes.FIXED_CHAR)
                 .addValue("xapproved", "1", OracleTypes.VARCHAR)
                 .addValue("xapproved_status", 400, OracleTypes.INTEGER)
-                .addValue("xact_qty", 0, OracleTypes.INTEGER)
                 .addValue("xbilling_status", 200, OracleTypes.INTEGER)
                 //nulls
                 .addValue("xtime_stamp", null, OracleTypes.VARCHAR)
@@ -314,6 +361,14 @@ public class RegistrationDAO {
         return orderItemId;
     }
 
+    /**
+     * Inserts a charge for an individual order item id
+     * @param user is the logged in user
+     * @param session is the session the student is registering for
+     * @param orderItemId is the individual order item for a single registration
+     * @return the chargeId
+     * @throws Exception
+     */
     private String insertCharge(User user, CourseSession session, String orderItemId) throws Exception {
         String chargeId = "chrgs" + this.jdbcTemplate.queryForObject(getChargeSequenceQuery, String.class);
 
@@ -321,17 +376,14 @@ public class RegistrationDAO {
         Date currentDate = new Date();
         long millis = currentDate.getTime();
 
-        java.sql.Date payDate = new java.sql.Date(millis);
-
         MapSqlParameterSource in = new MapSqlParameterSource()
                 .addValue("xid", chargeId, OracleTypes.FIXED_CHAR)
                 .addValue("xamount", session.getTuition(), OracleTypes.FLOAT)
                 .addValue("xowner_id", orderItemId, OracleTypes.FIXED_CHAR)
                 .addValue("xcreated_by", user.getUsername(), OracleTypes.VARCHAR)
-                //Hardcode till we know better
-                .addValue("xpaycat_id", "4000", OracleTypes.FIXED_CHAR)
-                .addValue("xpay_date", payDate, OracleTypes.DATE)
+                .addValue("xpaycat_id", "4000", OracleTypes.FIXED_CHAR) //Unsure what this represents
                 //Nulls
+                .addValue("xpay_date", null, OracleTypes.DATE)
                 .addValue("xref_id", null, OracleTypes.FIXED_CHAR)
                 .addValue("xcustom0", null, OracleTypes.VARCHAR)
                 .addValue("xcustom1", null, OracleTypes.VARCHAR)
@@ -355,6 +407,14 @@ public class RegistrationDAO {
         return chargeId;
     }
 
+    /**
+     * Inserts a single payment record for an order, where the amount is the summation of each indvidual order item
+     * @param user is the logged in user
+     * @param session is the session the student is registering for
+     * @param orderId is the identifier of the order being paid for
+     * @return the paymentId
+     * @throws Exception
+     */
     private String insertPaymentInfo(User user, User student, CourseSession session, String orderId) throws Exception {
         String paymentId = "mopay" + this.jdbcTemplate.queryForObject(getPaymentSequenceQuery, String.class);
 
@@ -374,10 +434,10 @@ public class RegistrationDAO {
                 .addValue("xcreated_id", user.getId(), OracleTypes.FIXED_CHAR)
                 .addValue("xmoney_amt", session.getTuition(), OracleTypes.FLOAT)
                 .addValue("xnewts", millis, OracleTypes.VARCHAR)
-                //Hardcode till we know better
-                .addValue("xcheck_no", "000000000000", OracleTypes.VARCHAR)
-                .addValue("xsplit", "domin000000000000001", OracleTypes.VARCHAR) // Can likely get from user
-                .addValue("xcurrency_id", "crncy000000000000167", OracleTypes.FIXED_CHAR) //Can likely get from user
+                .addValue("xsplit", student.getSplit(), OracleTypes.VARCHAR)
+                .addValue("xcurrency_id", student.getCurrencyId(), OracleTypes.FIXED_CHAR)
+                .addValue("xcheck_no", "000000000000", OracleTypes.VARCHAR) //Fake check
+                //Below are hardcoded flags and statuses taken from successful insert. Saba documentation defines what the values mean
                 .addValue("xconf_type", "3", OracleTypes.VARCHAR)
                 .addValue("xstatus", "1", OracleTypes.VARCHAR)
                 .addValue("xtx_status", "0", OracleTypes.VARCHAR)
