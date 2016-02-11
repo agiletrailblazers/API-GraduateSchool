@@ -436,15 +436,9 @@ public class RegistrationDAO {
     }
 
     private Map<String,Object> executeRegistrationStoredProcedure(MapSqlParameterSource inParameters, SimpleJdbcCall spCallToExecute) throws Exception {
-        try {
-            Map<String,Object> out = spCallToExecute.execute(inParameters);
+        Map<String,Object> out = spCallToExecute.execute(inParameters);
 
-            logger.debug("Stored Procedure executed successfully");
-            return out;
-        }
-        catch (Exception e) {
-            logger.error("Error calling stored procedure", e);
-            throw e;
-        }
+        logger.debug("Stored Procedure executed successfully");
+        return out;
     }
 }

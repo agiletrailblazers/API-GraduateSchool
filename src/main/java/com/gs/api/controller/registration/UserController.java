@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,14 +35,12 @@ public class UserController extends BaseController {
         return user;
     }
 
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
     public void deleteUser(@PathVariable("id") String id) throws Exception  {
 
         logger.debug("Delete User {}", id);
 
-        // TODO basic input validation
-
-        // create the user
         userService.deleteUser(id);
     }
 }
