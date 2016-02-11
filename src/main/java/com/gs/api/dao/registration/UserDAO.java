@@ -351,8 +351,16 @@ public class UserDAO {
             user.setId(rs.getString("USER_ID"));
             user.setUsername(rs.getString("USERNAME"));
             String ssn = rs.getString("SS_NO");
-            if (ssn != null && ssn.length() > 4) {
-                user.setLastFourSSN(ssn.substring(ssn.length() - 4, ssn.length()));
+            if (ssn != null) {
+                if (ssn.length() > 4) {
+                    user.setLastFourSSN(ssn.substring(ssn.length() - 4, ssn.length()));
+                }
+                else if (ssn.length() == 4) {
+                    user.setLastFourSSN(ssn);
+                }
+                else {
+                    user.setLastFourSSN(null);
+                }
             }
             user.setTimezoneId(rs.getString("TIMEZONE_ID"));
             user.setAccountId(rs.getString("ACCOUNT_ID"));
@@ -371,9 +379,9 @@ public class UserDAO {
             String veteranStatus = rs.getString("VETERAN");
             if (veteranStatus != null) {
                 //Translate y/Y and n/N to true false
-                if (veteranStatus.equals("y") || veteranStatus.equals("Y")) {
+                if (veteranStatus.equalsIgnoreCase("y")) {
                     person.setVeteran(true);
-                } else if (veteranStatus.equals("n") || veteranStatus.equals("N")) {
+                } else if (veteranStatus.equalsIgnoreCase("n")) {
                     person.setVeteran(false);
                 }
             }
