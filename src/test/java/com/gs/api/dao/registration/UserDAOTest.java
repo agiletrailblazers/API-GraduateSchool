@@ -20,6 +20,9 @@ import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.sql.ResultSet;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -27,10 +30,7 @@ import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -78,6 +78,8 @@ public class UserDAOTest {
     private static final String CURRENCY_ID = "crncy000000000000167";
 
     private User user;
+
+    private UserDAO.UserRowMapper rowMapper;
 
     @InjectMocks
     @Autowired
@@ -145,6 +147,8 @@ public class UserDAOTest {
         person.setPrimaryAddress(address);
 
         user.setPerson(person);
+
+        rowMapper = userDAO.new UserRowMapper();
     }
 
     @Test
@@ -335,5 +339,120 @@ public class UserDAOTest {
         assertEquals(user.getCurrencyId(), returnedUser.getCurrencyId());
         assertEquals(user.getId(), returnedUser.getId());
         assertEquals(user.getSplit(), returnedUser.getSplit());
+    }
+
+    @Test
+    public void testUserDAO_RowMapper() throws Exception {
+        ResultSet rs = mock(ResultSet.class);
+
+        when(rs.getString("USER_ID")).thenReturn(USER_ID);
+        when(rs.getString("USERNAME")).thenReturn(USERNAME);
+        when(rs.getString("SS_NO")).thenReturn(null);
+        when(rs.getString("TIMEZONE_ID")).thenReturn(TIMEZONE_ID);
+        when(rs.getString("ACCOUNT_ID")).thenReturn("1234");
+        when(rs.getString("SPLIT")).thenReturn(SPLIT);
+        when(rs.getString("CURRENCY_ID")).thenReturn("abc1234");
+        when(rs.getString("FNAME")).thenReturn(FIRST_NAME);
+        when(rs.getString("LNAME")).thenReturn(LAST_NAME);
+        when(rs.getString("EMAIL")).thenReturn(EMAIL_ADDRESS);
+        when(rs.getString("HOMEPHONE")).thenReturn(PHONE);
+        when(rs.getString("WORKPHONE")).thenReturn("123456");
+
+        when(rs.getDate("DATE_OF_BIRTH")).thenReturn(null);
+        when(rs.getString("VETERAN")).thenReturn("N");
+
+        User user = rowMapper.mapRow(rs, 0);
+        assertNotNull(user);
+        assertEquals(USER_ID, user.getId());
+        assertEquals(USERNAME, user.getUsername());
+        assertNull(user.getLastFourSSN());
+        assertEquals(TIMEZONE_ID, user.getTimezoneId());
+        assertEquals("1234", user.getAccountId());
+        assertEquals(SPLIT, user.getSplit());
+        assertEquals("abc1234", user.getCurrencyId());
+        assertEquals(FIRST_NAME, user.getPerson().getFirstName());
+        assertEquals(LAST_NAME, user.getPerson().getLastName());
+        assertEquals(EMAIL_ADDRESS, user.getPerson().getEmailAddress());
+        assertEquals(PHONE, user.getPerson().getPrimaryPhone());
+        assertEquals("123456", user.getPerson().getSecondaryPhone());
+        assertNull(user.getPerson().getDateOfBirth());
+        assertEquals(false, user.getPerson().getVeteran());
+    }
+
+    @Test
+    public void testUserDAOwithoutVetStatus_RowMapper() throws Exception {
+        ResultSet rs = mock(ResultSet.class);
+
+        when(rs.getString("USER_ID")).thenReturn(USER_ID);
+        when(rs.getString("VETERAN")).thenReturn(null);
+        User user = rowMapper.mapRow(rs, 0);
+        assertNotNull(user);
+        assertEquals(USER_ID, user.getId());
+        assertNull(user.getPerson().getVeteran());
+    }
+
+    @Test
+    public void testUserDAOwithVetStatusYes_RowMapper() throws Exception {
+        ResultSet rs = mock(ResultSet.class);
+
+        when(rs.getString("USER_ID")).thenReturn(USER_ID);
+        when(rs.getString("VETERAN")).thenReturn("y");
+        User user = rowMapper.mapRow(rs, 0);
+        assertNotNull(user);
+        assertEquals(USER_ID, user.getId());
+        assertTrue(user.getPerson().getVeteran());
+    }
+
+    @Test
+    public void testUserDAOwithDoB_RowMapper() throws Exception {
+        ResultSet rs = mock(ResultSet.class);
+
+        when(rs.getString("USER_ID")).thenReturn(USER_ID);
+        //Convert dates to sql dates
+        SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
+        Date parsed = format.parse("20110210");
+        java.sql.Date sqlDateOfBirth = new java.sql.Date(parsed.getTime());
+        when(rs.getDate("DATE_OF_BIRTH")).thenReturn(sqlDateOfBirth);
+        User user = rowMapper.mapRow(rs, 0);
+        assertNotNull(user);
+        assertEquals(USER_ID, user.getId());
+        assertEquals(sqlDateOfBirth.toString(), user.getPerson().getDateOfBirth());
+    }
+
+    @Test
+    public void testUserDAOwithSsnFull_RowMapper() throws Exception {
+        ResultSet rs = mock(ResultSet.class);
+
+        when(rs.getString("USER_ID")).thenReturn(USER_ID);
+        when(rs.getString("SS_NO")).thenReturn("00000" + LAST_FOUR_SSN);
+        User user = rowMapper.mapRow(rs, 0);
+        assertNotNull(user);
+        assertEquals(USER_ID, user.getId());
+        assertEquals(LAST_FOUR_SSN, user.getLastFourSSN());
+    }
+
+    @Test
+    public void testUserDAOwithTooSmallSsn_RowMapper() throws Exception {
+        ResultSet rs = mock(ResultSet.class);
+
+        when(rs.getString("USER_ID")).thenReturn(USER_ID);
+        when(rs.getString("SS_NO")).thenReturn("123");
+        User user = rowMapper.mapRow(rs, 0);
+        assertNotNull(user);
+        assertEquals(USER_ID, user.getId());
+        assertNull(user.getLastFourSSN());
+    }
+
+
+    @Test
+    public void testUserDAOwithTooFourSsn_RowMapper() throws Exception {
+        ResultSet rs = mock(ResultSet.class);
+
+        when(rs.getString("USER_ID")).thenReturn(USER_ID);
+        when(rs.getString("SS_NO")).thenReturn(LAST_FOUR_SSN);
+        User user = rowMapper.mapRow(rs, 0);
+        assertNotNull(user);
+        assertEquals(USER_ID, user.getId());
+        assertEquals(LAST_FOUR_SSN, user.getLastFourSSN());
     }
 }

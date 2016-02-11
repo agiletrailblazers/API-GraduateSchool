@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Matchers.any;
@@ -65,17 +66,18 @@ public class RegistrationServiceTest {
         registration1.setSessionId(SESSION_ID);
         registrations.add(registration1);
 
+    }
+
+    @Test
+    public void testRegisterTwoRegs() throws Exception {
+        final String id1 = "reg1";
+        final String id2 = "reg2";
+
+        //Add second reg
         registration2 = new Registration();
         registration2.setStudentId(STUDENT_ID_2);
         registration2.setSessionId(SESSION_ID);
         registrations.add(registration2);
-    }
-
-    @Test
-    public void testRegister() throws Exception {
-
-        final String id1 = "reg1";
-        final String id2 = "reg2";
 
         User user = new User(USER_ID, "user1", "", "1234", new Person(), "", "", "", "");
         User student1 = new User(STUDENT_ID_1, "student1", "", "1234", new Person(), "", "", "", "");
@@ -102,4 +104,56 @@ public class RegistrationServiceTest {
         assertEquals(id2, registration2.getId());
     }
 
+    @Test
+    public void testRegisterUserNotFound() throws Exception {
+        final String id1 = "reg1";
+
+        when(userDao.getUser(USER_ID)).thenReturn(null);
+        try {
+            registrationService.register(USER_ID, registrations);
+            fail("Shouldnt reach here");
+
+        }
+        catch (Exception e) {
+
+        }
+    }
+
+    @Test
+    public void testRegisterStudentNotFound() throws Exception {
+        User user = new User(USER_ID, "user1", "", "1234", new Person(), "", "", "", "");
+
+        when(userDao.getUser(USER_ID)).thenReturn(user);
+        when(userDao.getUser(STUDENT_ID_1)).thenReturn(null);
+
+        try {
+            registrationService.register(USER_ID, registrations);
+            fail("Shouldnt reach here");
+
+        }
+        catch (Exception e) {
+
+        }
+    }
+
+    @Test
+    public void testRegisterSessionNotFound() throws Exception {
+        final String id1 = "reg1";
+        User user = new User(USER_ID, "user1", "", "1234", new Person(), "", "", "", "");
+        User student1 = new User(STUDENT_ID_1, "student1", "", "1234", new Person(), "", "", "", "");
+
+
+        when(userDao.getUser(USER_ID)).thenReturn(user);
+        when(userDao.getUser(STUDENT_ID_1)).thenReturn(student1);
+
+        when(sessionDao.getSession(SESSION_ID)).thenReturn(null);
+        try {
+            registrationService.register(USER_ID, registrations);
+            fail("Shouldnt reach here");
+
+        }
+        catch (Exception e) {
+
+        }
+    }
 }
