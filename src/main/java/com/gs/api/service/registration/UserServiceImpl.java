@@ -127,4 +127,11 @@ public class UserServiceImpl implements UserService {
 
         return b16string.toString();
     }
+
+    @Override
+    public void deleteUser(String id) throws Exception {
+        logger.info("Deleting user: {}", id);
+
+        userDao.deleteUser(id);
+    }
 }

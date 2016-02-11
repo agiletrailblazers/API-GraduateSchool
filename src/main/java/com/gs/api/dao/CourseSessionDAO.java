@@ -16,6 +16,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -47,7 +48,7 @@ public class CourseSessionDAO {
         logger.debug("Getting course competency from database for course id {}", courseId);
         logger.debug(sql);
         try {
-            final List<CourseSession> sessions = this.jdbcTemplate.query(sql, new Object[] { courseId, courseId },
+            final List<CourseSession> sessions = this.jdbcTemplate.query(sql, new Object[]{courseId, courseId},
                     new SessionsRowMapper());
             logger.debug("Found {} session matchs for {}", sessions.size(), courseId);
             return sessions;
@@ -69,7 +70,7 @@ public class CourseSessionDAO {
      */
     public CourseSession getSession(String sessionId) {
         logger.debug("Getting course session information for sessionId {}", sessionId);
-        logger.debug(sql);
+        logger.debug(sqlForSingleSession);
         try {
             final CourseSession session = this.jdbcTemplate.queryForObject(sqlForSingleSession, new Object[] { sessionId, sessionId, sessionId },
                     new SessionsRowMapper());
@@ -104,6 +105,8 @@ public class CourseSessionDAO {
             session.setStartTime(rs.getString("START_TIME"));
             session.setEndTime(rs.getString("END_TIME"));
             session.setDays(rs.getString("SESSION_TEMPLATE"));
+            session.setCourseId(rs.getString("COURSE_ID"));
+            session.setOfferingSessionId(rs.getString("OFFERING_SESSION_ID"));
             Location location = new Location();
             location.setId(rs.getString("FACILITY_NO"));
             location.setName(rs.getString("FACILITY_NAME"));

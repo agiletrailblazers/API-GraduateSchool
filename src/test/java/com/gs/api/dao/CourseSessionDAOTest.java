@@ -111,6 +111,7 @@ public class CourseSessionDAOTest {
     @Test
     public void testSessionDAO_RowMapper_WithPerson() throws Exception {
         ResultSet rs = mock(ResultSet.class);
+
         when(rs.getString("CLASS_NO")).thenReturn("12345");
         when(rs.getString("PERSON_NO")).thenReturn("55555");
         CourseSession session = rowMapper.mapRow(rs, 0);
@@ -122,6 +123,7 @@ public class CourseSessionDAOTest {
     @Test
     public void testSessionDAO_RowMapper_WithoutPerson() throws Exception {
         ResultSet rs = mock(ResultSet.class);
+
         when(rs.getString("CLASS_NO")).thenReturn("12345");
         when(rs.getString("PERSON_NO")).thenReturn(null);
         CourseSession session = rowMapper.mapRow(rs, 0);

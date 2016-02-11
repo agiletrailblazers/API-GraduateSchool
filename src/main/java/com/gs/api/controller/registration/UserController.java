@@ -8,11 +8,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Configuration
 @RestController
@@ -24,6 +22,7 @@ public class UserController extends BaseController {
     @Autowired
     private UserService userService;
 
+    @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(value = "", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public User create(@RequestBody User user) throws Exception  {
 
@@ -37,4 +36,12 @@ public class UserController extends BaseController {
         return user;
     }
 
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public void deleteUser(@PathVariable("id") String id) throws Exception  {
+
+        logger.debug("Delete User {}", id);
+
+        userService.deleteUser(id);
+    }
 }

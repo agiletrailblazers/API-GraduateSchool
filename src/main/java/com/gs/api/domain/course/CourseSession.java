@@ -23,6 +23,8 @@ public class CourseSession {
     private double tuition;
     private Location location;
     private CourseInstructor instructor;
+    private String offeringSessionId;
+    private String courseId;
 
     public String getClassNumber() {
         return classNumber;
@@ -144,4 +146,19 @@ public class CourseSession {
         this.instructor = instructor;
     }
 
+    public String getOfferingSessionId() {
+        return offeringSessionId;
+    }
+
+    public void setOfferingSessionId(String offeringSessionId) {
+        this.offeringSessionId = offeringSessionId;
+    }
+
+    public String getCourseId() {
+        return courseId;
+    }
+
+    public void setCourseId(String courseId) {
+        this.courseId = courseId;
+    }
 }
