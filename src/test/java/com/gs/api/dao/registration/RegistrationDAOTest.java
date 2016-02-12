@@ -1,12 +1,17 @@
 package com.gs.api.dao.registration;
 
 import com.gs.api.domain.course.CourseSession;
-
+import com.gs.api.domain.registration.Registration;
 import com.gs.api.domain.registration.User;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.*;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -18,10 +23,10 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.util.Date;
 import java.util.HashMap;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -139,7 +144,7 @@ public class RegistrationDAOTest {
 
     @Test
     public void testRegister() throws Exception {
-        HashMap<String, Object> sqlResult = new HashMap();
+        HashMap<String, Object> sqlResult = new HashMap<>();
 
         String expectedOfferingActionProfileId = "ofapr100";
         String expectedRegistrationId = "regdw1000";
@@ -147,6 +152,7 @@ public class RegistrationDAOTest {
         String expectedOrderItemId = "ioreg1000";
         String expectedChargeId = "chrgs100";
         String expectedPaymentId = "mopay100";
+        String expectedOrderNumber = "order12345";
 
         when(jdbcTemplate.queryForObject(getOfferingActionSequenceQuery, String.class)).thenReturn("100");
         doReturn(sqlResult).when(insertOfferingActionProfileActor).execute(any(SqlParameterSource.class));
@@ -168,7 +174,15 @@ public class RegistrationDAOTest {
 
         doReturn(sqlResult).when(orderCompleteActor).execute(any(SqlParameterSource.class));
 
-        String id = registrationDAO.registerForCourse(loggedInUser, student, session);
+        Object[] expectedQueryParams = new Object[] {expectedOrderId};
+        when(jdbcTemplate.queryForObject(getOrderNumberQuery, expectedQueryParams, String.class)).thenReturn(expectedOrderNumber);
+
+        Registration createdRegistration = registrationDAO.registerForCourse(loggedInUser, student, session);
+
+        assertEquals(student.getId(), createdRegistration.getStudentId());
+        assertEquals(session.getClassNumber(), createdRegistration.getSessionId());
+        assertEquals(expectedRegistrationId, createdRegistration.getId());
+        assertEquals(expectedOrderNumber, createdRegistration.getOrderNumber());
 
         verify(insertOfferingActionProfileActor).execute(insertOfferingActionCaptor.capture());
         SqlParameterSource registrationParameters = insertOfferingActionCaptor.getValue();
@@ -240,40 +254,40 @@ public class RegistrationDAOTest {
     @Test
     public void testFailInsertOfferingActionProfile() throws Exception {
         when(jdbcTemplate.queryForObject(getOfferingActionSequenceQuery, String.class)).thenReturn("100");
-        when(insertOfferingActionProfileActor.execute(any(SqlParameterSource.class))).thenThrow(new IllegalArgumentException("BAD SQL"));
+        final IllegalArgumentException illegalArgumentException = new IllegalArgumentException("BAD SQL");
+        when(insertOfferingActionProfileActor.execute(any(SqlParameterSource.class))).thenThrow(illegalArgumentException);
         try {
-            String id = registrationDAO.registerForCourse(loggedInUser, student, session);
+            registrationDAO.registerForCourse(loggedInUser, student, session);
             assertTrue(false); //Should never reach this line
         }
         catch (IllegalArgumentException iE) {
-            assertNotNull(iE);
-            assertTrue(iE instanceof Exception);
+            assertSame(illegalArgumentException, iE);
         }
     }
 
     @Test
     public void testFailInsertRegistration() throws Exception {
-        HashMap<String, Object> sqlResult = new HashMap();
+        HashMap<String, Object> sqlResult = new HashMap<>();
 
         when(jdbcTemplate.queryForObject(getOfferingActionSequenceQuery, String.class)).thenReturn("100");
         doReturn(sqlResult).when(insertOfferingActionProfileActor).execute(any(SqlParameterSource.class));
 
         when(jdbcTemplate.queryForObject(getRegistrationSequenceQuery, String.class)).thenReturn("100");
-        when(insertRegistrationActor.execute(any(SqlParameterSource.class))).thenThrow(new IllegalArgumentException("BAD SQL"));
+        final IllegalArgumentException illegalArgumentException = new IllegalArgumentException("BAD SQL");
+        when(insertRegistrationActor.execute(any(SqlParameterSource.class))).thenThrow(illegalArgumentException);
         try {
-            String id = registrationDAO.registerForCourse(loggedInUser, student, session);
+            registrationDAO.registerForCourse(loggedInUser, student, session);
             assertTrue(false); //Should never reach this line
         }
         catch (IllegalArgumentException iE) {
-            assertNotNull(iE);
-            assertTrue(iE instanceof Exception);
+            assertSame(illegalArgumentException, iE);
             verify(insertOfferingActionProfileActor).execute(any(SqlParameterSource.class));
         }
     }
 
     @Test
     public void testFailInsertOrder() throws Exception {
-        HashMap<String, Object> sqlResult = new HashMap();
+        HashMap<String, Object> sqlResult = new HashMap<>();
 
         when(jdbcTemplate.queryForObject(getOfferingActionSequenceQuery, String.class)).thenReturn("100");
         doReturn(sqlResult).when(insertOfferingActionProfileActor).execute(any(SqlParameterSource.class));
@@ -282,14 +296,14 @@ public class RegistrationDAOTest {
         doReturn(sqlResult).when(insertRegistrationActor).execute(any(SqlParameterSource.class));
 
         when(jdbcTemplate.queryForObject(getOrderSequenceQuery, String.class)).thenReturn("100");
-        when(insertOrderActor.execute(any(SqlParameterSource.class))).thenThrow(new IllegalArgumentException("BAD SQL"));
+        final IllegalArgumentException illegalArgumentException = new IllegalArgumentException("BAD SQL");
+        when(insertOrderActor.execute(any(SqlParameterSource.class))).thenThrow(illegalArgumentException);
         try {
-            String id = registrationDAO.registerForCourse(loggedInUser, student, session);
+            registrationDAO.registerForCourse(loggedInUser, student, session);
             assertTrue(false); //Should never reach this line
         }
         catch (IllegalArgumentException iE) {
-            assertNotNull(iE);
-            assertTrue(iE instanceof Exception);
+            assertSame(illegalArgumentException, iE);
             verify(insertOfferingActionProfileActor).execute(any(SqlParameterSource.class));
             verify(insertRegistrationActor).execute(any(SqlParameterSource.class));
         }
@@ -297,7 +311,7 @@ public class RegistrationDAOTest {
 
     @Test
     public void testFailInsertOrderItem() throws Exception {
-        HashMap<String, Object> sqlResult = new HashMap();
+        HashMap<String, Object> sqlResult = new HashMap<>();
 
         when(jdbcTemplate.queryForObject(getOfferingActionSequenceQuery, String.class)).thenReturn("100");
         doReturn(sqlResult).when(insertOfferingActionProfileActor).execute(any(SqlParameterSource.class));
@@ -309,15 +323,15 @@ public class RegistrationDAOTest {
         doReturn(sqlResult).when(insertOrderActor).execute(any(SqlParameterSource.class));
 
         when(jdbcTemplate.queryForObject(getOrderItemSequenceQuery, String.class)).thenReturn("100");
-        when(insertOrderItemActor.execute(any(SqlParameterSource.class))).thenThrow(new IllegalArgumentException("BAD SQL"));
+        final IllegalArgumentException illegalArgumentException = new IllegalArgumentException("BAD SQL");
+        when(insertOrderItemActor.execute(any(SqlParameterSource.class))).thenThrow(illegalArgumentException);
 
         try {
-            String id = registrationDAO.registerForCourse(loggedInUser, student, session);
+            registrationDAO.registerForCourse(loggedInUser, student, session);
             assertTrue(false); //Should never reach this line
         }
         catch (IllegalArgumentException iE) {
-            assertNotNull(iE);
-            assertTrue(iE instanceof Exception);
+            assertSame(illegalArgumentException, iE);
             verify(insertOfferingActionProfileActor).execute(any(SqlParameterSource.class));
             verify(insertRegistrationActor).execute(any(SqlParameterSource.class));
             verify(insertOrderActor).execute(any(SqlParameterSource.class));
@@ -326,7 +340,7 @@ public class RegistrationDAOTest {
 
     @Test
     public void testFailInsertCharge() throws Exception {
-        HashMap<String, Object> sqlResult = new HashMap();
+        HashMap<String, Object> sqlResult = new HashMap<>();
 
         when(jdbcTemplate.queryForObject(getOfferingActionSequenceQuery, String.class)).thenReturn("100");
         doReturn(sqlResult).when(insertOfferingActionProfileActor).execute(any(SqlParameterSource.class));
@@ -341,15 +355,15 @@ public class RegistrationDAOTest {
         doReturn(sqlResult).when(insertOrderItemActor).execute(any(SqlParameterSource.class));
 
         when(jdbcTemplate.queryForObject(getChargeSequenceQuery, String.class)).thenReturn("100");
-        when(insertChargeActor.execute(any(SqlParameterSource.class))).thenThrow(new IllegalArgumentException("BAD SQL"));
+        final IllegalArgumentException illegalArgumentException = new IllegalArgumentException("BAD SQL");
+        when(insertChargeActor.execute(any(SqlParameterSource.class))).thenThrow(illegalArgumentException);
 
         try {
-            String id = registrationDAO.registerForCourse(loggedInUser, student, session);
+            registrationDAO.registerForCourse(loggedInUser, student, session);
             assertTrue(false); //Should never reach this line
         }
         catch (IllegalArgumentException iE) {
-            assertNotNull(iE);
-            assertTrue(iE instanceof Exception);
+            assertSame(illegalArgumentException, iE);
             verify(insertOfferingActionProfileActor).execute(any(SqlParameterSource.class));
             verify(insertRegistrationActor).execute(any(SqlParameterSource.class));
             verify(insertOrderActor).execute(any(SqlParameterSource.class));
@@ -359,7 +373,7 @@ public class RegistrationDAOTest {
 
     @Test
     public void testFailInsertPayment() throws Exception {
-        HashMap<String, Object> sqlResult = new HashMap();
+        HashMap<String, Object> sqlResult = new HashMap<>();
 
         when(jdbcTemplate.queryForObject(getOfferingActionSequenceQuery, String.class)).thenReturn("100");
         doReturn(sqlResult).when(insertOfferingActionProfileActor).execute(any(SqlParameterSource.class));
@@ -377,15 +391,15 @@ public class RegistrationDAOTest {
         doReturn(sqlResult).when(insertChargeActor).execute(any(SqlParameterSource.class));
 
         when(jdbcTemplate.queryForObject(getPaymentSequenceQuery, String.class)).thenReturn("100");
-        when(insertPaymentActor.execute(any(SqlParameterSource.class))).thenThrow(new IllegalArgumentException("BAD SQL"));
+        final IllegalArgumentException illegalArgumentException = new IllegalArgumentException("BAD SQL");
+        when(insertPaymentActor.execute(any(SqlParameterSource.class))).thenThrow(illegalArgumentException);
 
         try {
-            String id = registrationDAO.registerForCourse(loggedInUser, student, session);
+            registrationDAO.registerForCourse(loggedInUser, student, session);
             assertTrue(false); //Should never reach this line
         }
         catch (IllegalArgumentException iE) {
-            assertNotNull(iE);
-            assertTrue(iE instanceof Exception);
+            assertSame(illegalArgumentException, iE);
             verify(insertOfferingActionProfileActor).execute(any(SqlParameterSource.class));
             verify(insertRegistrationActor).execute(any(SqlParameterSource.class));
             verify(insertOrderActor).execute(any(SqlParameterSource.class));
@@ -396,7 +410,7 @@ public class RegistrationDAOTest {
 
     @Test
     public void testFailOrderComplete() throws Exception {
-        HashMap<String, Object> sqlResult = new HashMap();
+        HashMap<String, Object> sqlResult = new HashMap<>();
 
         when(jdbcTemplate.queryForObject(getOfferingActionSequenceQuery, String.class)).thenReturn("100");
         doReturn(sqlResult).when(insertOfferingActionProfileActor).execute(any(SqlParameterSource.class));
@@ -417,15 +431,15 @@ public class RegistrationDAOTest {
         doReturn(sqlResult).when(insertPaymentActor).execute(any(SqlParameterSource.class));
 
         when(jdbcTemplate.queryForObject(getPaymentSequenceQuery, String.class)).thenReturn("100");
-        when(orderCompleteActor.execute(any(SqlParameterSource.class))).thenThrow(new IllegalArgumentException("BAD SQL"));
+        final IllegalArgumentException illegalArgumentException = new IllegalArgumentException("BAD SQL");
+        when(orderCompleteActor.execute(any(SqlParameterSource.class))).thenThrow(illegalArgumentException);
 
         try {
-            String id = registrationDAO.registerForCourse(loggedInUser, student, session);
+            registrationDAO.registerForCourse(loggedInUser, student, session);
             assertTrue(false); //Should never reach this line
         }
         catch (IllegalArgumentException iE) {
-            assertNotNull(iE);
-            assertTrue(iE instanceof Exception);
+            assertSame(illegalArgumentException, iE);
             verify(insertOfferingActionProfileActor).execute(any(SqlParameterSource.class));
             verify(insertRegistrationActor).execute(any(SqlParameterSource.class));
             verify(insertOrderActor).execute(any(SqlParameterSource.class));
@@ -433,37 +447,5 @@ public class RegistrationDAOTest {
             verify(insertChargeActor).execute(any(SqlParameterSource.class));
             verify(insertPaymentActor).execute(any(SqlParameterSource.class));
         }
-    }
-
-    @Test
-    public void testGetOrderNumber() throws Exception {
-        String orderId = "test1234";
-        Object[] expectedQueryParams = new Object[] {orderId};
-        String expectedOrderNo = "999999";
-        when(jdbcTemplate.queryForObject(getOrderNumberQuery, expectedQueryParams, String.class)).thenReturn(expectedOrderNo);
-        String actualOrderNo = registrationDAO.getOrderNumber(orderId);
-
-        assertNotNull("Expected OrderNumber", actualOrderNo);
-        assertEquals("Order number not what expected", expectedOrderNo, actualOrderNo);
-
-        verify(jdbcTemplate).queryForObject(eq(getOrderNumberQuery), getOrderNoCaptor.capture(), eq(String.class));
-        Object[] capturedQueryParams = getOrderNoCaptor.getValue();
-        assertNotNull("Expected parameters", capturedQueryParams);
-        assertArrayEquals("wrong parameters", expectedQueryParams, capturedQueryParams);
-    }
-
-    @Test
-    public void testFailToGetOrderNumber() throws Exception {
-        String orderId = "test1234";
-        Object[] expectedQueryParams = new Object[] {orderId};
-
-        when(jdbcTemplate.queryForObject(getOrderNumberQuery, new Object[]{orderId}, String.class)).thenReturn(null);
-        String actualOrderNo = registrationDAO.getOrderNumber(orderId);
-
-        assertNull("Expected no order number", actualOrderNo);
-        verify(jdbcTemplate).queryForObject(eq(getOrderNumberQuery), getOrderNoCaptor.capture(),eq(String.class));
-        Object[] capturedQueryParams = getOrderNoCaptor.getValue();
-        assertNotNull("Expected parameters", capturedQueryParams);
-        assertArrayEquals("wrong parameters", expectedQueryParams, capturedQueryParams);
     }
 }

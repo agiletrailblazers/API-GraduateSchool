@@ -7,6 +7,8 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 public class Registration {
 
     private String id;
+
+    private String orderNumber;
     private String studentId;
     private String sessionId;
 
@@ -16,6 +18,14 @@ public class Registration {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getOrderNumber() {
+        return orderNumber;
+    }
+
+    public void setOrderNumber(String orderNumber) {
+        this.orderNumber = orderNumber;
     }
 
     public String getStudentId() {
