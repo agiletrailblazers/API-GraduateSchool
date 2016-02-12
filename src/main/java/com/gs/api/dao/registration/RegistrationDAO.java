@@ -31,6 +31,9 @@ public class RegistrationDAO {
     private SimpleJdbcCall insertPaymentActor;
     private SimpleJdbcCall orderCompleteActor;
 
+    @Value("${sql.registration.getOrderNo.query}")
+    private String getOrderNumberQuery;
+
     @Value("${sql.registration.offeringActionInsert.procedure}")
     private String insertOfferingActionProcedureName;
     @Value("${sql.registration.insertRegistration.procedure}")
@@ -70,6 +73,20 @@ public class RegistrationDAO {
         this.insertPaymentActor = new SimpleJdbcCall(this.jdbcTemplate).withProcedureName(insertPaymentProcedureName);
         this.orderCompleteActor = new SimpleJdbcCall(this.jdbcTemplate).withProcedureName(orderCompleteProcedureName);
     }
+
+    /**
+     * Convert the orderID into the Order Number
+     * @param orderId the identifer of the order in the database
+     * @return the Order Number for the specified order
+     */
+    public String getOrderNumber(String orderId) {
+        logger.debug("Getting OrderNo from OrderID {}", orderId);
+
+        String orderNo = jdbcTemplate.queryForObject(getOrderNumberQuery, new Object[]{orderId}, String.class);
+        logger.debug("Found Order Number {} from OrderID {}", orderNo, orderId);
+        return orderNo;
+    }
+
     /**
      * Create a registration for the requested session.
      * @param user is the user that is performing the registration.  This may or may not be the ID of the student being registered.

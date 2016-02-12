@@ -18,10 +18,10 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.util.Date;
 import java.util.HashMap;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -67,8 +67,12 @@ public class RegistrationDAOTest {
     private ArgumentCaptor<SqlParameterSource> insertPaymentCaptor;
     @Captor
     private ArgumentCaptor<SqlParameterSource> orderCompleteCaptor;
+    @Captor
+    private ArgumentCaptor<Object[]> getOrderNoCaptor;
 
 
+    @Value("${sql.registration.getOrderNo.query}")
+    private String getOrderNumberQuery;
     @Value("${sql.registration.offeringActionInsert.procedure}")
     private String insertOfferingActionProcedureName;
     @Value("${sql.registration.insertRegistration.procedure}")
@@ -429,5 +433,37 @@ public class RegistrationDAOTest {
             verify(insertChargeActor).execute(any(SqlParameterSource.class));
             verify(insertPaymentActor).execute(any(SqlParameterSource.class));
         }
+    }
+
+    @Test
+    public void testGetOrderNumber() throws Exception {
+        String orderId = "test1234";
+        Object[] expectedQueryParams = new Object[] {orderId};
+        String expectedOrderNo = "999999";
+        when(jdbcTemplate.queryForObject(getOrderNumberQuery, expectedQueryParams, String.class)).thenReturn(expectedOrderNo);
+        String actualOrderNo = registrationDAO.getOrderNumber(orderId);
+
+        assertNotNull("Expected OrderNumber", actualOrderNo);
+        assertEquals("Order number not what expected", expectedOrderNo, actualOrderNo);
+
+        verify(jdbcTemplate).queryForObject(eq(getOrderNumberQuery), getOrderNoCaptor.capture(), eq(String.class));
+        Object[] capturedQueryParams = getOrderNoCaptor.getValue();
+        assertNotNull("Expected parameters", capturedQueryParams);
+        assertArrayEquals("wrong parameters", expectedQueryParams, capturedQueryParams);
+    }
+
+    @Test
+    public void testFailToGetOrderNumber() throws Exception {
+        String orderId = "test1234";
+        Object[] expectedQueryParams = new Object[] {orderId};
+
+        when(jdbcTemplate.queryForObject(getOrderNumberQuery, new Object[]{orderId}, String.class)).thenReturn(null);
+        String actualOrderNo = registrationDAO.getOrderNumber(orderId);
+
+        assertNull("Expected no order number", actualOrderNo);
+        verify(jdbcTemplate).queryForObject(eq(getOrderNumberQuery), getOrderNoCaptor.capture(),eq(String.class));
+        Object[] capturedQueryParams = getOrderNoCaptor.getValue();
+        assertNotNull("Expected parameters", capturedQueryParams);
+        assertArrayEquals("wrong parameters", expectedQueryParams, capturedQueryParams);
     }
 }
