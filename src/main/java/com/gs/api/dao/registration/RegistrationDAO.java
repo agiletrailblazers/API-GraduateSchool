@@ -399,7 +399,6 @@ public class RegistrationDAO {
     private String insertCharge(User user, CourseSession session, String orderItemId) throws Exception {
         String chargeId = "chrgs" + this.jdbcTemplate.queryForObject(getChargeSequenceQuery, String.class);
 
-        //Setup audit data
         MapSqlParameterSource in = new MapSqlParameterSource()
                 .addValue("xid", chargeId, OracleTypes.FIXED_CHAR)
                 .addValue("xamount", session.getTuition(), OracleTypes.FLOAT)
