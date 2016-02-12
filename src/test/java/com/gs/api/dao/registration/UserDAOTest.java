@@ -153,7 +153,7 @@ public class UserDAOTest {
 
     @Test
     public void testInsertUser() throws Exception {
-        HashMap<String, Object> sqlResult = new HashMap();
+        HashMap<String, Object> sqlResult = new HashMap<>();
         String expectedPersonId = "persn100";
         String expectedProfileId = "ppcor1000";
         String expectedListEntryId = "liste10000";
@@ -217,9 +217,7 @@ public class UserDAOTest {
 
     @Test
     public void testInsertUserNoTimezoneNoVeteranStatus() throws Exception {
-        HashMap<String, Object> sqlResult = new HashMap();
-        String expectedPersonId = "persn100";
-        String expectedProfileId = "ppcor1000";
+        HashMap<String, Object> sqlResult = new HashMap<>();
 
         user.setTimezoneId(null);
 
@@ -232,7 +230,7 @@ public class UserDAOTest {
         when(jdbcTemplate.queryForObject(getListEntryIdSequenceQuery, String.class)).thenReturn("1000");
         doReturn(sqlResult).when(listEntryActor).execute(any(SqlParameterSource.class));
 
-        String actualUserId = userDAO.insertNewUser(user);
+        userDAO.insertNewUser(user);
 
         verify(userInsertActor).execute(insertUserCaptor.capture());
         SqlParameterSource userParameters = insertUserCaptor.getValue();
@@ -244,44 +242,42 @@ public class UserDAOTest {
     @Test
     public void testFailToInsertUser() throws Exception {
         when(jdbcTemplate.queryForObject(getPersIdSequenceQuery, String.class)).thenReturn("100");
-        when(userInsertActor.execute(any(SqlParameterSource.class))).thenThrow(new IllegalArgumentException("BAD SQL"));
+        final IllegalArgumentException illegalArgumentException = new IllegalArgumentException("BAD SQL");
+        when(userInsertActor.execute(any(SqlParameterSource.class))).thenThrow(illegalArgumentException);
         try {
             userDAO.insertNewUser(user);
             assertTrue(false); //Should never reach this line
         }
         catch (IllegalArgumentException iE) {
-            assertNotNull(iE);
-            assertTrue(iE instanceof Exception);
+            assertSame(illegalArgumentException, iE);
         }
     }
 
     @Test
     public void testFailToInsertProfile() throws Exception {
-        HashMap<String, Object> sqlResult = new HashMap();
+        HashMap<String, Object> sqlResult = new HashMap<>();
 
         //Mock successful User insert
         when(jdbcTemplate.queryForObject(getPersIdSequenceQuery, String.class)).thenReturn("100");
         doReturn(sqlResult).when(userInsertActor).execute(any(SqlParameterSource.class));
 
         when(jdbcTemplate.queryForObject(getProfileIdSequenceQuery, String.class)).thenReturn("1000");
+        final IllegalArgumentException illegalArgumentException = new IllegalArgumentException("BAD SQL");
         when(profileInsertActor.execute(any(SqlParameterSource.class)))
-                .thenThrow(new IllegalArgumentException("BAD SQL"));
+                .thenThrow(illegalArgumentException);
 
         try {
             userDAO.insertNewUser(user);
             assertTrue(false); //Should never reach this line
         }
         catch (IllegalArgumentException iE) {
-            assertNotNull(iE);
-            assertTrue(iE instanceof Exception);
+            assertSame(illegalArgumentException, iE);
         }
     }
 
     @Test
     public void testFailInsertListEntry() throws Exception {
-        HashMap<String, Object> sqlResult = new HashMap();
-        String expectedPersonId = "persn100";
-        String expectedProfileId = "ppcor1000";
+        HashMap<String, Object> sqlResult = new HashMap<>();
 
         when(jdbcTemplate.queryForObject(getPersIdSequenceQuery, String.class)).thenReturn("100");
         doReturn(sqlResult).when(userInsertActor).execute(any(SqlParameterSource.class));
@@ -290,21 +286,21 @@ public class UserDAOTest {
         doReturn(sqlResult).when(profileInsertActor).execute(any(SqlParameterSource.class));
 
         when(jdbcTemplate.queryForObject(getListEntryIdSequenceQuery, String.class)).thenReturn("1000");
+        final IllegalArgumentException illegalArgumentException = new IllegalArgumentException("BAD SQL");
         when(listEntryActor.execute(any(SqlParameterSource.class)))
-                .thenThrow(new IllegalArgumentException("BAD SQL"));
+                .thenThrow(illegalArgumentException);
 
         try {
             userDAO.insertNewUser(user);
             assertTrue(false); //Should never reach this line
         } catch (IllegalArgumentException iE) {
-            assertNotNull(iE);
-            assertTrue(iE instanceof Exception);
+            assertSame(illegalArgumentException, iE);
         }
     }
 
     @Test
     public void testDeleteUser() throws Exception {
-        HashMap<String, Object> sqlResult = new HashMap();
+        HashMap<String, Object> sqlResult = new HashMap<>();
         String userId = "persn1234";
         doReturn(sqlResult).when(deleteUserActor).execute(any(SqlParameterSource.class));
 

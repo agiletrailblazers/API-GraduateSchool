@@ -1,9 +1,11 @@
 package com.gs.api.dao.registration;
 
 import com.gs.api.domain.course.CourseSession;
-
+import com.gs.api.domain.registration.Registration;
 import com.gs.api.domain.registration.User;
+
 import oracle.jdbc.OracleTypes;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,9 +15,10 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.stereotype.Repository;
 
-import javax.sql.DataSource;
 import java.util.Date;
 import java.util.Map;
+
+import javax.sql.DataSource;
 
 @Repository
 public class RegistrationDAO {
@@ -75,35 +78,23 @@ public class RegistrationDAO {
     }
 
     /**
-     * Convert the orderID into the Order Number
-     * @param orderId the identifer of the order in the database
-     * @return the Order Number for the specified order
-     */
-    public String getOrderNumber(String orderId) {
-        logger.debug("Getting OrderNo from OrderID {}", orderId);
-
-        String orderNo = jdbcTemplate.queryForObject(getOrderNumberQuery, new Object[]{orderId}, String.class);
-        logger.debug("Found Order Number {} from OrderID {}", orderNo, orderId);
-        return orderNo;
-    }
-
-    /**
      * Create a registration for the requested session.
      * @param user is the user that is performing the registration.  This may or may not be the ID of the student being registered.
      * @param student is the user account of the student who is registering for the course.
      * @param session is the session which is being signed up for
-     * @return the id of the created registration.
+     * @return the created registration.
      * @throws Exception error creating registration.
      */
-    public String registerForCourse(User user, User student, CourseSession session) throws Exception {
+    public Registration registerForCourse(User user, User student, CourseSession session) throws Exception {
         logger.debug("Inserting registration into the database");
 
         String offeringActionProfileId = insertOfferingActionProfile(user, student, session);
         String registrationId = insertRegistration(student, session, offeringActionProfileId);
         String orderId = insertOrder(user, student, session);
         String orderItemId = insertOrderItem(user, student, session, registrationId, orderId);
-        String chargeId = insertCharge(user, session, orderItemId);
-        String paymentId = insertPaymentInfo(user, student, session, orderId);
+        insertCharge(user, session, orderItemId);
+        insertPaymentInfo(user, student, session, orderId);
+        String orderNumber = getOrderNumber(orderId);
 
         /* The stored procedure "tpp_cancel_recurring" is executed around this point which sets the registration status
         to 600 (canceled), cancels the order, and frees up the seat. This doesn't make sense, and the resulting registration in the
@@ -111,7 +102,26 @@ public class RegistrationDAO {
 
         completeOrder(orderId);
 
-        return registrationId;
+        Registration createdRegistration = new Registration();
+        createdRegistration.setStudentId(student.getId());
+        createdRegistration.setSessionId(session.getClassNumber());
+        createdRegistration.setId(registrationId);
+        createdRegistration.setOrderNumber(orderNumber);
+
+        return createdRegistration;
+    }
+
+    /**
+     * Convert the orderID into the Order Number
+     * @param orderId the identifer of the order in the database
+     * @return the Order Number for the specified order
+     */
+    private String getOrderNumber(String orderId) {
+        logger.debug("Getting OrderNo from OrderID {}", orderId);
+
+        String orderNo = jdbcTemplate.queryForObject(getOrderNumberQuery, new Object[]{orderId}, String.class);
+        logger.debug("Found Order Number {} from OrderID {}", orderNo, orderId);
+        return orderNo;
     }
 
     /**
@@ -173,7 +183,7 @@ public class RegistrationDAO {
                 .addValue("xduration", null, OracleTypes.FLOAT);
 
         logger.debug("Inserting OfferingActionProfile. Executing stored procedure: {}", insertOfferingActionProcedureName);
-        Map<String, Object> insertOfferingActionResults = executeRegistrationStoredProcedure(in, insertOfferingActionProfileActor);
+        executeRegistrationStoredProcedure(in, insertOfferingActionProfileActor);
 
         return offeringActionProfileId;
     }
@@ -222,7 +232,7 @@ public class RegistrationDAO {
                 .addValue("xcustom9", null, OracleTypes.VARCHAR);
 
         logger.debug("Inserting Registration. Executing stored procedure: {}", insertRegistrationProcedureName);
-        Map<String, Object> insertRegistrationResults = executeRegistrationStoredProcedure(in, insertRegistrationActor);
+        executeRegistrationStoredProcedure(in, insertRegistrationActor);
 
         return registrationId;
     }
@@ -301,7 +311,7 @@ public class RegistrationDAO {
                 .addValue("xcustom14", null, OracleTypes.VARCHAR);
 
         logger.debug("Inserting Order. Executing stored procedure: {}", insertOrderProcedureName);
-        Map<String, Object> insertOrderResults = executeRegistrationStoredProcedure(in, insertOrderActor);
+        executeRegistrationStoredProcedure(in, insertOrderActor);
         return orderId;
     }
 
@@ -373,7 +383,7 @@ public class RegistrationDAO {
                 .addValue("xbilled_on", null, OracleTypes.DATE);
 
         logger.debug("Inserting Order Item. Executing stored procedure: {}", insertOrderItemProcedureName);
-        Map<String, Object> insertOrderItemResults = executeRegistrationStoredProcedure(in, insertOrderItemActor);
+        executeRegistrationStoredProcedure(in, insertOrderItemActor);
 
         return orderItemId;
     }
@@ -388,10 +398,6 @@ public class RegistrationDAO {
      */
     private String insertCharge(User user, CourseSession session, String orderItemId) throws Exception {
         String chargeId = "chrgs" + this.jdbcTemplate.queryForObject(getChargeSequenceQuery, String.class);
-
-        //Setup audit data
-        Date currentDate = new Date();
-        long millis = currentDate.getTime();
 
         MapSqlParameterSource in = new MapSqlParameterSource()
                 .addValue("xid", chargeId, OracleTypes.FIXED_CHAR)
@@ -419,7 +425,7 @@ public class RegistrationDAO {
                 .addValue("xnewts", null, OracleTypes.VARCHAR);
 
         logger.debug("Inserting charge. Executing stored procedure: {}", insertChargeProcedureName);
-        Map<String, Object> insertChargeResults = executeRegistrationStoredProcedure(in, insertChargeActor);
+        executeRegistrationStoredProcedure(in, insertChargeActor);
 
         return chargeId;
     }
@@ -499,7 +505,7 @@ public class RegistrationDAO {
                 .addValue("xcountry", null, OracleTypes.VARCHAR);
 
         logger.debug("Inserting payment info. Executing stored procedure: {}", insertPaymentProcedureName);
-        Map<String, Object> insertPaymentResults = executeRegistrationStoredProcedure(in, insertPaymentActor);
+        executeRegistrationStoredProcedure(in, insertPaymentActor);
 
         return paymentId;
     }
@@ -509,7 +515,7 @@ public class RegistrationDAO {
                 .addValue("xorder_id", orderId, OracleTypes.FIXED_CHAR);
 
         logger.debug("Completing order. Executing stored procedure: {}", orderCompleteProcedureName);
-        Map<String, Object> completeOrderResults = executeRegistrationStoredProcedure(in, orderCompleteActor);
+        executeRegistrationStoredProcedure(in, orderCompleteActor);
     }
 
     private Map<String,Object> executeRegistrationStoredProcedure(MapSqlParameterSource inParameters, SimpleJdbcCall spCallToExecute) throws Exception {

@@ -89,7 +89,7 @@ public class UserDAO {
 
         logger.debug("Deleting user. Executing stored procedure: {}", deleteUserStoredProcedureName);
 
-        Map<String, Object> deleteUserResults = executeUserStoredProcedure(in, deleteUserActor);
+        executeUserStoredProcedure(in, deleteUserActor);
 
         //TODO get actual success/fail result
         return true;
@@ -120,7 +120,7 @@ public class UserDAO {
         }
 
         //Generate person id
-        String personId = "persn" + (String) this.jdbcTemplate.queryForObject(getPersIdSequenceQuery, String.class);
+        String personId = "persn" + this.jdbcTemplate.queryForObject(getPersIdSequenceQuery, String.class);
 
         //Convert dates to sql dates
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
@@ -197,10 +197,9 @@ public class UserDAO {
         logger.debug("Inserting new user. Executing stored procedure: {}", insertUserStoredProcedureName);
 
         //TODO Can this  be wrapped in a transaction, if the later queries fail roll back the first
-        Map<String, Object> insertUserResults = executeUserStoredProcedure(in, userInsertActor);
+        executeUserStoredProcedure(in, userInsertActor);
 
-        Map<String, Object> insertProfileResults = insertUserProfile(createdByName, createdById, personId,
-                split);
+        insertUserProfile(createdByName, createdById, personId, split);
 
         String desktopPermissionListID = "listl000000000000101"; //External security role grants permission to main saba app
         String domainIDcprivIDListID = "listl000000000001004"; // Concat of two security tables ids [domin000000000000001][cpriv000000000000117]
@@ -219,7 +218,7 @@ public class UserDAO {
         String entryTypeId = "ppetp000000000000018"; //This is a guess, it may be a different lookup but all active rows have this
 
         String flags = "0010000000"; //active flag
-        String profileId = "ppcor" +  (String) this.jdbcTemplate.queryForObject(getProfileIdSequenceQuery, String.class);
+        String profileId = "ppcor" +  this.jdbcTemplate.queryForObject(getProfileIdSequenceQuery, String.class);
 
         SqlParameterSource in = new MapSqlParameterSource()
                 .addValue("xid", profileId, OracleTypes.CHAR)

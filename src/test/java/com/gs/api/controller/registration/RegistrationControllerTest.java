@@ -13,14 +13,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
@@ -29,32 +31,35 @@ public class RegistrationControllerTest {
 
     private static final String USER_ID = "person654321";
 
-    @InjectMocks
-    private MockMvc mockMvc;
-
     @Autowired
     private WebApplicationContext applicationContext;
 
     @Mock
     private RegistrationService registrationService;
 
-    @Autowired
     @InjectMocks
     private RegistrationController registrationController;
 
     @Before
     public void setUp() throws Exception {
-        mockMvc = MockMvcBuilders.webAppContextSetup(applicationContext).build();
+        MockMvcBuilders.webAppContextSetup(applicationContext).build();
         MockitoAnnotations.initMocks(this);
     }
 
     @Test
-    public void testCreateUser() throws Exception {
+    public void testCreateRegistration() throws Exception {
 
         Registration registration = new Registration();
-        List<Registration> registrations = Arrays.asList(registration);
+        List<Registration> registrations = Collections.singletonList(registration);
+        Registration createdRegistration = new Registration();
+        createdRegistration.setId("12345");
 
-        registrationController.createRegistration(USER_ID, registrations);
+        when(registrationService.register(USER_ID, registrations)).thenReturn(Collections.singletonList(createdRegistration));
+
+        List<Registration> createdRegistrations = registrationController.createRegistration(USER_ID, registrations);
+        assertEquals(1, createdRegistrations.size());
+        assertSame(createdRegistration, createdRegistrations.get(0));
+
         verify(registrationService).register(USER_ID, registrations);
      }
 

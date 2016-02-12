@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -30,7 +31,9 @@ public class RegistrationServiceImpl implements RegistrationService {
     private CourseSessionDAO sessionDao;
 
     @Override
-    public void register(String userId, List<Registration> registrations) throws Exception {
+    public List<Registration> register(String userId, List<Registration> registrations) throws Exception {
+
+        List<Registration> completedRegistrations = new ArrayList<>();
 
         for (Registration registration : registrations) {
             logger.info("User {} is registering student {} for class no {}", new String[] {userId,
@@ -46,7 +49,7 @@ public class RegistrationServiceImpl implements RegistrationService {
             User studentUser = userDao.getUser(registration.getStudentId());
             if (studentUser == null) {
                 logger.error("No user found for student {}", registration.getStudentId());
-                throw new Exception("No user found for student: " + registration.getSessionId());
+                throw new Exception("No user found for student " + registration.getSessionId());
             }
 
             CourseSession session = sessionDao.getSession(registration.getSessionId());
@@ -55,10 +58,9 @@ public class RegistrationServiceImpl implements RegistrationService {
                 throw new Exception("No course session found for session id " + registration.getSessionId());
             }
 
-            String id = registrationDao.registerForCourse(user, studentUser, session);
-
-            // set the id for the newly created registration
-            registration.setId(id);
+            completedRegistrations.add(registrationDao.registerForCourse(user, studentUser, session));
         }
+
+        return completedRegistrations;
     }
 }

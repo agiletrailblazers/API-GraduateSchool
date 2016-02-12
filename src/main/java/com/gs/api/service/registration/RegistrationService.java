@@ -11,8 +11,9 @@ public interface RegistrationService {
      * be updated with the unique id of the created registration upon successful registration.
      * @param userId the ID of the user that is performing the registration.  This may or may not be the ID of the student being registered.
      * @param registrations list of registrations to be created.
+     * @return list of registrations updated with the registration id's and order numbers.
      * @throws Exception error creating registrations.
      */
-    void register(final String userId, final List<Registration> registrations) throws Exception;
+    List<Registration> register(final String userId, final List<Registration> registrations) throws Exception;
 
 }

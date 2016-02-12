@@ -15,8 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.util.HashMap;
-
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -93,7 +91,6 @@ public class UserServiceTest {
 
     @Test
     public void testDeleteUser() throws Exception {
-        HashMap<String, Object> sqlResult = new HashMap();
         final String id = "persn0001234";
 
         userService.deleteUser(id);

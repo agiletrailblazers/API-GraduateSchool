@@ -6,8 +6,8 @@ import com.gs.api.dao.registration.UserDAO;
 import com.gs.api.domain.Person;
 import com.gs.api.domain.course.CourseSession;
 import com.gs.api.domain.registration.Registration;
-
 import com.gs.api.domain.registration.User;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,12 +21,14 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static junit.framework.Assert.assertSame;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "classpath:spring/test-root-context.xml" })
@@ -38,9 +40,6 @@ public class RegistrationServiceTest {
     private static final String STUDENT_ID_2 = "person55555";
 
     private List<Registration> registrations;
-    private Registration registration1;
-    private Registration registration2;
-    private CourseSession session;
 
     @Mock
     private RegistrationDAO registrationDao;
@@ -61,7 +60,7 @@ public class RegistrationServiceTest {
 
         registrations = new ArrayList<>();
 
-        registration1 = new Registration();
+        Registration registration1 = new Registration();
         registration1.setStudentId(STUDENT_ID_1);
         registration1.setSessionId(SESSION_ID);
         registrations.add(registration1);
@@ -70,11 +69,8 @@ public class RegistrationServiceTest {
 
     @Test
     public void testRegisterTwoRegs() throws Exception {
-        final String id1 = "reg1";
-        final String id2 = "reg2";
-
         //Add second reg
-        registration2 = new Registration();
+        Registration registration2 = new Registration();
         registration2.setStudentId(STUDENT_ID_2);
         registration2.setSessionId(SESSION_ID);
         registrations.add(registration2);
@@ -91,31 +87,36 @@ public class RegistrationServiceTest {
         when(userDao.getUser(STUDENT_ID_2)).thenReturn(student2);
         when(sessionDao.getSession(SESSION_ID)).thenReturn(session);
 
-        when(registrationDao.registerForCourse(user, student1, session)).thenReturn(id1);
-        when(registrationDao.registerForCourse(user, student2, session)).thenReturn(id2);
+        Registration createdRegistration1 = new Registration();
+        createdRegistration1.setId("12345");
+        Registration createdRegistration2 = new Registration();
+        createdRegistration2.setId("54321");
 
-        registrationService.register(USER_ID, registrations);
+        when(registrationDao.registerForCourse(user, student1, session)).thenReturn(createdRegistration1);
+        when(registrationDao.registerForCourse(user, student2, session)).thenReturn(createdRegistration2);
+
+        List<Registration> createdRegistrations = registrationService.register(USER_ID, registrations);
 
         verify(userDao, times(4)).getUser(any(String.class));
         verify(sessionDao, times(2)).getSession(any(String.class));
         verify(registrationDao, times(2)).registerForCourse(any(User.class), any(User.class), any(CourseSession.class));
 
-        assertEquals(id1, registration1.getId());
-        assertEquals(id2, registration2.getId());
+        // the list returned from the service should not be the same instance as the one passed in,
+        // it should be a list of the created registrations returned by the DAO
+        assertNotSame(createdRegistrations, registrations);
+        assertSame(createdRegistration1, createdRegistrations.get(0));
+        assertSame(createdRegistration2, createdRegistrations.get(1));
     }
 
     @Test
     public void testRegisterUserNotFound() throws Exception {
-        final String id1 = "reg1";
-
         when(userDao.getUser(USER_ID)).thenReturn(null);
         try {
             registrationService.register(USER_ID, registrations);
-            fail("Shouldnt reach here");
-
+            fail("Shouldn't reach here");
         }
         catch (Exception e) {
-
+            assertTrue(e.getMessage().contains("No user found for logged in user"));
         }
     }
 
@@ -128,17 +129,15 @@ public class RegistrationServiceTest {
 
         try {
             registrationService.register(USER_ID, registrations);
-            fail("Shouldnt reach here");
-
+            fail("Shouldn't reach here");
         }
         catch (Exception e) {
-
+            assertTrue(e.getMessage().contains("No user found for student"));
         }
     }
 
     @Test
     public void testRegisterSessionNotFound() throws Exception {
-        final String id1 = "reg1";
         User user = new User(USER_ID, "user1", "", "1234", new Person(), "", "", "", "");
         User student1 = new User(STUDENT_ID_1, "student1", "", "1234", new Person(), "", "", "", "");
 
@@ -149,11 +148,10 @@ public class RegistrationServiceTest {
         when(sessionDao.getSession(SESSION_ID)).thenReturn(null);
         try {
             registrationService.register(USER_ID, registrations);
-            fail("Shouldnt reach here");
-
+            fail("Shouldn't reach here");
         }
         catch (Exception e) {
-
+            assertTrue(e.getMessage().contains("No course session found for session id"));
         }
     }
 }

@@ -29,13 +29,7 @@ public class RegistrationController extends BaseController {
     public List<Registration> createRegistration(@PathVariable("id") String id, @RequestBody List<Registration> registrations) throws Exception  {
 
         logger.debug("{} is creating {} registration(s)", id, registrations.size());
-
-        // TODO basic input validation
-
-        // createUser the user
-        registrationService.register(id, registrations);
-
-        return registrations;
+        return registrationService.register(id, registrations);
     }
 
 }

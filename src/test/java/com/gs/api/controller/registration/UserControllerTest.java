@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -24,22 +23,18 @@ import static org.mockito.Mockito.verify;
 @ContextConfiguration(locations = { "classpath:spring/test-root-context.xml" })
 public class UserControllerTest {
 
-    @InjectMocks
-    private MockMvc mockMvc;
-
     @Autowired
     private WebApplicationContext applicationContext;
 
     @Mock
     private UserService userService;
 
-    @Autowired
     @InjectMocks
     private UserController userController;
 
     @Before
     public void setUp() throws Exception {
-        mockMvc = MockMvcBuilders.webAppContextSetup(applicationContext).build();
+        MockMvcBuilders.webAppContextSetup(applicationContext).build();
         MockitoAnnotations.initMocks(this);
     }
 
