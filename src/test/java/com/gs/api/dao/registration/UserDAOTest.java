@@ -76,6 +76,7 @@ public class UserDAOTest {
     private static final Boolean VETERAN_STATUS = true;
     private static final String SPLIT = "domin000000000000001";
     private static final String CURRENCY_ID = "crncy000000000000167";
+    private static final String USER_TIMESTAMP = "12345678987654";
 
     private User user;
 
@@ -127,6 +128,7 @@ public class UserDAOTest {
         user.setLastFourSSN(LAST_FOUR_SSN);
         user.setSplit(SPLIT);
         user.setCurrencyId(CURRENCY_ID);
+        user.setTimestamp(Long.valueOf(USER_TIMESTAMP));
 
         Person person = new Person();
         person.setFirstName(FIRST_NAME);
@@ -304,12 +306,13 @@ public class UserDAOTest {
         String userId = "persn1234";
         doReturn(sqlResult).when(deleteUserActor).execute(any(SqlParameterSource.class));
 
-        userDAO.deleteUser(userId);
+        userDAO.deleteUser(userId, Long.valueOf(USER_TIMESTAMP));
 
         verify(deleteUserActor).execute(deleteUserCaptor.capture());
         SqlParameterSource userParameters = deleteUserCaptor.getValue();
 
         assertEquals(userId, userParameters.getValue("xid"));
+        assertEquals(Long.valueOf(USER_TIMESTAMP), userParameters.getValue("xts"));
     }
 
     @Test
@@ -356,6 +359,7 @@ public class UserDAOTest {
 
         when(rs.getDate("DATE_OF_BIRTH")).thenReturn(null);
         when(rs.getString("VETERAN")).thenReturn("N");
+        when(rs.getString("TIME_STAMP")).thenReturn(USER_TIMESTAMP);
 
         User user = rowMapper.mapRow(rs, 0);
         assertNotNull(user);
@@ -381,6 +385,7 @@ public class UserDAOTest {
 
         when(rs.getString("USER_ID")).thenReturn(USER_ID);
         when(rs.getString("VETERAN")).thenReturn(null);
+        when(rs.getString("TIME_STAMP")).thenReturn(USER_TIMESTAMP);
         User user = rowMapper.mapRow(rs, 0);
         assertNotNull(user);
         assertEquals(USER_ID, user.getId());
@@ -393,6 +398,7 @@ public class UserDAOTest {
 
         when(rs.getString("USER_ID")).thenReturn(USER_ID);
         when(rs.getString("VETERAN")).thenReturn("y");
+        when(rs.getString("TIME_STAMP")).thenReturn(USER_TIMESTAMP);
         User user = rowMapper.mapRow(rs, 0);
         assertNotNull(user);
         assertEquals(USER_ID, user.getId());
@@ -404,6 +410,7 @@ public class UserDAOTest {
         ResultSet rs = mock(ResultSet.class);
 
         when(rs.getString("USER_ID")).thenReturn(USER_ID);
+        when(rs.getString("TIME_STAMP")).thenReturn(USER_TIMESTAMP);
         //Convert dates to sql dates
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
         Date parsed = format.parse("20110210");
@@ -421,6 +428,7 @@ public class UserDAOTest {
 
         when(rs.getString("USER_ID")).thenReturn(USER_ID);
         when(rs.getString("SS_NO")).thenReturn("00000" + LAST_FOUR_SSN);
+        when(rs.getString("TIME_STAMP")).thenReturn(USER_TIMESTAMP);
         User user = rowMapper.mapRow(rs, 0);
         assertNotNull(user);
         assertEquals(USER_ID, user.getId());
@@ -433,6 +441,7 @@ public class UserDAOTest {
 
         when(rs.getString("USER_ID")).thenReturn(USER_ID);
         when(rs.getString("SS_NO")).thenReturn("123");
+        when(rs.getString("TIME_STAMP")).thenReturn(USER_TIMESTAMP);
         User user = rowMapper.mapRow(rs, 0);
         assertNotNull(user);
         assertEquals(USER_ID, user.getId());
@@ -446,6 +455,7 @@ public class UserDAOTest {
 
         when(rs.getString("USER_ID")).thenReturn(USER_ID);
         when(rs.getString("SS_NO")).thenReturn(LAST_FOUR_SSN);
+        when(rs.getString("TIME_STAMP")).thenReturn(USER_TIMESTAMP);
         User user = rowMapper.mapRow(rs, 0);
         assertNotNull(user);
         assertEquals(USER_ID, user.getId());

@@ -19,6 +19,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import static junit.framework.Assert.assertSame;
@@ -54,6 +55,8 @@ public class RegistrationServiceTest {
     @Autowired
     private RegistrationServiceImpl registrationService;
 
+    private long userTimestamp;
+
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
@@ -65,6 +68,7 @@ public class RegistrationServiceTest {
         registration1.setSessionId(SESSION_ID);
         registrations.add(registration1);
 
+        userTimestamp = new Date().getTime();
     }
 
     @Test
@@ -75,9 +79,9 @@ public class RegistrationServiceTest {
         registration2.setSessionId(SESSION_ID);
         registrations.add(registration2);
 
-        User user = new User(USER_ID, "user1", "", "1234", new Person(), "", "", "", "");
-        User student1 = new User(STUDENT_ID_1, "student1", "", "1234", new Person(), "", "", "", "");
-        User student2 = new User(STUDENT_ID_2, "student2", "", "1234", new Person(), "", "", "", "");
+        User user = new User(USER_ID, "user1", "", "1234", new Person(), "", "", "", "", userTimestamp);
+        User student1 = new User(STUDENT_ID_1, "student1", "", "1234", new Person(), "", "", "", "", userTimestamp);
+        User student2 = new User(STUDENT_ID_2, "student2", "", "1234", new Person(), "", "", "", "", userTimestamp);
 
         CourseSession session = new CourseSession();
         session.setClassNumber(SESSION_ID);
@@ -122,7 +126,7 @@ public class RegistrationServiceTest {
 
     @Test
     public void testRegisterStudentNotFound() throws Exception {
-        User user = new User(USER_ID, "user1", "", "1234", new Person(), "", "", "", "");
+        User user = new User(USER_ID, "user1", "", "1234", new Person(), "", "", "", "", userTimestamp);
 
         when(userDao.getUser(USER_ID)).thenReturn(user);
         when(userDao.getUser(STUDENT_ID_1)).thenReturn(null);
@@ -138,8 +142,8 @@ public class RegistrationServiceTest {
 
     @Test
     public void testRegisterSessionNotFound() throws Exception {
-        User user = new User(USER_ID, "user1", "", "1234", new Person(), "", "", "", "");
-        User student1 = new User(STUDENT_ID_1, "student1", "", "1234", new Person(), "", "", "", "");
+        User user = new User(USER_ID, "user1", "", "1234", new Person(), "", "", "", "", userTimestamp);
+        User student1 = new User(STUDENT_ID_1, "student1", "", "1234", new Person(), "", "", "", "", userTimestamp);
 
 
         when(userDao.getUser(USER_ID)).thenReturn(user);

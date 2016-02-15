@@ -132,6 +132,8 @@ public class UserServiceImpl implements UserService {
     public void deleteUser(String id) throws Exception {
         logger.info("Deleting user: {}", id);
 
-        userDao.deleteUser(id);
+        // need to lookup the user by id first because the delete dao requires the timestamp associated with the id
+        User user = userDao.getUser(id);
+        userDao.deleteUser(id, user.getTimestamp());
     }
 }
