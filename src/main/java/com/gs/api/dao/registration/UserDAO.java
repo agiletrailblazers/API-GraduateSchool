@@ -81,7 +81,7 @@ public class UserDAO {
      * @param userTimestamp the timestamp associated with the user id.
      * @throws Exception error deleting user.
      */
-    public boolean deleteUser(String userId, long userTimestamp) throws Exception {
+    public boolean deleteUser(String userId, String userTimestamp) throws Exception {
 
         SqlParameterSource in = new MapSqlParameterSource()
                 .addValue("xid", userId, OracleTypes.FIXED_CHAR)
@@ -91,7 +91,7 @@ public class UserDAO {
 
         executeUserStoredProcedure(in, deleteUserActor);
 
-        //TODO get actual success/fail result
+        // throws sql exception for failure
         return true;
     }
 
@@ -365,7 +365,7 @@ public class UserDAO {
             user.setAccountId(rs.getString("ACCOUNT_ID"));
             user.setSplit(rs.getString("SPLIT"));
             user.setCurrencyId(rs.getString("CURRENCY_ID"));
-            user.setTimestamp(Long.valueOf(rs.getString("TIME_STAMP")));
+            user.setTimestamp(rs.getString("TIME_STAMP"));
 
             Person person = new Person();
             person.setFirstName(rs.getString("FNAME"));

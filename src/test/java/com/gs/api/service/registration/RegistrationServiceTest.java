@@ -55,7 +55,7 @@ public class RegistrationServiceTest {
     @Autowired
     private RegistrationServiceImpl registrationService;
 
-    private long userTimestamp;
+    private String userTimestamp;
 
     @Before
     public void setUp() throws Exception {
@@ -68,7 +68,7 @@ public class RegistrationServiceTest {
         registration1.setSessionId(SESSION_ID);
         registrations.add(registration1);
 
-        userTimestamp = new Date().getTime();
+        userTimestamp = Long.toString(new Date().getTime());
     }
 
     @Test

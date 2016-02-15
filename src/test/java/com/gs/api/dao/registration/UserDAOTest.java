@@ -128,7 +128,7 @@ public class UserDAOTest {
         user.setLastFourSSN(LAST_FOUR_SSN);
         user.setSplit(SPLIT);
         user.setCurrencyId(CURRENCY_ID);
-        user.setTimestamp(Long.valueOf(USER_TIMESTAMP));
+        user.setTimestamp(USER_TIMESTAMP);
 
         Person person = new Person();
         person.setFirstName(FIRST_NAME);
@@ -306,13 +306,13 @@ public class UserDAOTest {
         String userId = "persn1234";
         doReturn(sqlResult).when(deleteUserActor).execute(any(SqlParameterSource.class));
 
-        userDAO.deleteUser(userId, Long.valueOf(USER_TIMESTAMP));
+        userDAO.deleteUser(userId, USER_TIMESTAMP);
 
         verify(deleteUserActor).execute(deleteUserCaptor.capture());
         SqlParameterSource userParameters = deleteUserCaptor.getValue();
 
         assertEquals(userId, userParameters.getValue("xid"));
-        assertEquals(Long.valueOf(USER_TIMESTAMP), userParameters.getValue("xts"));
+        assertEquals(USER_TIMESTAMP, userParameters.getValue("xts"));
     }
 
     @Test

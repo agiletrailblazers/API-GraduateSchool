@@ -94,7 +94,7 @@ public class UserServiceTest {
     @Test
     public void testDeleteUser() throws Exception {
         final String id = "persn0001234";
-        final long timestamp = new Date().getTime();
+        final String timestamp = Long.toString(new Date().getTime());
         user.setTimestamp(timestamp);
 
         when(userDao.getUser(id)).thenReturn(user);
