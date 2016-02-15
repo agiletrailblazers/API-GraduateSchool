@@ -15,13 +15,16 @@ public class User {
     private String accountId;
     private String currencyId;
     private String split;
+    // this is the timestamp associated with the user creation, some of the stored procedures require that this timestamp be passed in,
+    // keeping it as a string because the DB currently has timestamps with different formats
+    private String timestamp;
 
     private Person person;
 
     public User() { }
 
     public User(String id, String username, String password, String lastFourSSN, Person person, String timezoneId, String accountId,
-                String split, String currencyId) {
+                String split, String currencyId, String timestamp) {
         this.id = id;
         this.username = username;
         this.password = password;
@@ -31,6 +34,7 @@ public class User {
         this.accountId = accountId;
         this.split = split;
         this.currencyId = currencyId;
+        this.timestamp = timestamp;
     }
 
     public String getId() {
@@ -103,5 +107,13 @@ public class User {
 
     public void setSplit(String split) {
         this.split = split;
+    }
+
+    public String getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(String timestamp) {
+        this.timestamp = timestamp;
     }
 }

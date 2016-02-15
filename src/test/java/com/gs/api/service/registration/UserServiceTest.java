@@ -15,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.util.Date;
+
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -92,9 +94,14 @@ public class UserServiceTest {
     @Test
     public void testDeleteUser() throws Exception {
         final String id = "persn0001234";
+        final String timestamp = Long.toString(new Date().getTime());
+        user.setTimestamp(timestamp);
+
+        when(userDao.getUser(id)).thenReturn(user);
 
         userService.deleteUser(id);
 
-        verify(userDao).deleteUser(id);
+        verify(userDao).getUser(id);
+        verify(userDao).deleteUser(id, timestamp);
     }
 }
