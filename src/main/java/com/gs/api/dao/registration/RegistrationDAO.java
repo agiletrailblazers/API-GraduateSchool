@@ -154,6 +154,7 @@ public class RegistrationDAO {
                 .addValue("xcreated_id", user.getId(), OracleTypes.FIXED_CHAR)
                 .addValue("xupdated_by", user.getUsername(), OracleTypes.VARCHAR)
                 .addValue("xscore", 0, OracleTypes.FLOAT) //No score yet
+                .addValue("xduration", 0, OracleTypes.FLOAT)
                 //Below are hardcoded flags and statuses taken from successful insert. Saba documentation defines what the values mean
                 .addValue("xstatus", 100, OracleTypes.INTEGER)
                 .addValue("xflags", "2", OracleTypes.FIXED_CHAR)
@@ -179,8 +180,7 @@ public class RegistrationDAO {
                 .addValue("xcustom7", null, OracleTypes.VARCHAR)
                 .addValue("xcustom8", null, OracleTypes.VARCHAR)
                 .addValue("xcustom9", null, OracleTypes.VARCHAR)
-                .addValue("xend_date", null, OracleTypes.DATE)
-                .addValue("xduration", null, OracleTypes.FLOAT);
+                .addValue("xend_date", null, OracleTypes.DATE);
 
         logger.debug("Inserting OfferingActionProfile. Executing stored procedure: {}", insertOfferingActionProcedureName);
         executeRegistrationStoredProcedure(in, insertOfferingActionProfileActor);
@@ -353,8 +353,8 @@ public class RegistrationDAO {
                 .addValue("xseq_no", 1, OracleTypes.INTEGER)
                 //Below are hardcoded flags and statuses taken from successful insert. Saba documentation defines what the values mean
                 .addValue("xstatus", 100, OracleTypes.INTEGER)
-                .addValue("xflags", "0000", OracleTypes.FIXED_CHAR)
-                .addValue("xapproved", "1", OracleTypes.VARCHAR)
+                .addValue("xflags", "0000000000", OracleTypes.FIXED_CHAR)
+                .addValue("xapproved", "1", OracleTypes.VARCHAR) //represents the order is confirmed
                 .addValue("xapproved_status", 400, OracleTypes.INTEGER)
                 .addValue("xbilling_status", 200, OracleTypes.INTEGER)
                 //nulls
