@@ -45,10 +45,10 @@ public class AuthenticationControllerTest {
 
         when(authTokenService.generateGuestToken()).thenReturn(TEST_TOKEN);
 
-        String token = authenticationController.generateGuestToken();
+        AuthToken token = authenticationController.generateGuestToken();
 
         verify(authTokenService).generateGuestToken();
 
-        assertEquals("wrong token", TEST_TOKEN, token);
+        assertEquals("wrong token", TEST_TOKEN, token.getToken());
      }
 }

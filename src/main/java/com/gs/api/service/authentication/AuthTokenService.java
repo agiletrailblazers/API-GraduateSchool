@@ -1,6 +1,6 @@
 package com.gs.api.service.authentication;
 
-import com.gs.api.domain.authentication.Role;
+import com.gs.api.exception.AuthenticationException;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -9,25 +9,15 @@ public interface AuthTokenService {
     /**
      * Generate a guest token.
      * @return a token that is valid for a guest user
-     * @throws Exception error creating the token
+     * @throws AuthenticationException error creating the token
      */
-    String generateGuestToken() throws Exception;
+    String generateGuestToken() throws AuthenticationException;
 
     /**
-     * Generate a user token.
-     * @param userId the user id.
-     * @param role the user's role.
-     * @return a token that is valid for an identified user
-     * @throws Exception error creating the token
-     */
-    String generateToken(String userId, Role role) throws Exception;
-
-    /**
-     * Validate a token
+     * Validate a token.  If the token is valid, the user id will be set to the configured request attribute.
      * @param request the http request
-     * @return the user user id from the token
-     * @throws Exception
+     * @throws AuthenticationException error validating the token or the token is not valid.
      */
-    String validateToken(HttpServletRequest request) throws Exception;
+    void validateToken(HttpServletRequest request) throws AuthenticationException;
 
 }
