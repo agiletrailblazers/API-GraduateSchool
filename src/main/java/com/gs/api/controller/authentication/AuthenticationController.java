@@ -23,10 +23,12 @@ public class AuthenticationController extends BaseController {
     private AuthTokenService authTokenService;
 
     @RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public String generateGuestToken() throws Exception  {
+    public AuthToken generateGuestToken() throws Exception  {
 
         logger.debug("Generating a guest API token");
 
-        return authTokenService.generateGuestToken();
+        AuthToken token = new AuthToken();
+        token.setToken(authTokenService.generateGuestToken());
+        return token;
     }
 }
