@@ -14,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
@@ -38,6 +39,9 @@ import static org.mockito.Mockito.*;
 public class UserDAOTest {
     @Value("${sql.user.single.query}")
     private String sqlForSingleUser;
+
+    @Value("${sql.user.login.query}")
+    private String sqlForUserLogin;
 
     @Value("${sql.user.personInsert.procedure}")
     private String insertUserStoredProcedureName;
@@ -68,7 +72,7 @@ public class UserDAOTest {
     private static final String ADDRESS_STATE = "MA";
     private static final String ADDRESS_ZIP = "55555";
     private static final String PHONE = "555-555-5555";
-    private static final String PASSWORD_CLEAR = "test1234";
+    private static final String PASSWORD = "test1234";
     private static final String DOB = "05/05/1955";
     private static final String LAST_FOUR_SSN = "5555";
     private static final String TIMEZONE_ID = "testId";
@@ -123,7 +127,7 @@ public class UserDAOTest {
         user = new User();
         user.setId(USER_ID);
         user.setUsername(USERNAME);
-        user.setPassword(PASSWORD_CLEAR);
+        user.setPassword(PASSWORD);
         user.setTimezoneId(TIMEZONE_ID);
         user.setLastFourSSN(LAST_FOUR_SSN);
         user.setSplit(SPLIT);
@@ -461,4 +465,42 @@ public class UserDAOTest {
         assertEquals(USER_ID, user.getId());
         assertEquals(LAST_FOUR_SSN, user.getLastFourSSN());
     }
+
+    @Test
+    public void testGetUserByUsernamePassword() throws Exception {
+        Object[] expectedQueryParams = new Object[] { USER_ID, PASSWORD};
+
+        when(jdbcTemplate.queryForObject(anyString(), any(Object[].class), any(UserDAO.UserRowMapper.class))).
+                thenReturn(user);
+
+        User returnedUser = userDAO.getUser(USER_ID, PASSWORD);
+
+        verify(jdbcTemplate).queryForObject(eq(sqlForUserLogin), singleUserQueryParamsCaptor.capture(), any(UserDAO.UserRowMapper.class));
+
+        Object[] capturedQueryParams = singleUserQueryParamsCaptor.getValue();
+        assertNotNull("Expected parameters", capturedQueryParams);
+        assertArrayEquals("wrong parameters", expectedQueryParams, capturedQueryParams);
+
+        assertNotNull("Expected a user to be found", returnedUser);
+        assertSame("Wrong user", user, returnedUser);
+    }
+
+    @Test
+    public void testGetUserByUsernamePassword_InvalidUser() throws Exception {
+        Object[] expectedQueryParams = new Object[] { USER_ID, PASSWORD};
+
+        when(jdbcTemplate.queryForObject(anyString(), any(Object[].class), any(UserDAO.UserRowMapper.class))).
+                thenThrow(new IncorrectResultSizeDataAccessException("No results found", 1));
+
+        User returnedUser = userDAO.getUser(USER_ID, PASSWORD);
+
+        verify(jdbcTemplate).queryForObject(eq(sqlForUserLogin), singleUserQueryParamsCaptor.capture(), any(UserDAO.UserRowMapper.class));
+
+        Object[] capturedQueryParams = singleUserQueryParamsCaptor.getValue();
+        assertNotNull("Expected parameters", capturedQueryParams);
+        assertArrayEquals("wrong parameters", expectedQueryParams, capturedQueryParams);
+
+        assertNull("No user should be found", returnedUser);
+    }
+
 }

@@ -3,6 +3,7 @@ package com.gs.api.service.registration;
 import com.gs.api.dao.registration.UserDAO;
 import com.gs.api.domain.Address;
 import com.gs.api.domain.Person;
+import com.gs.api.domain.authentication.AuthCredentials;
 import com.gs.api.domain.registration.User;
 
 import org.junit.Before;
@@ -18,6 +19,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.util.Date;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -35,6 +37,7 @@ public class UserServiceTest {
     private static final String ADDRESS_STATE = "MA";
     private static final String ADDRESS_ZIP = "55555";
     private static final String PHONE = "555-555-5555";
+    // don't change either of these password values, they match the encryption implementation
     private static final String PASSWORD_CLEAR = "test1234";
     private static final String PASSWORD_ENCRYPTED = "937E8D5FBB48BD4949536CD65B8D35C426B80D2F830C5C308E2CDEC422AE2244";
     private static final String DOB = "05/05/1955";
@@ -104,4 +107,17 @@ public class UserServiceTest {
         verify(userDao).getUser(id);
         verify(userDao).deleteUser(id, timestamp);
     }
+
+    @Test
+    public void testGetUser() throws Exception {
+
+        when(userDao.getUser(EMAIL_ADDRESS, PASSWORD_ENCRYPTED)).thenReturn(user);
+
+        User retrievedUser = userService.getUser(new AuthCredentials(EMAIL_ADDRESS, PASSWORD_CLEAR));
+
+        verify(userDao).getUser(EMAIL_ADDRESS, PASSWORD_ENCRYPTED);
+
+        assertSame("wrong user", user, retrievedUser);
+    }
+
 }
