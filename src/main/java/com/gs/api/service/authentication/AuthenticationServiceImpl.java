@@ -35,6 +35,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     static final String TOKEN_UUID_IS_NOT_VALID_MSG = "Token uuid is not valid";
     static final String TOKEN_ROLE_IS_NOT_VALID_MSG = "Token role is not valid";
     static final String TOKEN_USER_IS_NOT_VALID_MSG = "Token user is not valid";
+    static final String MISMATCHED_USER_MSG = "User is not the authenticated user";
     static final String TOKEN_EXPIRED_MSG = "Token expired";
     static final String INVALID_USER_MSG = "Invalid user";
     static final String ERROR_AUTHENTICATING_USER_MSG = "Error authenticating user";
@@ -54,8 +55,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Value("${auth.user.attribute}")
     private String authUserAttribute;
 
-    @Value("${auth.token.filter.expire.minutes}")
+    @Value("${auth.token.expire.minutes}")
     private int authTokenExpireMinutes;
+
+    @Value("${auth.token.filter.active}")
+    private boolean authTokenFilterActive;
 
     @Override
     public AuthToken generateToken() throws AuthenticationException {
@@ -144,6 +148,16 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         AuthToken authToken = generateToken(user.getId(), Role.AUTHENTICATED);
 
         return new AuthUser(authToken, user);
+    }
+
+    @Override
+    public void verifyUser(HttpServletRequest request, String userId) throws AuthenticationException {
+
+        if (authTokenFilterActive) {
+            if (!StringUtils.equals(userId, (String) request.getAttribute(authUserAttribute))) {
+                throw new AuthenticationException(MISMATCHED_USER_MSG);
+            }
+        }
     }
 
     private String[] performBasicValidation(HttpServletRequest request) throws AuthenticationException {

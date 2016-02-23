@@ -98,7 +98,7 @@ public class UserDAO {
             return user;
         }
         catch (IncorrectResultSizeDataAccessException e) {
-            logger.debug("No user found with username {} and supplied password");
+            logger.debug("Expected 1 user with username {} and supplied password, found {}", username, e.getActualSize());
             return null;
         }
     }

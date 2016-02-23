@@ -30,6 +30,9 @@ public class AuthTokenFilter implements Filter {
     @Value("${auth.token.filter.allowed.uri}")
     private String[] authTokenFilterAllowedUri;
 
+    @Value("${auth.token.filter.authentication.whitelist}")
+    private String[] authTokenFilterAuthenticationWhiteList;
+
     @Autowired
     private AuthenticationService authenticationService;
 
@@ -52,10 +55,17 @@ public class AuthTokenFilter implements Filter {
                 logger.debug("Applying auth token filter");
 
                 //unless URI is on the "allowed" list, validate token
-                if (!ArrayUtils.contains(authTokenFilterAllowedUri, httpRequest.getRequestURI())) {
+                String requestedURI = httpRequest.getRequestURI();
+                if (!ArrayUtils.contains(authTokenFilterAllowedUri, requestedURI)) {
 
-                    // validate the token (will throw exception if not valid)
-                    authenticationService.validateGuestAccess(httpRequest);
+                    if (isURIWhiteListed(requestedURI)) {
+                        // the URI is white listed, validate that the token has guest level access (will throw exception if not valid)
+                        authenticationService.validateGuestAccess(httpRequest);
+                    }
+                    else {
+                        // the URI is not white listed, validate the token has authenticated level access (will throw exception if not valid)
+                        authenticationService.validateAuthenticatedAccess(httpRequest);
+                    }
                 }
             }
 
@@ -67,11 +77,25 @@ public class AuthTokenFilter implements Filter {
             logger.warn("Authentication failure", e);
             httpResponse.setHeader("Content-Type", "application/json");
             httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return;
         }
     }
 
     @Override
     public void destroy() {
     }
+
+    private boolean isURIWhiteListed(String requestURI) {
+
+        /*
+           the request URI may include path variables, in which case the
+           white listed URI may contain a regular expression for the match.
+        */
+        for(String whiteListedURI: authTokenFilterAuthenticationWhiteList) {
+            if (requestURI.matches(whiteListedURI)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }
