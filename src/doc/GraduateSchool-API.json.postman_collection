@@ -24,7 +24,9 @@
 		"ac89fbcc-11ed-c3e5-5822-e61711bc5d47",
 		"dce3df62-adae-bb06-992a-7c494d183818",
 		"59b4a783-2dc5-ff89-52ac-62993681355c",
-		"8486d046-80f3-dee4-d8a4-96f7baeed563"
+		"8486d046-80f3-dee4-d8a4-96f7baeed563",
+		"eafa44d1-5e0a-d73a-3402-540d85e971a7",
+		"8cc01474-e2fa-baa8-969d-d5994cc43492"
 	],
 	"folders": [],
 	"timestamp": 1436731751085,
@@ -300,6 +302,26 @@
 			"responses": []
 		},
 		{
+			"id": "8cc01474-e2fa-baa8-969d-d5994cc43492",
+			"headers": "Authorization: {{auth_token}}\nContent-Type: application/json\n",
+			"url": "http://{{url}}:{{port}}/api/authentication",
+			"preRequestScript": "",
+			"pathVariables": {},
+			"method": "POST",
+			"data": [],
+			"dataMode": "raw",
+			"version": 2,
+			"tests": "tests[\"Status code is 401\"] = responseCode.code === 401;\n\n\nvar jsonData = JSON.parse(responseBody);\ntests[\"Invalid user message\"] = jsonData.message === \"Invalid user\";",
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"time": 1456157355861,
+			"name": "Authenticate User - Invalid",
+			"description": "Authenticate an invalid user",
+			"collectionId": "4c2b3198-777b-09b6-f6a9-52ea4b95fada",
+			"responses": [],
+			"rawModeData": "{\n\"username\" : \"postman.user@postman.com\",\n\"password\" : \"invalidpassword\"\n}"
+		},
+		{
 			"id": "ac89fbcc-11ed-c3e5-5822-e61711bc5d47",
 			"headers": "Authorization: {{auth_token}}\n",
 			"url": "http://{{url}}:{{port}}/api/site?search=&filter=content:Washington,%20DC",
@@ -431,6 +453,26 @@
 			"description": "Invalid args passed to course API",
 			"collectionId": "4c2b3198-777b-09b6-f6a9-52ea4b95fada",
 			"responses": []
+		},
+		{
+			"id": "eafa44d1-5e0a-d73a-3402-540d85e971a7",
+			"headers": "Authorization: {{auth_token}}\nContent-Type: application/json\n",
+			"url": "http://{{url}}:{{port}}/api/authentication",
+			"preRequestScript": "",
+			"pathVariables": {},
+			"method": "POST",
+			"data": [],
+			"dataMode": "raw",
+			"version": 2,
+			"tests": "tests[\"Status code is 200\"] = responseCode.code === 200;\n\nvar jsonData = JSON.parse(responseBody);\ntests[\"New token returned\"] = jsonData.token != globals.auth_token;\ntests[\"Correct user?\"] = jsonData.user.id === \"persn000000000596032\";",
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"time": 1456157390874,
+			"name": "Authenticate User - Valid",
+			"description": "Authenticate a valid user",
+			"collectionId": "4c2b3198-777b-09b6-f6a9-52ea4b95fada",
+			"responses": [],
+			"rawModeData": "{\n\"username\" : \"postman.user@postman.com\",\n\"password\" : \"test1234\"\n}"
 		},
 		{
 			"id": "eb829a7d-bbae-b1a9-f43b-1b6caacb472e",

@@ -13,13 +13,10 @@
 	<!-- DispatcherServlet Context: defines this servlet's request-processing 
 		infrastructure -->
 	<context:property-placeholder
-		system-properties-mode="OVERRIDE"
-		location="classpath:${propertiesLoc}/application.properties" />
+			system-properties-mode="OVERRIDE"
+			ignore-unresolvable="true"
+			location="classpath:base.properties, classpath:${propertiesLoc}/application.properties"/>
 
-	<context:property-placeholder
-		system-properties-mode="OVERRIDE"
-		location="classpath:base.properties"  ignore-unresolvable="true" order="1" />
-		
 	<!-- Enables the Spring MVC @Controller programming model -->
 	<beans:bean id="dev-dataSource" class="org.apache.commons.dbcp.BasicDataSource">
 		<beans:property name="driverClassName" value="${datasource.driverClassName}" />

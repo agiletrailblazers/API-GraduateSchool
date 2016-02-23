@@ -5,5 +5,5 @@ package com.gs.api.domain.authentication;
  */
 public enum Role {
     GUEST,
-    STUDENT
+    AUTHENTICATED
 }

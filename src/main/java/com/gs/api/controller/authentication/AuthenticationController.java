@@ -1,34 +1,44 @@
 package com.gs.api.controller.authentication;
 
 import com.gs.api.controller.BaseController;
-import com.gs.api.service.authentication.AuthTokenService;
+import com.gs.api.domain.authentication.AuthCredentials;
+import com.gs.api.domain.authentication.AuthToken;
+import com.gs.api.domain.authentication.AuthUser;
+import com.gs.api.service.authentication.AuthenticationService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 @Configuration
 @RestController
-@RequestMapping("/token")
+@RequestMapping("")
 public class AuthenticationController extends BaseController {
 
     final Logger logger = LoggerFactory.getLogger(AuthenticationController.class);
 
     @Autowired
-    private AuthTokenService authTokenService;
+    private AuthenticationService authenticationService;
 
-    @RequestMapping(value = "", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public AuthToken generateGuestToken() throws Exception  {
+    @RequestMapping(value = "/token", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public AuthToken generateToken() throws Exception  {
 
         logger.debug("Generating a guest API token");
 
-        AuthToken token = new AuthToken();
-        token.setToken(authTokenService.generateGuestToken());
-        return token;
+        return authenticationService.generateToken();
+    }
+
+    @RequestMapping(value = "/authentication", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    public AuthUser authenticateUser(@RequestBody AuthCredentials authCredentials) throws Exception  {
+
+        logger.debug("Authenticating user {}", authCredentials.getUsername());
+
+        return authenticationService.authenticateUser(authCredentials);
     }
 }

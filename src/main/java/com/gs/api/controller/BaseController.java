@@ -1,6 +1,7 @@
 package com.gs.api.controller;
 
-import java.io.IOException;
+import com.gs.api.exception.AuthenticationException;
+import com.gs.api.exception.NotFoundException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +14,7 @@ import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import com.gs.api.exception.NotFoundException;
+import java.io.IOException;
 
 /**
  * Common code for Controllers 
@@ -21,6 +22,22 @@ import com.gs.api.exception.NotFoundException;
 public abstract class BaseController {
     
     static final Logger logger = LoggerFactory.getLogger(BaseController.class);
+
+    /**
+     * Return json formatted error response for authentication errors
+     * @return ResponseBody
+     */
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    @ExceptionHandler({ AuthenticationException.class })
+    @ResponseBody
+    public String handleAuthenticationException(Exception ex) {
+        logger.error("Not authorized", ex);
+        final StringBuffer response = new StringBuffer();
+        response.append("{\"message\":\"");
+        response.append(ex.getMessage());
+        response.append("\"}");
+        return response.toString();
+    }
 
     /**
      * Return json formatted error response for any custom "not found" errors

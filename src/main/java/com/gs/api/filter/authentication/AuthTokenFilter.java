@@ -1,7 +1,7 @@
 package com.gs.api.filter.authentication;
 
 import com.gs.api.exception.AuthenticationException;
-import com.gs.api.service.authentication.AuthTokenService;
+import com.gs.api.service.authentication.AuthenticationService;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
@@ -31,7 +31,7 @@ public class AuthTokenFilter implements Filter {
     private String[] authTokenFilterAllowedUri;
 
     @Autowired
-    private AuthTokenService authTokenService;
+    private AuthenticationService authenticationService;
 
     final Logger logger = LoggerFactory.getLogger(AuthTokenFilter.class);
 
@@ -55,7 +55,7 @@ public class AuthTokenFilter implements Filter {
                 if (!ArrayUtils.contains(authTokenFilterAllowedUri, httpRequest.getRequestURI())) {
 
                     // validate the token (will throw exception if not valid)
-                    authTokenService.validateToken(httpRequest);
+                    authenticationService.validateGuestAccess(httpRequest);
                 }
             }
 

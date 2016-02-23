@@ -5,10 +5,12 @@ import com.gs.api.domain.Person;
 import com.gs.api.domain.registration.User;
 
 import oracle.jdbc.OracleTypes;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -50,6 +52,9 @@ public class UserDAO {
     @Value("${sql.user.listEntry.sequence}")
     private String getListEntryIdSequenceQuery;
 
+    @Value("${sql.user.login.query}")
+    private String sqlForUserLogin;
+
     @Value("${sql.user.single.query}")
     private String sqlForSingleUser;
 
@@ -61,6 +66,7 @@ public class UserDAO {
         this.listEntryActor = new SimpleJdbcCall(this.jdbcTemplate).withProcedureName(insertfgtListEntryStoredProcedureName);
         this.deleteUserActor = new SimpleJdbcCall(this.jdbcTemplate).withProcedureName(deleteUserStoredProcedureName);
     }
+
     /**
      * Get User details for a specified user
      * @param userId the id of the user
@@ -71,8 +77,30 @@ public class UserDAO {
         logger.debug(sqlForSingleUser);
         final User user = this.jdbcTemplate.queryForObject(sqlForSingleUser, new Object[] { userId },
                 new UserRowMapper());
-        logger.debug("Found session for session id {}", userId);
+        logger.debug("Found user for user id {}", userId);
         return user;
+    }
+
+    /**
+     * Get user details by the username and password
+     * @param username the username
+     * @param password the encrypted password
+     * @return the user or null if no user found matching the supplied username and password
+     */
+    public User getUser(String username, String password) {
+        logger.debug("Getting user by username {} and supplied password", username);
+        logger.debug(sqlForUserLogin);
+        try {
+            User user = this.jdbcTemplate.queryForObject(sqlForUserLogin, new Object[] { username, password },
+                    new UserRowMapper());
+
+            logger.debug("Found user with username {} and supplied password", username);
+            return user;
+        }
+        catch (IncorrectResultSizeDataAccessException e) {
+            logger.debug("No user found with username {} and supplied password");
+            return null;
+        }
     }
 
     /**

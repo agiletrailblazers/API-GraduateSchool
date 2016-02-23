@@ -1,7 +1,7 @@
 package com.gs.api.filter.authentication;
 
 import com.gs.api.exception.AuthenticationException;
-import com.gs.api.service.authentication.AuthTokenService;
+import com.gs.api.service.authentication.AuthenticationService;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,7 +37,7 @@ public class AuthTokenFilterTest {
     private HttpServletResponse response;
 
     @Mock
-    private AuthTokenService authTokenService;
+    private AuthenticationService authenticationService;
 
     @InjectMocks
     private AuthTokenFilter filter;
@@ -49,7 +49,7 @@ public class AuthTokenFilterTest {
 
         filter.doFilter(request, response, filterChain);
 
-        verifyZeroInteractions(authTokenService);
+        verifyZeroInteractions(authenticationService);
         verify(filterChain).doFilter(request, response);
     }
 
@@ -70,7 +70,7 @@ public class AuthTokenFilterTest {
         filter.destroy();
 
         verify(request).getRequestURI();
-        verify(authTokenService).validateToken(request);
+        verify(authenticationService).validateGuestAccess(request);
         verify(filterChain).doFilter(request, response);
     }
 
@@ -83,11 +83,11 @@ public class AuthTokenFilterTest {
         when(request.getRequestURI()).thenReturn(PATH_REQUIRES_TOKEN);
 
         AuthenticationException cause = new AuthenticationException("I caused invalid token");
-        doThrow(cause).when(authTokenService).validateToken(request);
+        doThrow(cause).when(authenticationService).validateGuestAccess(request);
         filter.doFilter(request, response, filterChain);
 
         verify(request).getRequestURI();
-        verify(authTokenService).validateToken(request);
+        verify(authenticationService).validateGuestAccess(request);
         verify(response).setHeader("Content-Type", "application/json");
         verify(response).setStatus(401);
         verifyZeroInteractions(filterChain);
@@ -111,7 +111,7 @@ public class AuthTokenFilterTest {
 
         verify(request).getRequestURI();
         verifyNoMoreInteractions(request);
-        verifyZeroInteractions(authTokenService);
+        verifyZeroInteractions(authenticationService);
         verify(filterChain).doFilter(request, response);
     }
 

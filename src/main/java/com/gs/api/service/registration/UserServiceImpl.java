@@ -1,6 +1,7 @@
 package com.gs.api.service.registration;
 
 import com.gs.api.dao.registration.UserDAO;
+import com.gs.api.domain.authentication.AuthCredentials;
 import com.gs.api.domain.registration.User;
 
 import org.slf4j.Logger;
@@ -31,6 +32,24 @@ public class UserServiceImpl implements UserService {
 
         // update the user with the generated ID
         user.setId(userId);
+    }
+
+    @Override
+    public void deleteUser(String id) throws Exception {
+
+        logger.info("Deleting user: {}", id);
+
+        // need to lookup the user by id first because the delete dao requires the timestamp associated with the id
+        User user = userDao.getUser(id);
+        userDao.deleteUser(id, user.getTimestamp());
+    }
+
+    @Override
+    public User getUser(AuthCredentials authCredentials) throws Exception {
+
+        logger.debug("Get user: {}", authCredentials.getUsername());
+
+        return userDao.getUser(authCredentials.getUsername(), generateHash(authCredentials.getPassword()));
     }
 
     /**
@@ -126,14 +145,5 @@ public class UserServiceImpl implements UserService {
         }
 
         return b16string.toString();
-    }
-
-    @Override
-    public void deleteUser(String id) throws Exception {
-        logger.info("Deleting user: {}", id);
-
-        // need to lookup the user by id first because the delete dao requires the timestamp associated with the id
-        User user = userDao.getUser(id);
-        userDao.deleteUser(id, user.getTimestamp());
     }
 }
