@@ -365,22 +365,35 @@ public class UserDAOTest {
         when(rs.getString("VETERAN")).thenReturn("N");
         when(rs.getString("TIME_STAMP")).thenReturn(USER_TIMESTAMP);
 
-        User user = rowMapper.mapRow(rs, 0);
-        assertNotNull(user);
-        assertEquals(USER_ID, user.getId());
-        assertEquals(USERNAME, user.getUsername());
-        assertNull(user.getLastFourSSN());
-        assertEquals(TIMEZONE_ID, user.getTimezoneId());
-        assertEquals("1234", user.getAccountId());
-        assertEquals(SPLIT, user.getSplit());
-        assertEquals("abc1234", user.getCurrencyId());
-        assertEquals(FIRST_NAME, user.getPerson().getFirstName());
-        assertEquals(LAST_NAME, user.getPerson().getLastName());
-        assertEquals(EMAIL_ADDRESS, user.getPerson().getEmailAddress());
-        assertEquals(PHONE, user.getPerson().getPrimaryPhone());
-        assertEquals("123456", user.getPerson().getSecondaryPhone());
-        assertNull(user.getPerson().getDateOfBirth());
-        assertEquals(false, user.getPerson().getVeteran());
+        when(rs.getString("ADDRESS1")).thenReturn(ADDRESS_1);
+        when(rs.getString("ADDRESS2")).thenReturn(ADDRESS_2);
+        when(rs.getString("CITY")).thenReturn(ADDRESS_CITY);
+        when(rs.getString("STATE")).thenReturn(ADDRESS_STATE);
+        when(rs.getString("ZIP")).thenReturn(ADDRESS_ZIP);
+
+        User returnedUser = rowMapper.mapRow(rs, 0);
+        assertNotNull(returnedUser);
+        assertEquals(USER_ID, returnedUser.getId());
+        assertEquals(USERNAME, returnedUser.getUsername());
+        assertNull(returnedUser.getLastFourSSN());
+        assertEquals(TIMEZONE_ID, returnedUser.getTimezoneId());
+        assertEquals("1234", returnedUser.getAccountId());
+        assertEquals(SPLIT, returnedUser.getSplit());
+        assertEquals("abc1234", returnedUser.getCurrencyId());
+        assertEquals(FIRST_NAME, returnedUser.getPerson().getFirstName());
+        assertEquals(LAST_NAME, returnedUser.getPerson().getLastName());
+        assertEquals(EMAIL_ADDRESS, returnedUser.getPerson().getEmailAddress());
+        assertEquals(PHONE, returnedUser.getPerson().getPrimaryPhone());
+        assertEquals("123456", returnedUser.getPerson().getSecondaryPhone());
+        assertNull(returnedUser.getPerson().getDateOfBirth());
+        assertEquals(false, returnedUser.getPerson().getVeteran());
+
+        Address returnedAddress = returnedUser.getPerson().getPrimaryAddress();
+        assertEquals(ADDRESS_1,returnedAddress.getAddress1());
+        assertEquals(ADDRESS_2,returnedAddress.getAddress2());
+        assertEquals(ADDRESS_CITY, returnedAddress.getCity());
+        assertEquals(ADDRESS_STATE, returnedAddress.getState());
+        assertEquals(ADDRESS_ZIP, returnedAddress.getPostalCode());
     }
 
     @Test

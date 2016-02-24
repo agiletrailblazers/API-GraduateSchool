@@ -413,6 +413,15 @@ public class UserDAO {
                     person.setVeteran(false);
                 }
             }
+
+            Address address = new Address();
+            address.setAddress1(rs.getString("ADDRESS1"));
+            address.setAddress2(rs.getString("ADDRESS2"));
+            address.setCity(rs.getString("CITY"));
+            address.setState(rs.getString("STATE"));
+            address.setPostalCode(rs.getString("ZIP"));
+
+            person.setPrimaryAddress(address);
             user.setPerson(person);
 
             return user;
