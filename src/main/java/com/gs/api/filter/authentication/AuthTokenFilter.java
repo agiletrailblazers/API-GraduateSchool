@@ -27,11 +27,11 @@ public class AuthTokenFilter implements Filter {
     @Value("${auth.token.filter.active}")
     private boolean authTokenFilterActive;
 
-    @Value("${auth.token.filter.allowed.uri}")
-    private String[] authTokenFilterAllowedUri;
+    @Value("${auth.token.filter.uri.no.token.required}")
+    private String[] noTokenRequiredList;
 
-    @Value("${auth.token.filter.authentication.whitelist}")
-    private String[] authTokenFilterAuthenticationWhiteList;
+    @Value("${auth.token.filter.uri.guest.token.required}")
+    private String[] guestTokenRequiredList;
 
     @Autowired
     private AuthenticationService authenticationService;
@@ -52,18 +52,19 @@ public class AuthTokenFilter implements Filter {
 
             if (authTokenFilterActive) {
 
-                logger.debug("Applying auth token filter");
-
-                //unless URI is on the "allowed" list, validate token
+                // if the requested URI IS NOT on the "no token required" list then it must be verified for either guest or authenticated access
                 String requestedURI = httpRequest.getRequestURI();
-                if (!ArrayUtils.contains(authTokenFilterAllowedUri, requestedURI)) {
+                logger.debug("Applying auth token filter for URI {}", requestedURI);
 
-                    if (isURIWhiteListed(requestedURI)) {
-                        // the URI is white listed, validate that the token has guest level access (will throw exception if not valid)
+                if (!ArrayUtils.contains(noTokenRequiredList, requestedURI)) {
+
+                    if (isGuestTokenRequired(requestedURI)) {
+                        logger.debug("URI {} requires a guest token", requestedURI);
                         authenticationService.validateGuestAccess(httpRequest);
                     }
                     else {
-                        // the URI is not white listed, validate the token has authenticated level access (will throw exception if not valid)
+                        // any URI not specifically listed on the guest token required list must have an authenticated token
+                        logger.debug("URI {} requires an authenticated token", requestedURI);
                         authenticationService.validateAuthenticatedAccess(httpRequest);
                     }
                 }
@@ -84,13 +85,13 @@ public class AuthTokenFilter implements Filter {
     public void destroy() {
     }
 
-    private boolean isURIWhiteListed(String requestURI) {
+    private boolean isGuestTokenRequired(String requestURI) {
 
         /*
            the request URI may include path variables, in which case the
            white listed URI may contain a regular expression for the match.
         */
-        for(String whiteListedURI: authTokenFilterAuthenticationWhiteList) {
+        for(String whiteListedURI: guestTokenRequiredList) {
             if (requestURI.matches(whiteListedURI)) {
                 return true;
             }

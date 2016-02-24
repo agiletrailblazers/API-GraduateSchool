@@ -52,8 +52,8 @@ public class AuthTokenFilterTest {
     @Before
     public void setup() {
         ReflectionTestUtils.setField(filter, "authTokenFilterActive", true);
-        ReflectionTestUtils.setField(filter, "authTokenFilterAuthenticationWhiteList", AUTHENTICATION_WHITELIST);
-        ReflectionTestUtils.setField(filter, "authTokenFilterAllowedUri", ALLOWED_URI);
+        ReflectionTestUtils.setField(filter, "guestTokenRequiredList", AUTHENTICATION_WHITELIST);
+        ReflectionTestUtils.setField(filter, "noTokenRequiredList", ALLOWED_URI);
     }
 
     @Test
