@@ -38,4 +38,12 @@ public interface AuthenticationService {
      */
     AuthUser authenticateUser(AuthCredentials authCredentials) throws AuthenticationException;
 
+    /**
+     * Verify that the specified user id matches the user id that was authenticated.
+     * @param request the http request
+     * @param userId the id of the user.
+     * @throws AuthenticationException if the supplied user id does not match the user id that was authenticated.
+     */
+    void verifyUser(HttpServletRequest request, String userId) throws AuthenticationException;
+
 }

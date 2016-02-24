@@ -58,8 +58,11 @@ public class AuthenticationServiceTest {
     @Value("${auth.user.attribute}")
     private String authUserAttribute;
 
-    @Value("${auth.token.filter.expire.minutes}")
+    @Value("${auth.token.expire.minutes}")
     private int authTokenExpireMinutes;
+
+    @Value("${auth.token.filter.active}")
+    private boolean authTokenFilterActive;
 
     @Autowired
     private WebApplicationContext applicationContext;
@@ -412,4 +415,33 @@ public class AuthenticationServiceTest {
 
         authenticationService.authenticateUser(authCredentials);
     }
+
+    @Test
+    public void testVerifyUser_WrongUser() throws Exception{
+
+        ReflectionTestUtils.setField(authenticationService, "authTokenFilterActive", true);
+
+        // setup expected exception
+        thrown.expect(AuthenticationException.class);
+        thrown.expectMessage(AuthenticationServiceImpl.MISMATCHED_USER_MSG);
+
+        when(request.getAttribute(authUserAttribute)).thenReturn(USER_ID);
+
+        authenticationService.verifyUser(request, "bogususerid");
+
+        verify(request).getAttribute(authUserAttribute);
+    }
+
+    @Test
+    public void testVerifyUser_ValidUser() throws Exception{
+
+        ReflectionTestUtils.setField(authenticationService, "authTokenFilterActive", true);
+
+        when(request.getAttribute(authUserAttribute)).thenReturn(USER_ID);
+
+        authenticationService.verifyUser(request, USER_ID);
+
+        verify(request).getAttribute(authUserAttribute);
+    }
+
 }

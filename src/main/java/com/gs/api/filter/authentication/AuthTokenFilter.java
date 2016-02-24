@@ -27,8 +27,11 @@ public class AuthTokenFilter implements Filter {
     @Value("${auth.token.filter.active}")
     private boolean authTokenFilterActive;
 
-    @Value("${auth.token.filter.allowed.uri}")
-    private String[] authTokenFilterAllowedUri;
+    @Value("${auth.token.filter.uri.no.token.required}")
+    private String[] noTokenRequiredList;
+
+    @Value("${auth.token.filter.uri.guest.token.required}")
+    private String[] guestTokenRequiredList;
 
     @Autowired
     private AuthenticationService authenticationService;
@@ -49,13 +52,21 @@ public class AuthTokenFilter implements Filter {
 
             if (authTokenFilterActive) {
 
-                logger.debug("Applying auth token filter");
+                // if the requested URI IS NOT on the "no token required" list then it must be verified for either guest or authenticated access
+                String requestedURI = httpRequest.getRequestURI();
+                logger.debug("Applying auth token filter for URI {}", requestedURI);
 
-                //unless URI is on the "allowed" list, validate token
-                if (!ArrayUtils.contains(authTokenFilterAllowedUri, httpRequest.getRequestURI())) {
+                if (!ArrayUtils.contains(noTokenRequiredList, requestedURI)) {
 
-                    // validate the token (will throw exception if not valid)
-                    authenticationService.validateGuestAccess(httpRequest);
+                    if (isGuestTokenRequired(requestedURI)) {
+                        logger.debug("URI {} requires a guest token", requestedURI);
+                        authenticationService.validateGuestAccess(httpRequest);
+                    }
+                    else {
+                        // any URI not specifically listed on the guest token required list must have an authenticated token
+                        logger.debug("URI {} requires an authenticated token", requestedURI);
+                        authenticationService.validateAuthenticatedAccess(httpRequest);
+                    }
                 }
             }
 
@@ -67,11 +78,25 @@ public class AuthTokenFilter implements Filter {
             logger.warn("Authentication failure", e);
             httpResponse.setHeader("Content-Type", "application/json");
             httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return;
         }
     }
 
     @Override
     public void destroy() {
     }
+
+    private boolean isGuestTokenRequired(String requestURI) {
+
+        /*
+           the request URI may include path variables, in which case the
+           white listed URI may contain a regular expression for the match.
+        */
+        for(String whiteListedURI: guestTokenRequiredList) {
+            if (requestURI.matches(whiteListedURI)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

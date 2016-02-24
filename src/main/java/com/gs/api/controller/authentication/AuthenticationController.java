@@ -29,7 +29,7 @@ public class AuthenticationController extends BaseController {
     @RequestMapping(value = "/token", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public AuthToken generateToken() throws Exception  {
 
-        logger.debug("Generating a guest API token");
+        logger.debug("Generating an API token");
 
         return authenticationService.generateToken();
     }
