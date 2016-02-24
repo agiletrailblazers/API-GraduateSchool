@@ -44,4 +44,12 @@ public class UserController extends BaseController {
 
         userService.deleteUser(id);
     }
+
+    @RequestMapping(value = "/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public User getUser(@PathVariable("id") String id) throws Exception {
+
+        logger.debug("Get User {}", id);
+
+        return userService.getUser(id);
+    }
 }

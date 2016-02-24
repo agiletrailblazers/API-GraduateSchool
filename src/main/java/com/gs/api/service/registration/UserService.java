@@ -29,4 +29,10 @@ public interface UserService {
      */
     User getUser(final AuthCredentials authCredentials) throws Exception;
 
+    /**
+     * Get a user by the user id
+     * @param userId the user id.
+     * @throws Exception error deleting the user.
+     */
+    User getUser(final String userId) throws Exception;
 }

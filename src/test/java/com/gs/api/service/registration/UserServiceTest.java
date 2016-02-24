@@ -27,6 +27,7 @@ import static org.mockito.Mockito.when;
 @ContextConfiguration(locations = { "classpath:spring/test-root-context.xml" })
 public class UserServiceTest {
 
+    private static final String USER_ID = "pern0000123123123123";
     private static final String FIRST_NAME = "Joe";
     private static final String MIDDLE_NAME = "Bob";
     private static final String LAST_NAME = "Smith";
@@ -57,6 +58,7 @@ public class UserServiceTest {
         MockitoAnnotations.initMocks(this);
 
         user = new User();
+        user.setId(USER_ID);
         user.setUsername(EMAIL_ADDRESS);
         user.setPassword(PASSWORD_CLEAR);
         user.setLastFourSSN(LAST_FOUR_SSN);
@@ -83,33 +85,32 @@ public class UserServiceTest {
     @Test
     public void testCreateUser() throws Exception {
 
-        final String id = "test-55555";
-        when(userDao.insertNewUser(user)).thenReturn(id);
+        when(userDao.insertNewUser(user)).thenReturn(USER_ID);
 
         userService.createUser(user);
 
         verify(userDao).insertNewUser(user);
 
-        assertEquals("ID not set on user", id, user.getId());
+        assertEquals("ID not set on user", USER_ID, user.getId());
         assertEquals("Encrypted password not set on user", PASSWORD_ENCRYPTED, user.getPassword());
     }
 
     @Test
     public void testDeleteUser() throws Exception {
-        final String id = "persn0001234";
+
         final String timestamp = Long.toString(new Date().getTime());
         user.setTimestamp(timestamp);
 
-        when(userDao.getUser(id)).thenReturn(user);
+        when(userDao.getUser(USER_ID)).thenReturn(user);
 
-        userService.deleteUser(id);
+        userService.deleteUser(USER_ID);
 
-        verify(userDao).getUser(id);
-        verify(userDao).deleteUser(id, timestamp);
+        verify(userDao).getUser(USER_ID);
+        verify(userDao).deleteUser(USER_ID, timestamp);
     }
 
     @Test
-    public void testGetUser() throws Exception {
+    public void testGetUserByCredentials() throws Exception {
 
         when(userDao.getUser(EMAIL_ADDRESS, PASSWORD_ENCRYPTED)).thenReturn(user);
 
@@ -118,6 +119,12 @@ public class UserServiceTest {
         verify(userDao).getUser(EMAIL_ADDRESS, PASSWORD_ENCRYPTED);
 
         assertSame("wrong user", user, retrievedUser);
+    }
+
+    @Test
+    public void testGetUserById() throws Exception {
+
+        when(userDao.getUser(USER_ID)).thenReturn(user);
     }
 
 }

@@ -70,15 +70,21 @@ public class UserDAO {
     /**
      * Get User details for a specified user
      * @param userId the id of the user
-     * @return the user details
+     * @return the user details or null if no user found matching the supplied id
      */
     public User getUser(String userId) {
         logger.debug("Getting user {}", userId);
         logger.debug(sqlForSingleUser);
-        final User user = this.jdbcTemplate.queryForObject(sqlForSingleUser, new Object[] { userId },
-                new UserRowMapper());
-        logger.debug("Found user for user id {}", userId);
-        return user;
+        try {
+            User user = this.jdbcTemplate.queryForObject(sqlForSingleUser, new Object[]{userId},
+                    new UserRowMapper());
+            logger.debug("Found user for user id {}", userId);
+            return user;
+        }
+        catch (IncorrectResultSizeDataAccessException e) {
+            logger.debug("Expected 1 user with id {} and supplied password, found {}", userId, e.getActualSize());
+            return null;
+        }
     }
 
     /**

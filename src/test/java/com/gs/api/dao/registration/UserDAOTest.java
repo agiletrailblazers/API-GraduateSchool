@@ -480,6 +480,25 @@ public class UserDAOTest {
     }
 
     @Test
+    public void testGetUser_InvalidUser() throws Exception {
+        Object[] expectedQueryParams = new Object[] { USER_ID };
+
+        when(jdbcTemplate.queryForObject(anyString(), any(Object[].class), any(UserDAO.UserRowMapper.class))).
+                thenReturn(null);
+
+        User returnedUser = userDAO.getUser(USER_ID);
+
+        assertNull("Expected no user to be found", returnedUser);
+
+        verify(jdbcTemplate).queryForObject(eq(sqlForSingleUser), singleUserQueryParamsCaptor.capture(), any(UserDAO.UserRowMapper.class));
+        Object[] capturedQueryParams = singleUserQueryParamsCaptor.getValue();
+        assertNotNull("Expected parameters", capturedQueryParams);
+        assertArrayEquals("wrong parameters", expectedQueryParams, capturedQueryParams);
+
+    }
+
+
+    @Test
     public void testGetUserByUsernamePassword() throws Exception {
         Object[] expectedQueryParams = new Object[] { USER_ID, PASSWORD};
 
@@ -515,5 +534,4 @@ public class UserDAOTest {
 
         assertNull("No user should be found", returnedUser);
     }
-
 }
