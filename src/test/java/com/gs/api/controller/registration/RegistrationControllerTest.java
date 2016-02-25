@@ -2,6 +2,7 @@ package com.gs.api.controller.registration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gs.api.domain.registration.Registration;
+import com.gs.api.domain.registration.RegistrationRequest;
 import com.gs.api.service.authentication.AuthenticationService;
 import com.gs.api.service.registration.RegistrationService;
 
@@ -63,7 +64,7 @@ public class RegistrationControllerTest {
     private RegistrationController registrationController;
 
     @Captor
-    private ArgumentCaptor<List<Registration>> capturedRegistrations;
+    private ArgumentCaptor<RegistrationRequest> capturedRegistrations;
 
     @Before
     public void setUp() throws Exception {
@@ -79,12 +80,14 @@ public class RegistrationControllerTest {
         registration.setSessionId(SESSION_ID);
         List<Registration> registrations = Collections.singletonList(registration);
 
+        RegistrationRequest registrationRequest = new RegistrationRequest(registrations, null);
+
         Registration createdRegistration = new Registration();
         createdRegistration.setId(REGISTRATION_ID);
 
-        String jsonModel = new ObjectMapper().writeValueAsString(registrations);
+        String jsonModel = new ObjectMapper().writeValueAsString(registrationRequest);
 
-        when(registrationService.register(eq(USER_ID), isA(List.class))).thenReturn(Collections.singletonList(createdRegistration));
+        when(registrationService.register(eq(USER_ID), isA(RegistrationRequest.class))).thenReturn(Collections.singletonList(createdRegistration));
 
         mockMvc.perform(post("/registration/user/" + USER_ID)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -95,8 +98,8 @@ public class RegistrationControllerTest {
 
         verify(authenticationService).verifyUser(isA(HttpServletRequest.class), eq(USER_ID));
         verify(registrationService).register(eq(USER_ID), capturedRegistrations.capture());
-        assertEquals("Wrong user id", USER_ID, capturedRegistrations.getValue().get(0).getStudentId());
-        assertEquals("Wrong session id", SESSION_ID, capturedRegistrations.getValue().get(0).getSessionId());
+        assertEquals("Wrong user id", USER_ID, capturedRegistrations.getValue().getRegistrations().get(0).getStudentId());
+        assertEquals("Wrong session id", SESSION_ID, capturedRegistrations.getValue().getRegistrations().get(0).getSessionId());
      }
 
 }

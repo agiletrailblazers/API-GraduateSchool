@@ -1,6 +1,7 @@
 package com.gs.api.service.registration;
 
 import com.gs.api.domain.registration.Registration;
+import com.gs.api.domain.registration.RegistrationRequest;
 
 import java.util.List;
 
@@ -14,6 +15,6 @@ public interface RegistrationService {
      * @return list of registrations updated with the registration id's and order numbers.
      * @throws Exception error creating registrations.
      */
-    List<Registration> register(final String userId, final List<Registration> registrations) throws Exception;
+    List<Registration> register(final String userId, final RegistrationRequest registrationRequest) throws Exception;
 
 }

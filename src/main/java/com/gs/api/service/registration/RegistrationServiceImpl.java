@@ -7,6 +7,7 @@ import com.gs.api.dao.registration.UserDAO;
 import com.gs.api.domain.course.CourseSession;
 import com.gs.api.domain.registration.Registration;
 
+import com.gs.api.domain.registration.RegistrationRequest;
 import com.gs.api.domain.registration.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,11 +32,11 @@ public class RegistrationServiceImpl implements RegistrationService {
     private CourseSessionDAO sessionDao;
 
     @Override
-    public List<Registration> register(String userId, List<Registration> registrations) throws Exception {
+    public List<Registration> register(String userId, RegistrationRequest registrationRequest) throws Exception {
 
         List<Registration> completedRegistrations = new ArrayList<>();
 
-        for (Registration registration : registrations) {
+        for (Registration registration : registrationRequest.getRegistrations()) {
             logger.info("User {} is registering student {} for class no {}", new String[] {userId,
                     registration.getStudentId(), registration.getSessionId()});
 

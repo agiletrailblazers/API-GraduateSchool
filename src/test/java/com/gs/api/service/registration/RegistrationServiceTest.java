@@ -6,6 +6,7 @@ import com.gs.api.dao.registration.UserDAO;
 import com.gs.api.domain.Person;
 import com.gs.api.domain.course.CourseSession;
 import com.gs.api.domain.registration.Registration;
+import com.gs.api.domain.registration.RegistrationRequest;
 import com.gs.api.domain.registration.User;
 
 import org.junit.Before;
@@ -40,7 +41,8 @@ public class RegistrationServiceTest {
     private static final String STUDENT_ID_1 = "person44444";
     private static final String STUDENT_ID_2 = "person55555";
 
-    private List<Registration> registrations;
+    //private List<Registration> registrations;
+    private RegistrationRequest registrationRequest;
 
     @Mock
     private RegistrationDAO registrationDao;
@@ -61,12 +63,14 @@ public class RegistrationServiceTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
 
-        registrations = new ArrayList<>();
+        List<Registration> registrations = new ArrayList<>();
 
         Registration registration1 = new Registration();
         registration1.setStudentId(STUDENT_ID_1);
         registration1.setSessionId(SESSION_ID);
         registrations.add(registration1);
+
+        registrationRequest = new RegistrationRequest(registrations, null);
 
         userTimestamp = Long.toString(new Date().getTime());
     }
@@ -77,7 +81,7 @@ public class RegistrationServiceTest {
         Registration registration2 = new Registration();
         registration2.setStudentId(STUDENT_ID_2);
         registration2.setSessionId(SESSION_ID);
-        registrations.add(registration2);
+        registrationRequest.getRegistrations().add(registration2);
 
         User user = new User(USER_ID, "user1", "", "1234", new Person(), "", "", "", "", userTimestamp);
         User student1 = new User(STUDENT_ID_1, "student1", "", "1234", new Person(), "", "", "", "", userTimestamp);
@@ -99,7 +103,7 @@ public class RegistrationServiceTest {
         when(registrationDao.registerForCourse(user, student1, session)).thenReturn(createdRegistration1);
         when(registrationDao.registerForCourse(user, student2, session)).thenReturn(createdRegistration2);
 
-        List<Registration> createdRegistrations = registrationService.register(USER_ID, registrations);
+        List<Registration> createdRegistrations = registrationService.register(USER_ID, registrationRequest);
 
         verify(userDao, times(4)).getUser(any(String.class));
         verify(sessionDao, times(2)).getSession(any(String.class));
@@ -107,7 +111,7 @@ public class RegistrationServiceTest {
 
         // the list returned from the service should not be the same instance as the one passed in,
         // it should be a list of the created registrations returned by the DAO
-        assertNotSame(createdRegistrations, registrations);
+        assertNotSame(createdRegistrations, registrationRequest.getRegistrations());
         assertSame(createdRegistration1, createdRegistrations.get(0));
         assertSame(createdRegistration2, createdRegistrations.get(1));
     }
@@ -116,7 +120,8 @@ public class RegistrationServiceTest {
     public void testRegisterUserNotFound() throws Exception {
         when(userDao.getUser(USER_ID)).thenReturn(null);
         try {
-            registrationService.register(USER_ID, registrations);
+
+            registrationService.register(USER_ID, registrationRequest);
             fail("Shouldn't reach here");
         }
         catch (Exception e) {
@@ -132,7 +137,7 @@ public class RegistrationServiceTest {
         when(userDao.getUser(STUDENT_ID_1)).thenReturn(null);
 
         try {
-            registrationService.register(USER_ID, registrations);
+            registrationService.register(USER_ID, registrationRequest);
             fail("Shouldn't reach here");
         }
         catch (Exception e) {
@@ -151,7 +156,7 @@ public class RegistrationServiceTest {
 
         when(sessionDao.getSession(SESSION_ID)).thenReturn(null);
         try {
-            registrationService.register(USER_ID, registrations);
+            registrationService.register(USER_ID, registrationRequest);
             fail("Shouldn't reach here");
         }
         catch (Exception e) {
