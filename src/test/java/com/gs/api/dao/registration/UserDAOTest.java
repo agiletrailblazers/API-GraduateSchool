@@ -497,7 +497,6 @@ public class UserDAOTest {
 
     }
 
-
     @Test
     public void testGetUserByUsernamePassword() throws Exception {
         Object[] expectedQueryParams = new Object[] { USER_ID, PASSWORD};

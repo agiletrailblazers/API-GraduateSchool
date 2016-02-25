@@ -32,7 +32,7 @@ public interface UserService {
     /**
      * Get a user by the user id
      * @param userId the user id.
-     * @throws Exception error deleting the user.
+     * @throws Exception error getting the user.
      */
     User getUser(final String userId) throws Exception;
 }

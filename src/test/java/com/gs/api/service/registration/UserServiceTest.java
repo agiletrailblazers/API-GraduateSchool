@@ -125,6 +125,11 @@ public class UserServiceTest {
     public void testGetUserById() throws Exception {
 
         when(userDao.getUser(USER_ID)).thenReturn(user);
+
+        User retrievedUser = userService.getUser(USER_ID);
+        verify(userDao).getUser(USER_ID);
+
+        assertSame("wrong user", user, retrievedUser);
     }
 
 }
