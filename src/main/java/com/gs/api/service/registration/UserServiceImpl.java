@@ -52,6 +52,14 @@ public class UserServiceImpl implements UserService {
         return userDao.getUser(authCredentials.getUsername(), generateHash(authCredentials.getPassword()));
     }
 
+    @Override
+    public User getUser(String id) throws Exception {
+
+        logger.debug("Get user: {}", id);
+
+        return userDao.getUser(id);
+    }
+
     /**
      * Password encryption/hashing logic taken from existing saba system to ensure compatibility
      * with Saba.
