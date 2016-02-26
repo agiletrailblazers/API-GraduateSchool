@@ -5,9 +5,11 @@ import com.gs.api.dao.CourseSessionDAO;
 import com.gs.api.dao.registration.RegistrationDAO;
 import com.gs.api.dao.registration.UserDAO;
 import com.gs.api.domain.course.CourseSession;
+import com.gs.api.domain.payment.PaymentConfirmation;
 import com.gs.api.domain.registration.Registration;
 
 import com.gs.api.domain.registration.RegistrationRequest;
+import com.gs.api.domain.registration.RegistrationResponse;
 import com.gs.api.domain.registration.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +34,7 @@ public class RegistrationServiceImpl implements RegistrationService {
     private CourseSessionDAO sessionDao;
 
     @Override
-    public List<Registration> register(String userId, RegistrationRequest registrationRequest) throws Exception {
+    public RegistrationResponse register(String userId, RegistrationRequest registrationRequest) throws Exception {
 
         List<Registration> completedRegistrations = new ArrayList<>();
 
@@ -62,6 +64,10 @@ public class RegistrationServiceImpl implements RegistrationService {
             completedRegistrations.add(registrationDao.registerForCourse(user, studentUser, session));
         }
 
-        return completedRegistrations;
+        List<PaymentConfirmation> confirmedPayments = new ArrayList<PaymentConfirmation>();
+
+        RegistrationResponse registrationResponse = new RegistrationResponse(completedRegistrations, confirmedPayments);
+
+        return registrationResponse;
     }
 }

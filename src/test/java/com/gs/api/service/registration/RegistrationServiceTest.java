@@ -7,6 +7,7 @@ import com.gs.api.domain.Person;
 import com.gs.api.domain.course.CourseSession;
 import com.gs.api.domain.registration.Registration;
 import com.gs.api.domain.registration.RegistrationRequest;
+import com.gs.api.domain.registration.RegistrationResponse;
 import com.gs.api.domain.registration.User;
 
 import org.junit.Before;
@@ -103,7 +104,7 @@ public class RegistrationServiceTest {
         when(registrationDao.registerForCourse(user, student1, session)).thenReturn(createdRegistration1);
         when(registrationDao.registerForCourse(user, student2, session)).thenReturn(createdRegistration2);
 
-        List<Registration> createdRegistrations = registrationService.register(USER_ID, registrationRequest);
+        RegistrationResponse createdRegistrationResponse = registrationService.register(USER_ID, registrationRequest);
 
         verify(userDao, times(4)).getUser(any(String.class));
         verify(sessionDao, times(2)).getSession(any(String.class));
@@ -111,9 +112,9 @@ public class RegistrationServiceTest {
 
         // the list returned from the service should not be the same instance as the one passed in,
         // it should be a list of the created registrations returned by the DAO
-        assertNotSame(createdRegistrations, registrationRequest.getRegistrations());
-        assertSame(createdRegistration1, createdRegistrations.get(0));
-        assertSame(createdRegistration2, createdRegistrations.get(1));
+        assertNotSame(createdRegistrationResponse.getRegistrations(), registrationRequest.getRegistrations());
+        assertSame(createdRegistration1, createdRegistrationResponse.getRegistrations().get(0));
+        assertSame(createdRegistration2, createdRegistrationResponse.getRegistrations().get(1));
     }
 
     @Test
