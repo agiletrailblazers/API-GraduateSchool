@@ -9,25 +9,25 @@ public class PaymentConfirmation {
     @JsonProperty("payment")
     private Payment payment;
 
-    @JsonProperty("transactionID")
-    private String transactionID;
+    @JsonProperty("saleId")
+    private String saleId;
 
     /**
      * Constructor for Payment object
      *
      * @param payment - the payment information
-     * @param transactionID - transaction ID for the payment
+     * @param saleId - transaction ID for the payment
      */
-    public PaymentConfirmation(@JsonProperty("payment") Payment payment, @JsonProperty("transactionID") String transactionID){
+    public PaymentConfirmation(@JsonProperty("payment") Payment payment, @JsonProperty("saleId") String saleId){
         this.payment = payment;
-        this.transactionID = transactionID;
+        this.saleId = saleId;
     }
 
     public Payment getPayment(){
         return payment;
     }
 
-    public String getTransactionID(){
-        return transactionID;
+    public String getSaleId(){
+        return saleId;
     }
 }

@@ -105,7 +105,7 @@ public class CyberSourcePaymentServiceTest {
         PaymentConfirmation confirmation = paymentService.processPayment(payment);
 
         assertSame("wrong payment", payment, confirmation.getPayment());
-        assertEquals("wrong sale transaction id", SALE_ID, confirmation.getTransactionID());
+        assertEquals("wrong sale transaction id", SALE_ID, confirmation.getSaleId());
 
         PowerMockito.verifyStatic();
         Client.runTransaction(requestCaptor.capture(), propertiesCaptor.capture());

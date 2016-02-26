@@ -5,12 +5,14 @@ import com.gs.api.dao.CourseSessionDAO;
 import com.gs.api.dao.registration.RegistrationDAO;
 import com.gs.api.dao.registration.UserDAO;
 import com.gs.api.domain.course.CourseSession;
+import com.gs.api.domain.payment.Payment;
 import com.gs.api.domain.payment.PaymentConfirmation;
 import com.gs.api.domain.registration.Registration;
-
 import com.gs.api.domain.registration.RegistrationRequest;
 import com.gs.api.domain.registration.RegistrationResponse;
 import com.gs.api.domain.registration.User;
+import com.gs.api.service.payment.PaymentService;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +34,9 @@ public class RegistrationServiceImpl implements RegistrationService {
 
     @Autowired
     private CourseSessionDAO sessionDao;
+
+    @Autowired
+    private PaymentService paymentService;
 
     @Override
     public RegistrationResponse register(String userId, RegistrationRequest registrationRequest) throws Exception {
@@ -64,7 +69,13 @@ public class RegistrationServiceImpl implements RegistrationService {
             completedRegistrations.add(registrationDao.registerForCourse(user, studentUser, session));
         }
 
-        List<PaymentConfirmation> confirmedPayments = new ArrayList<PaymentConfirmation>();
+        // make the payments
+        List<PaymentConfirmation> confirmedPayments = new ArrayList<>();
+        for (Payment payment : registrationRequest.getPayments()) {
+            confirmedPayments.add(paymentService.processPayment(payment));
+        }
+
+        // TODO: future story, update payment information in DB
 
         RegistrationResponse registrationResponse = new RegistrationResponse(completedRegistrations, confirmedPayments);
 

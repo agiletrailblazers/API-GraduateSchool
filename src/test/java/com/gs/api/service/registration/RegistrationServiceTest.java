@@ -5,10 +5,13 @@ import com.gs.api.dao.registration.RegistrationDAO;
 import com.gs.api.dao.registration.UserDAO;
 import com.gs.api.domain.Person;
 import com.gs.api.domain.course.CourseSession;
+import com.gs.api.domain.payment.Payment;
+import com.gs.api.domain.payment.PaymentConfirmation;
 import com.gs.api.domain.registration.Registration;
 import com.gs.api.domain.registration.RegistrationRequest;
 import com.gs.api.domain.registration.RegistrationResponse;
 import com.gs.api.domain.registration.User;
+import com.gs.api.service.payment.PaymentService;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -24,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
@@ -52,6 +56,9 @@ public class RegistrationServiceTest {
     private CourseSessionDAO sessionDao;
 
     @Mock
+    private PaymentService paymentService;
+
+    @Mock
     private UserDAO userDao;
 
     @InjectMocks
@@ -71,7 +78,9 @@ public class RegistrationServiceTest {
         registration1.setSessionId(SESSION_ID);
         registrations.add(registration1);
 
-        registrationRequest = new RegistrationRequest(registrations, null);
+        List<Payment> payments = new ArrayList<>();
+
+        registrationRequest = new RegistrationRequest(registrations, payments);
 
         userTimestamp = Long.toString(new Date().getTime());
     }
@@ -91,10 +100,15 @@ public class RegistrationServiceTest {
         CourseSession session = new CourseSession();
         session.setClassNumber(SESSION_ID);
 
+        Payment payment = new Payment(100.00, "authId12345", "merchId12345");
+        registrationRequest.getPayments().add(payment);
+        PaymentConfirmation paymentConfirmation = new PaymentConfirmation(payment, "saleId12345");
+
         when(userDao.getUser(USER_ID)).thenReturn(user);
         when(userDao.getUser(STUDENT_ID_1)).thenReturn(student1);
         when(userDao.getUser(STUDENT_ID_2)).thenReturn(student2);
         when(sessionDao.getSession(SESSION_ID)).thenReturn(session);
+        when(paymentService.processPayment(payment)).thenReturn(paymentConfirmation);
 
         Registration createdRegistration1 = new Registration();
         createdRegistration1.setId("12345");
@@ -108,6 +122,7 @@ public class RegistrationServiceTest {
 
         verify(userDao, times(4)).getUser(any(String.class));
         verify(sessionDao, times(2)).getSession(any(String.class));
+        verify(paymentService).processPayment(payment);
         verify(registrationDao, times(2)).registerForCourse(any(User.class), any(User.class), any(CourseSession.class));
 
         // the list returned from the service should not be the same instance as the one passed in,
@@ -115,6 +130,8 @@ public class RegistrationServiceTest {
         assertNotSame(createdRegistrationResponse.getRegistrations(), registrationRequest.getRegistrations());
         assertSame(createdRegistration1, createdRegistrationResponse.getRegistrations().get(0));
         assertSame(createdRegistration2, createdRegistrationResponse.getRegistrations().get(1));
+        assertEquals(1, createdRegistrationResponse.getPaymentConfirmations().size());
+        assertSame(paymentConfirmation, createdRegistrationResponse.getPaymentConfirmations().get(0));
     }
 
     @Test

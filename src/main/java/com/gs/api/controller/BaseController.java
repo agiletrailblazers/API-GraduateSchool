@@ -2,6 +2,7 @@ package com.gs.api.controller;
 
 import com.gs.api.exception.AuthenticationException;
 import com.gs.api.exception.NotFoundException;
+import com.gs.api.exception.PaymentException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +23,12 @@ import java.io.IOException;
 public abstract class BaseController {
     
     static final Logger logger = LoggerFactory.getLogger(BaseController.class);
+
+    @InitBinder
+    public void initBinder(WebDataBinder binder) {
+        binder.registerCustomEditor(
+                String[].class, new StringArrayPropertyEditor(null));
+    }
 
     /**
      * Return json formatted error response for authentication errors
@@ -84,10 +91,16 @@ public abstract class BaseController {
         return "{\"message\": \"Invalid Request \"}";
     }
 
-    @InitBinder
-    public void initBinder(WebDataBinder binder) {
-        binder.registerCustomEditor(
-            String[].class, new StringArrayPropertyEditor(null));
+    /**
+     * Return json formatted error response for fatal payment failure
+     * This exception is thrown when CyberSource marks a failure as critical.
+     * @return ResponseBody
+     */
+    @ResponseStatus(HttpStatus.PAYMENT_REQUIRED)
+    @ExceptionHandler({ PaymentException.class })
+    @ResponseBody
+    public String handlePaymentException(PaymentException ex) {
+        return "{\"message\": \"" + ex.getMessage() + "\"}";
     }
 
 }

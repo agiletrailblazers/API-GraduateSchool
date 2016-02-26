@@ -6,6 +6,8 @@ import com.gs.api.domain.payment.PaymentConfirmation;
 import com.gs.api.domain.registration.Registration;
 import com.gs.api.domain.registration.RegistrationRequest;
 import com.gs.api.domain.registration.RegistrationResponse;
+import com.gs.api.exception.FatalPaymentException;
+import com.gs.api.exception.PaymentException;
 import com.gs.api.service.authentication.AuthenticationService;
 import com.gs.api.service.registration.RegistrationService;
 
@@ -48,7 +50,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
 @ContextConfiguration(locations = { "classpath:spring/test-root-context.xml" })
-public class RegistrationControllerTest {final Logger logger = LoggerFactory.getLogger(RegistrationControllerTest.class);
+public class RegistrationControllerTest {
+    private static final String SALE_ID = "saleId12345";
+    final Logger logger = LoggerFactory.getLogger(RegistrationControllerTest.class);
 
     private static final String USER_ID = "person654321";
     private static final String SESSION_ID = "session654321";
@@ -98,16 +102,14 @@ public class RegistrationControllerTest {final Logger logger = LoggerFactory.get
         createdRegistration.setId(REGISTRATION_ID);
         List<Registration> createdRegistrations = Collections.singletonList(createdRegistration);
 
-        List<PaymentConfirmation> paymentConfirmations = new ArrayList<PaymentConfirmation>();
-        for (Payment p : payments){
-            paymentConfirmations.add(new PaymentConfirmation(p,null));
+        List<PaymentConfirmation> paymentConfirmations = new ArrayList<>();
+        for (Payment p : payments) {
+            paymentConfirmations.add(new PaymentConfirmation(p, SALE_ID));
         }
 
         RegistrationResponse createdRegistrationResponse = new RegistrationResponse(createdRegistrations, paymentConfirmations);
 
         String jsonModel = new ObjectMapper().writeValueAsString(registrationRequest);
-
-        logger.info(new ObjectMapper().writeValueAsString(createdRegistrationResponse));
 
         when(registrationService.register(eq(USER_ID), isA(RegistrationRequest.class))).thenReturn(createdRegistrationResponse);
 
@@ -118,6 +120,7 @@ public class RegistrationControllerTest {final Logger logger = LoggerFactory.get
                 .andExpect(jsonPath("$.registrations", hasSize(1)))
                 .andExpect(jsonPath("$.registrations[0].id", is(REGISTRATION_ID)))
                 .andExpect(jsonPath("$.paymentConfirmations", hasSize(1)))
+                .andExpect(jsonPath("$.paymentConfirmations[0].saleId", is(SALE_ID)))
                 .andExpect(jsonPath("$.paymentConfirmations[0].payment.authorizationId", is(AUTHORIZATION_ID)));
 
         verify(authenticationService).verifyUser(isA(HttpServletRequest.class), eq(USER_ID));
@@ -125,5 +128,38 @@ public class RegistrationControllerTest {final Logger logger = LoggerFactory.get
         assertEquals("Wrong user id", USER_ID, capturedRegistrations.getValue().getRegistrations().get(0).getStudentId());
         assertEquals("Wrong session id", SESSION_ID, capturedRegistrations.getValue().getRegistrations().get(0).getSessionId());
      }
+
+    @Test
+    public void testCreateRegistration_PaymentException() throws Exception {
+
+        Registration registration = new Registration();
+        registration.setStudentId(USER_ID);
+        registration.setSessionId(SESSION_ID);
+        List<Registration> registrations = Collections.singletonList(registration);
+
+        Payment payment = new Payment(PAYMENT_AMOUNT, AUTHORIZATION_ID, MERCHANT_ID);
+        List<Payment> payments = Collections.singletonList(payment);
+        RegistrationRequest registrationRequest = new RegistrationRequest(registrations, payments);
+
+        Registration createdRegistration = new Registration();
+        createdRegistration.setId(REGISTRATION_ID);
+        List<Registration> createdRegistrations = Collections.singletonList(createdRegistration);
+
+        List<PaymentConfirmation> paymentConfirmations = new ArrayList<PaymentConfirmation>();
+        for (Payment p : payments){
+            paymentConfirmations.add(new PaymentConfirmation(p,null));
+        }
+
+        String jsonModel = new ObjectMapper().writeValueAsString(registrationRequest);
+
+        PaymentException pe = new PaymentException("I made payment fail");
+        when(registrationService.register(eq(USER_ID), isA(RegistrationRequest.class))).thenThrow(pe);
+
+        mockMvc.perform(post("/registration/user/" + USER_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonModel))
+                .andExpect(status().isPaymentRequired())
+                .andExpect(jsonPath("$.message").value(is(pe.getMessage())));
+    }
 
 }
