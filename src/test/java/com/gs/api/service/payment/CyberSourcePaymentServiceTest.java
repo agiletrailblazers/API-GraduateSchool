@@ -3,9 +3,7 @@ package com.gs.api.service.payment;
 import com.cybersource.ws.client.Client;
 import com.gs.api.domain.payment.Payment;
 import com.gs.api.domain.payment.PaymentConfirmation;
-import com.gs.api.exception.PaymentException;
 
-import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -88,9 +86,7 @@ public class CyberSourcePaymentServiceTest {
         // setup expected exception
         IllegalArgumentException cause = new IllegalArgumentException("I caused test to fail");
 
-        thrown.expect(PaymentException.class);
-        thrown.expectMessage(CyberSourcePaymentServiceImpl.FAILED_TO_COMPLETE_SALE_MSG);
-        thrown.expectCause(Matchers.is(cause));
+        thrown.expect(IllegalArgumentException.class);
 
         Payment payment = new Payment(AMOUNT, AUTHORIZATION_ID, MERCHANT_REFERENCE_ID);
 

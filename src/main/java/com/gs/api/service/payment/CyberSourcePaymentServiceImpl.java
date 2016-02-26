@@ -1,10 +1,14 @@
 package com.gs.api.service.payment;
 
 import com.cybersource.ws.client.Client;
+import com.cybersource.ws.client.ClientException;
+import com.cybersource.ws.client.FaultException;
 import com.gs.api.domain.payment.Payment;
 import com.gs.api.domain.payment.PaymentConfirmation;
 import com.gs.api.exception.PaymentException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.text.DecimalFormat;
@@ -20,49 +24,101 @@ public class CyberSourcePaymentServiceImpl implements PaymentService {
 
     static final String REQUEST_ID = "requestID";
     static final String FAILED_TO_COMPLETE_SALE_MSG = "Failed to complete sale with CyberSource";
+    static final String MERCHANT_ID = "merchantID";
+    static final String CC_CAPTURE_SERVICE_RUN = "ccCaptureService_run";
+    static final String MERCHANT_REFERENCE_CODE = "merchantReferenceCode";
+    static final String CC_CAPTURE_SERVICE_AUTH_REQUEST_ID = "ccCaptureService_authRequestID";
+    static final String PURCHASE_TOTALS_CURRENCY = "purchaseTotals_currency";
+    static final String PURCHASE_TOTALS_GRAND_TOTAL_AMOUNT = "purchaseTotals_grandTotalAmount";
+    static final String USD = "USD";
+
+    final Logger logger = LoggerFactory.getLogger(CyberSourcePaymentServiceImpl.class);
 
     // TODO inject cybersource properties from config
 
     @Override
     public PaymentConfirmation processPayment(final Payment payment) throws PaymentException {
 
-        // TODO add the parameters for the request
-        Map<String, String> request = new HashMap<>();
+        // create the request parameters for the CyberSource request
+        Map<String, String> request = createRequestParameters(payment);
 
-        request.put( "ccCaptureService_run", "true" );
+        // create the configuration properties for the CyberSource client
+        Properties props = createClientProperties();
 
-        // TODO We will let the Client get the merchantID from props and insert it
-        // into the request Map.
-
-        // so that you can efficiently track the order in the CyberSource
-        // reports and transaction search screens, you should use the same
-        // merchantReferenceCode for the auth and subsequent captures and
-        // credits.
-        request.put( "merchantReferenceCode", payment.getMerchantReferenceId() );
-
-        // reference the transaction_id returned by the previous authorization.
-        request.put( "ccCaptureService_authRequestID", payment.getAuthorizationId());
-
-        // set the sale amount
-        request.put( "purchaseTotals_currency", "USD" );
-
-        // this sample assumes only the first item has been shipped.
-        request.put( "purchaseTotals_grandTotalAmount", new DecimalFormat("#.00").format(payment.getAmount()));
-
-        Properties props = new Properties();
-
-        // TODO add the properties from the config
-
-        // call CyberSource to complete the sale
         try {
+            // use the CyberSource client to execute the capture (sale) transaction
             Map<String, String> response = Client.runTransaction(request, props);
 
             // TODO check the response for actual success vs failure, etc.
 
             return new PaymentConfirmation(payment, response.get(REQUEST_ID));
         }
-        catch (Exception e) {
+        catch (ClientException e) {
+
+            if (e.isCritical()) {
+
+                handleCriticalException(e, request);
+
+                // TODO throw a FatalPaymentException?
+            }
+
+            throw new PaymentException(FAILED_TO_COMPLETE_SALE_MSG, e);
+        }
+        catch (FaultException e) {
+
+            if (e.isCritical()) {
+
+                handleCriticalException(e, request);
+
+                // TODO throw a FatalPaymentException?
+            }
+
             throw new PaymentException(FAILED_TO_COMPLETE_SALE_MSG, e);
         }
     }
+
+    private Properties createClientProperties() {
+
+        Properties props = new Properties();
+
+        props.getProperty(MERCHANT_ID, "evalgraduateschool");
+
+        // TODO add the properties from the config
+
+        return props;
+    }
+
+    private Map<String, String> createRequestParameters(Payment payment) {
+
+        Map<String, String> requestParameters = new HashMap<>();
+
+        // execute the capture (sale)
+        requestParameters.put(CC_CAPTURE_SERVICE_RUN, Boolean.TRUE.toString());
+
+        // so that you can efficiently track the order in the CyberSource
+        // reports and transaction search screens, you should use the same
+        // merchantReferenceCode for the auth and subsequent captures and
+        // credits.
+        requestParameters.put(MERCHANT_REFERENCE_CODE, payment.getMerchantReferenceId());
+
+        // reference the authorization ID returned by the hosted CyberSource payment page
+        requestParameters.put(CC_CAPTURE_SERVICE_AUTH_REQUEST_ID, payment.getAuthorizationId());
+
+        // currency is US dollar
+        requestParameters.put(PURCHASE_TOTALS_CURRENCY, USD);
+
+        // set the sale amount
+        requestParameters.put(PURCHASE_TOTALS_GRAND_TOTAL_AMOUNT, new DecimalFormat("#.00").format(payment.getAmount()));
+
+        return requestParameters;
+    }
+
+    private void handleCriticalException(Exception e, Map<String, String> request) {
+
+        logger.error("CyberSource transaction failure", e);
+
+        // TODO future story - send an email to Graduate School operations including the error and the request details?
+    }
+
+
 }
