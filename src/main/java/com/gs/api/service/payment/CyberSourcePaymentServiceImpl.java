@@ -45,6 +45,9 @@ public class CyberSourcePaymentServiceImpl implements PaymentService {
     static final String RESPONSE_REASON_CODE = "reasonCode";
     static final String RESPONSE_DECISION = "decision";
     static final String ACCEPT = "ACCEPT";
+    static final String ENABLE_LOG_PROP = "enableLogProp";
+    static final String LOG_MAXIMUM_SIZE_PROP = "logMaximumSizeProp";
+    static final String LOG_DIRECTORY_PROP = "logDirectoryProp";
 
     final Logger logger = LoggerFactory.getLogger(CyberSourcePaymentServiceImpl.class);
 
@@ -72,8 +75,19 @@ public class CyberSourcePaymentServiceImpl implements PaymentService {
     @Value("${cybersource.timeout}")
     private int timeout;
 
+    @Value("${cybersource.enableLog}")
+    private boolean enableLog;
+
+    @Value("${cybersource.logDirectory}")
+    private String logDirectory;
+
+    @Value("${cybersource.logMaximumSize}")
+    private int logMaximumSize;
+
     @Override
     public PaymentConfirmation processPayment(final Payment payment) throws PaymentException {
+
+        logger.debug("Processing payment, authorization id {}, amount {}", payment.getAuthorizationId(), payment.getAmount());
 
         // create the request parameters for the CyberSource request
         Map<String, String> request = createRequestParameters(payment);
@@ -94,6 +108,7 @@ public class CyberSourcePaymentServiceImpl implements PaymentService {
                 throw new PaymentException(errorMsg);
             }
 
+            logger.debug("Successful payment, reference number {}, amount {}", payment.getMerchantReferenceId(), payment.getAmount());
             return new PaymentConfirmation(payment, (String) response.get(REQUEST_ID));
         }
         catch (ClientException e) {
@@ -151,6 +166,15 @@ public class CyberSourcePaymentServiceImpl implements PaymentService {
 
         // Http request timeout, only used if using the Apache Commons HttpClient
         clientProperties.setProperty(TIMEOUT_PROP, Integer.toString(timeout));
+
+        // Flag indicating whether or not CyberSource logging is turned on, they recommend keeping it off except for debugging
+        clientProperties.setProperty(ENABLE_LOG_PROP, Boolean.toString(enableLog));
+
+        // Directory into which the CyberSource log file will be created
+        clientProperties.setProperty(LOG_DIRECTORY_PROP, logDirectory);
+
+        // Maximum file size of the CyberSource log file
+        clientProperties.setProperty(LOG_MAXIMUM_SIZE_PROP, Integer.toString(logMaximumSize));
 
         return clientProperties;
     }

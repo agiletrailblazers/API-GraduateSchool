@@ -53,6 +53,8 @@ public class CyberSourcePaymentServiceTest {
     private static final int TIMEOUT = 5000;
     private static final String REJECT = "Reject";
     private static final String TEST_REJECT_REASON_CODE = "testRejectReasonCode";
+    private static final String LOG_DIR = "logDir";
+    private static final int MAX_LOG_SIZE = 10;
 
     private CyberSourcePaymentServiceImpl paymentService;
 
@@ -89,6 +91,9 @@ public class CyberSourcePaymentServiceTest {
         ReflectionTestUtils.setField(paymentService, "serverURL", SERVER_URL);
         ReflectionTestUtils.setField(paymentService, "useHttpClient", TRUE);
         ReflectionTestUtils.setField(paymentService, "timeout", TIMEOUT);
+        ReflectionTestUtils.setField(paymentService, "enableLog", FALSE);
+        ReflectionTestUtils.setField(paymentService, "logDirectory", LOG_DIR);
+        ReflectionTestUtils.setField(paymentService, "logMaximumSize", MAX_LOG_SIZE);
     }
 
     @Test
@@ -119,7 +124,7 @@ public class CyberSourcePaymentServiceTest {
         assertEquals(new DecimalFormat("#.00").format(AMOUNT), capturedRequest.get(CyberSourcePaymentServiceImpl.REQUEST_PURCHASE_TOTALS_GRAND_TOTAL_AMOUNT));
 
         Properties capturedProps = propertiesCaptor.getValue();
-        assertEquals(10, capturedProps.size());
+        assertEquals(13, capturedProps.size());
         assertEquals(MERCHANT_ID, capturedProps.get(CyberSourcePaymentServiceImpl.MERCHANT_ID_PROP));
         assertEquals(KEY_DIR, capturedProps.get(CyberSourcePaymentServiceImpl.KEYS_DIRECTORY_PROP));
         assertEquals(TESTCERT, capturedProps.get(CyberSourcePaymentServiceImpl.KEY_FILENAME_PROP));
@@ -130,7 +135,10 @@ public class CyberSourcePaymentServiceTest {
         assertEquals(SERVER_URL, capturedProps.get(CyberSourcePaymentServiceImpl.SERVER_URL_PROP));
         assertTrue(Boolean.parseBoolean((String) capturedProps.get(CyberSourcePaymentServiceImpl.USE_HTTP_CLIENT_PROP)));
         assertEquals(Integer.toString(TIMEOUT), capturedProps.get(CyberSourcePaymentServiceImpl.TIMEOUT_PROP));
-     }
+        assertFalse(Boolean.parseBoolean((String) capturedProps.get(CyberSourcePaymentServiceImpl.ENABLE_LOG_PROP)));
+        assertEquals(LOG_DIR, capturedProps.get(CyberSourcePaymentServiceImpl.LOG_DIRECTORY_PROP));
+        assertEquals(Integer.toString(MAX_LOG_SIZE), capturedProps.get(CyberSourcePaymentServiceImpl.LOG_MAXIMUM_SIZE_PROP));
+    }
 
     @Test
     public void testProcessPayment_Decline() throws Exception {

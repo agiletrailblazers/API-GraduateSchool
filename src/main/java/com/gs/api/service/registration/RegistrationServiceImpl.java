@@ -44,7 +44,7 @@ public class RegistrationServiceImpl implements RegistrationService {
         List<Registration> completedRegistrations = new ArrayList<>();
 
         for (Registration registration : registrationRequest.getRegistrations()) {
-            logger.info("User {} is registering student {} for class no {}", new String[] {userId,
+            logger.debug("User {} is registering student {} for class no {}", new String[]{userId,
                     registration.getStudentId(), registration.getSessionId()});
 
             //Get actual user, student, session, and courseSession from specified IDs
@@ -67,15 +67,22 @@ public class RegistrationServiceImpl implements RegistrationService {
             }
 
             completedRegistrations.add(registrationDao.registerForCourse(user, studentUser, session));
+            logger.info("Successful registration: User {} registered student {} for class number {}, order number {}",
+                    new String[]{userId, registration.getStudentId(), registration.getSessionId(), registration.getOrderNumber()});
         }
 
         // make the payments
         List<PaymentConfirmation> confirmedPayments = new ArrayList<>();
         for (Payment payment : registrationRequest.getPayments()) {
+
+            logger.debug("Processing payment for user {}", userId);
+
             confirmedPayments.add(paymentService.processPayment(payment));
+
+            logger.info("Successful payment: User {}, payment reference number {}", userId, payment.getMerchantReferenceId());
         }
 
-        // TODO: future story, update payment information in DB
+        // TODO: future story, update payment information in DB with the payment reference number
 
         RegistrationResponse registrationResponse = new RegistrationResponse(completedRegistrations, confirmedPayments);
 
