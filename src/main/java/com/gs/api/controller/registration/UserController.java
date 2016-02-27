@@ -24,7 +24,7 @@ public class UserController extends BaseController {
 
     @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(value = "", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public User create(@RequestBody User user) throws Exception  {
+    public User createUser(@RequestBody User user) throws Exception  {
 
         logger.debug("User Create API initiated");
 

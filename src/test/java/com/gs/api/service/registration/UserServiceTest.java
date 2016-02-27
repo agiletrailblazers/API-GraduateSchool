@@ -5,9 +5,12 @@ import com.gs.api.domain.Address;
 import com.gs.api.domain.Person;
 import com.gs.api.domain.authentication.AuthCredentials;
 import com.gs.api.domain.registration.User;
+import com.gs.api.exception.NotFoundException;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -52,6 +55,13 @@ public class UserServiceTest {
     @InjectMocks
     @Autowired
     private UserServiceImpl userService;
+
+    /*
+    By default, no exceptions are expected to be thrown (i.e. tests will fail if an exception is thrown),
+    but using this rule allows for verification of operations that are expected to throw specific exceptions
+    */
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     @Before
     public void setUp() throws Exception {
@@ -130,6 +140,18 @@ public class UserServiceTest {
         verify(userDao).getUser(USER_ID);
 
         assertSame("wrong user", user, retrievedUser);
+    }
+
+    @Test
+    public void testGetUserById_NotFound() throws Exception {
+
+        when(userDao.getUser(USER_ID)).thenReturn(null);
+
+        // setup expected exception
+        thrown.expect(NotFoundException.class);
+        thrown.expectMessage("User not found by id " + USER_ID);
+
+        userService.getUser(USER_ID);
     }
 
 }
