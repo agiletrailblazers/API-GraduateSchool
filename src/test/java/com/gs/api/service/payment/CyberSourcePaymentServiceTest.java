@@ -43,7 +43,6 @@ public class CyberSourcePaymentServiceTest {
     private static final String MERCHANT_REFERENCE_ID = "merch12345";
     static final String SALE_ID = "sale12345";
     private static final String MERCHANT_ID = "merch12345";
-    private static final String KEY_DIR = "/some/test/dir";
     private static final String TESTCERT = "testcert.p12";
     private static final String API_VERSION = "1.1.1";
     private static final boolean SEND_TO_PROD = false;
@@ -53,7 +52,7 @@ public class CyberSourcePaymentServiceTest {
     private static final int TIMEOUT = 5000;
     private static final String REJECT = "Reject";
     private static final String TEST_REJECT_REASON_CODE = "testRejectReasonCode";
-    private static final String LOG_DIR = "logDir";
+    private static final String CYBERSOURCE_DIR = "/some/test/dir";
     private static final int MAX_LOG_SIZE = 10;
 
     private CyberSourcePaymentServiceImpl paymentService;
@@ -84,7 +83,7 @@ public class CyberSourcePaymentServiceTest {
         mockStatic(Client.class);
 
         ReflectionTestUtils.setField(paymentService, "merchantId", MERCHANT_ID);
-        ReflectionTestUtils.setField(paymentService, "keysDirectory", KEY_DIR);
+        ReflectionTestUtils.setField(paymentService, "cybersourceDir", CYBERSOURCE_DIR);
         ReflectionTestUtils.setField(paymentService, "keyFilename", TESTCERT);
         ReflectionTestUtils.setField(paymentService, "targetAPIVersion", API_VERSION);
         ReflectionTestUtils.setField(paymentService, "sendToProduction", FALSE);
@@ -92,7 +91,6 @@ public class CyberSourcePaymentServiceTest {
         ReflectionTestUtils.setField(paymentService, "useHttpClient", TRUE);
         ReflectionTestUtils.setField(paymentService, "timeout", TIMEOUT);
         ReflectionTestUtils.setField(paymentService, "enableLog", FALSE);
-        ReflectionTestUtils.setField(paymentService, "logDirectory", LOG_DIR);
         ReflectionTestUtils.setField(paymentService, "logMaximumSize", MAX_LOG_SIZE);
     }
 
@@ -126,7 +124,7 @@ public class CyberSourcePaymentServiceTest {
         Properties capturedProps = propertiesCaptor.getValue();
         assertEquals(13, capturedProps.size());
         assertEquals(MERCHANT_ID, capturedProps.get(CyberSourcePaymentServiceImpl.MERCHANT_ID_PROP));
-        assertEquals(KEY_DIR, capturedProps.get(CyberSourcePaymentServiceImpl.KEYS_DIRECTORY_PROP));
+        assertEquals(CYBERSOURCE_DIR, capturedProps.get(CyberSourcePaymentServiceImpl.KEYS_DIRECTORY_PROP));
         assertEquals(TESTCERT, capturedProps.get(CyberSourcePaymentServiceImpl.KEY_FILENAME_PROP));
         assertEquals(MERCHANT_ID, capturedProps.get(CyberSourcePaymentServiceImpl.KEY_ALIAS_PROP));
         assertEquals(MERCHANT_ID, capturedProps.get(CyberSourcePaymentServiceImpl.KEY_PASSWORD_PROP));
@@ -136,7 +134,7 @@ public class CyberSourcePaymentServiceTest {
         assertTrue(Boolean.parseBoolean((String) capturedProps.get(CyberSourcePaymentServiceImpl.USE_HTTP_CLIENT_PROP)));
         assertEquals(Integer.toString(TIMEOUT), capturedProps.get(CyberSourcePaymentServiceImpl.TIMEOUT_PROP));
         assertFalse(Boolean.parseBoolean((String) capturedProps.get(CyberSourcePaymentServiceImpl.ENABLE_LOG_PROP)));
-        assertEquals(LOG_DIR, capturedProps.get(CyberSourcePaymentServiceImpl.LOG_DIRECTORY_PROP));
+        assertEquals(CYBERSOURCE_DIR, capturedProps.get(CyberSourcePaymentServiceImpl.LOG_DIRECTORY_PROP));
         assertEquals(Integer.toString(MAX_LOG_SIZE), capturedProps.get(CyberSourcePaymentServiceImpl.LOG_MAXIMUM_SIZE_PROP));
     }
 

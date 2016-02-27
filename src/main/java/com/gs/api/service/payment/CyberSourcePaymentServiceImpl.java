@@ -54,9 +54,6 @@ public class CyberSourcePaymentServiceImpl implements PaymentService {
     @Value("${cybersource.merchantID}")
     private String merchantId;
 
-    @Value("${cybersource.keysDirectory}")
-    private String keysDirectory;
-
     @Value("${cybersource.keyFilename}")
     private String keyFilename;
 
@@ -78,11 +75,11 @@ public class CyberSourcePaymentServiceImpl implements PaymentService {
     @Value("${cybersource.enableLog}")
     private boolean enableLog;
 
-    @Value("${cybersource.logDirectory}")
-    private String logDirectory;
-
     @Value("${cybersource.logMaximumSize}")
     private int logMaximumSize;
+
+    @Value("#{systemProperties.cybersourceDir}")
+    private String cybersourceDir;
 
     @Override
     public PaymentConfirmation processPayment(final Payment payment) throws PaymentException {
@@ -141,7 +138,7 @@ public class CyberSourcePaymentServiceImpl implements PaymentService {
         clientProperties.setProperty(MERCHANT_ID_PROP, merchantId);
 
         // Directory containing the CyberSource security certificate
-        clientProperties.setProperty(KEYS_DIRECTORY_PROP, keysDirectory);
+        clientProperties.setProperty(KEYS_DIRECTORY_PROP, cybersourceDir);
 
         // File name of the CyberSource security certificate
         clientProperties.setProperty(KEY_FILENAME_PROP, keyFilename);
@@ -171,7 +168,7 @@ public class CyberSourcePaymentServiceImpl implements PaymentService {
         clientProperties.setProperty(ENABLE_LOG_PROP, Boolean.toString(enableLog));
 
         // Directory into which the CyberSource log file will be created
-        clientProperties.setProperty(LOG_DIRECTORY_PROP, logDirectory);
+        clientProperties.setProperty(LOG_DIRECTORY_PROP, cybersourceDir);
 
         // Maximum file size of the CyberSource log file
         clientProperties.setProperty(LOG_MAXIMUM_SIZE_PROP, Integer.toString(logMaximumSize));
