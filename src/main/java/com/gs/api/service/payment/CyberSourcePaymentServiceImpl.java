@@ -78,7 +78,7 @@ public class CyberSourcePaymentServiceImpl implements PaymentService {
     @Value("${cybersource.logMaximumSize}")
     private int logMaximumSize;
 
-    @Value("#{systemProperties.cybersourceDir}")
+    @Value("#{systemProperties['cybersourceDir'] ?: ''}")
     private String cybersourceDir;
 
     @Override
