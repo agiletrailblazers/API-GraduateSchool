@@ -5,9 +5,14 @@ import com.gs.api.dao.CourseSessionDAO;
 import com.gs.api.dao.registration.RegistrationDAO;
 import com.gs.api.dao.registration.UserDAO;
 import com.gs.api.domain.course.CourseSession;
+import com.gs.api.domain.payment.Payment;
+import com.gs.api.domain.payment.PaymentConfirmation;
 import com.gs.api.domain.registration.Registration;
-
+import com.gs.api.domain.registration.RegistrationRequest;
+import com.gs.api.domain.registration.RegistrationResponse;
 import com.gs.api.domain.registration.User;
+import com.gs.api.service.payment.PaymentService;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,13 +35,16 @@ public class RegistrationServiceImpl implements RegistrationService {
     @Autowired
     private CourseSessionDAO sessionDao;
 
+    @Autowired
+    private PaymentService paymentService;
+
     @Override
-    public List<Registration> register(String userId, List<Registration> registrations) throws Exception {
+    public RegistrationResponse register(String userId, RegistrationRequest registrationRequest) throws Exception {
 
         List<Registration> completedRegistrations = new ArrayList<>();
 
-        for (Registration registration : registrations) {
-            logger.info("User {} is registering student {} for class no {}", new String[] {userId,
+        for (Registration registration : registrationRequest.getRegistrations()) {
+            logger.debug("User {} is registering student {} for class no {}", new String[]{userId,
                     registration.getStudentId(), registration.getSessionId()});
 
             //Get actual user, student, session, and courseSession from specified IDs
@@ -59,8 +67,25 @@ public class RegistrationServiceImpl implements RegistrationService {
             }
 
             completedRegistrations.add(registrationDao.registerForCourse(user, studentUser, session));
+            logger.info("Successful registration: User {} registered student {} for class number {}, order number {}",
+                    new String[]{userId, registration.getStudentId(), registration.getSessionId(), registration.getOrderNumber()});
         }
 
-        return completedRegistrations;
+        // make the payments
+        List<PaymentConfirmation> confirmedPayments = new ArrayList<>();
+        for (Payment payment : registrationRequest.getPayments()) {
+
+            logger.debug("Processing payment for user {}", userId);
+
+            confirmedPayments.add(paymentService.processPayment(payment));
+
+            logger.info("Successful payment: User {}, payment reference number {}", userId, payment.getMerchantReferenceId());
+        }
+
+        // TODO: future story, update payment information in DB with the payment reference number
+
+        RegistrationResponse registrationResponse = new RegistrationResponse(completedRegistrations, confirmedPayments);
+
+        return registrationResponse;
     }
 }

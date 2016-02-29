@@ -15,18 +15,22 @@ command below to install it
 
 <h2>Maven command to build</h2>
 ```
-> mvn eclipse:clean clean -U install eclipse:eclipse -Dwtpversion=2.0
+> mvn clean -U install
 ```
 
 <h2>Running API on Apache Tomcat</h2>
+- Required configuration for CyberSource, the 3rd party payment system used by the new registration functionality.
+  - Create a directory (it can be anywhere), or use an existing if you would prefer, and download the CyberSource test certificate (evalgraduateschool.p12) from http://confluence.agiletrailblazers.com/display/GS/Cybersource+Simple+Order+API+Security+Certificates.
+  - Add the following Tomcat VM argument to specify the location of the CyberSource directory<br/>
+  ```-DcybersourceDir=_fullPathToCyberSourceDir_```
+  - Update the version of Java that is being used by Tomcat with the security jars that support the type of key used by CyberSource.  Replace [JAVA_HOME]/jre/lib/security/local_policy.jar and [JAVA_HOME]/jre/lib/security/US_export_policy.jar with the versions that can be downloaded from http://confluence.agiletrailblazers.com/display/GS/Cybersource+Simple+Order+API+Security+Certificates
 - Add the following Tomcat argument to pick the right properties file<br/>
 -- For Dev:  ```-DpropertiesLoc=/properties/dev```<br/>
 -- For Prod: ```-DpropertiesLoc=/properties/prod```<br/>
-<img src="readme/Tomcat-Setup.png" />
 - To run in a standalone Tomcat (Linux) add a file "setenv.sh" to the /conf folder with:</br>
 ```
 JRE_HOME=/Library/Java/JavaVirtualMachines/jdk1.8.0_20.jdk/Contents/Home/jre
-CATALINA_OPTS="-DpropertiesLoc=properties/dev"
+CATALINA_OPTS="-DpropertiesLoc=properties/dev -DcybersourceDir=fullPathToCyberSourceDir"
 ```
 NOTE: JRE_HOME is optional but if you are running multiple Java version this is a way to handle it.
 

@@ -2,6 +2,8 @@ package com.gs.api.controller.registration;
 
 import com.gs.api.controller.BaseController;
 import com.gs.api.domain.registration.Registration;
+import com.gs.api.domain.registration.RegistrationRequest;
+import com.gs.api.domain.registration.RegistrationResponse;
 import com.gs.api.service.authentication.AuthenticationService;
 import com.gs.api.service.registration.RegistrationService;
 
@@ -37,14 +39,14 @@ public class RegistrationController extends BaseController {
 
     @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(value = "/user/{id}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<Registration> createRegistration(@PathVariable("id") String id, @RequestBody List<Registration> registrations, HttpServletRequest request) throws Exception  {
+    public RegistrationResponse createRegistration(@PathVariable("id") String id, @RequestBody RegistrationRequest registrationRequest, HttpServletRequest request) throws Exception  {
 
-        logger.debug("{} is creating {} registration(s)", id, registrations.size());
+        logger.debug("{} is creating {} registration(s)", id, registrationRequest.getRegistrations().size());
 
         // verify that the user making the request is the authenticated user
         authenticationService.verifyUser(request, id);
 
-        return registrationService.register(id, registrations);
+        return registrationService.register(id, registrationRequest);
     }
 
 }

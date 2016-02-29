@@ -3,6 +3,7 @@ package com.gs.api.service.registration;
 import com.gs.api.dao.registration.UserDAO;
 import com.gs.api.domain.authentication.AuthCredentials;
 import com.gs.api.domain.registration.User;
+import com.gs.api.exception.NotFoundException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,7 +58,14 @@ public class UserServiceImpl implements UserService {
 
         logger.debug("Get user: {}", id);
 
-        return userDao.getUser(id);
+        User user = userDao.getUser(id);
+
+        if (user == null) {
+            // user not found
+            throw new NotFoundException("User not found by id " + id);
+        }
+
+        return user;
     }
 
     /**
