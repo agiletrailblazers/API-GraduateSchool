@@ -130,6 +130,11 @@ public class CyberSourcePaymentServiceImpl implements PaymentService {
         }
     }
 
+    @Override
+    public void reversePayment(final Payment payment) throws PaymentException{
+
+    }
+
     private Properties createClientProperties() {
 
         Properties clientProperties = new Properties();

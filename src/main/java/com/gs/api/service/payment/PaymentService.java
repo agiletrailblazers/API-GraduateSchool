@@ -14,4 +14,6 @@ public interface PaymentService {
      */
     PaymentConfirmation processPayment(final Payment payment) throws PaymentException;
 
+    void reversePayment(final Payment payment) throws PaymentException;
+
 }
