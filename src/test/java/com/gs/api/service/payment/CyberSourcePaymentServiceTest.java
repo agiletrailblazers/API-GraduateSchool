@@ -233,4 +233,139 @@ public class CyberSourcePaymentServiceTest {
         paymentService.processPayment(payment);
     }
 
+    @Test
+    public void testReversePayment_Success() throws Exception {
+
+        final HashMap<String, String> response = new HashMap<>();
+        response.put(CyberSourcePaymentServiceImpl.REQUEST_ID, SALE_ID);
+        response.put(CyberSourcePaymentServiceImpl.RESPONSE_DECISION, CyberSourcePaymentServiceImpl.ACCEPT);
+
+        when(Client.runTransaction(isA(HashMap.class), isA(Properties.class))).thenReturn(response);
+
+        Payment payment = new Payment(AMOUNT, AUTHORIZATION_ID, MERCHANT_REFERENCE_ID);
+
+        paymentService.reversePayment(payment);
+
+        PowerMockito.verifyStatic();
+        Client.runTransaction(requestCaptor.capture(), propertiesCaptor.capture());
+
+        HashMap<String, String> capturedRequest = requestCaptor.getValue();
+        assertEquals(5, capturedRequest.size());
+        assertTrue(Boolean.parseBoolean(capturedRequest.get(CyberSourcePaymentServiceImpl.REQUEST_CC_AUTH_REVERSAL_SERVICE_RUN)));
+        assertEquals(MERCHANT_REFERENCE_ID, capturedRequest.get(CyberSourcePaymentServiceImpl.REQUEST_MERCHANT_REFERENCE_CODE));
+        assertEquals(AUTHORIZATION_ID, capturedRequest.get(CyberSourcePaymentServiceImpl.REQUEST_CC_CAPTURE_SERVICE_AUTH_REQUEST_ID));
+        assertEquals(CyberSourcePaymentServiceImpl.USD, capturedRequest.get(CyberSourcePaymentServiceImpl.REQUEST_PURCHASE_TOTALS_CURRENCY));
+        assertEquals(new DecimalFormat("#.00").format(AMOUNT), capturedRequest.get(CyberSourcePaymentServiceImpl.REQUEST_PURCHASE_TOTALS_GRAND_TOTAL_AMOUNT));
+
+        Properties capturedProps = propertiesCaptor.getValue();
+        assertEquals(13, capturedProps.size());
+        assertEquals(MERCHANT_ID, capturedProps.get(CyberSourcePaymentServiceImpl.MERCHANT_ID_PROP));
+        assertEquals(CYBERSOURCE_DIR, capturedProps.get(CyberSourcePaymentServiceImpl.KEYS_DIRECTORY_PROP));
+        assertEquals(TESTCERT, capturedProps.get(CyberSourcePaymentServiceImpl.KEY_FILENAME_PROP));
+        assertEquals(MERCHANT_ID, capturedProps.get(CyberSourcePaymentServiceImpl.KEY_ALIAS_PROP));
+        assertEquals(MERCHANT_ID, capturedProps.get(CyberSourcePaymentServiceImpl.KEY_PASSWORD_PROP));
+        assertEquals(API_VERSION, capturedProps.get(CyberSourcePaymentServiceImpl.TARGET_API_VERSION_PROP));
+        assertFalse(Boolean.parseBoolean((String) capturedProps.get(CyberSourcePaymentServiceImpl.SEND_TO_PRODUCTION_PROP)));
+        assertEquals(SERVER_URL, capturedProps.get(CyberSourcePaymentServiceImpl.SERVER_URL_PROP));
+        assertTrue(Boolean.parseBoolean((String) capturedProps.get(CyberSourcePaymentServiceImpl.USE_HTTP_CLIENT_PROP)));
+        assertEquals(Integer.toString(TIMEOUT), capturedProps.get(CyberSourcePaymentServiceImpl.TIMEOUT_PROP));
+        assertFalse(Boolean.parseBoolean((String) capturedProps.get(CyberSourcePaymentServiceImpl.ENABLE_LOG_PROP)));
+        assertEquals(CYBERSOURCE_DIR, capturedProps.get(CyberSourcePaymentServiceImpl.LOG_DIRECTORY_PROP));
+        assertEquals(Integer.toString(MAX_LOG_SIZE), capturedProps.get(CyberSourcePaymentServiceImpl.LOG_MAXIMUM_SIZE_PROP));
+    }
+
+    @Test
+    public void testReversePayment_Decline() throws Exception {
+
+        thrown.expect(PaymentException.class);
+        thrown.expectMessage(Matchers.containsString(CyberSourcePaymentServiceImpl.FAILED_TO_REVERSE_AUTHORIZATION_MSG));
+        thrown.expectMessage(Matchers.containsString(REJECT));
+        thrown.expectMessage(Matchers.containsString(TEST_REJECT_REASON_CODE));
+
+        final HashMap<String, String> response = new HashMap<>();
+        response.put(CyberSourcePaymentServiceImpl.REQUEST_ID, SALE_ID);
+        response.put(CyberSourcePaymentServiceImpl.RESPONSE_DECISION, REJECT);
+        response.put(CyberSourcePaymentServiceImpl.RESPONSE_REASON_CODE, TEST_REJECT_REASON_CODE);
+
+        when(Client.runTransaction(isA(HashMap.class), isA(Properties.class))).thenReturn(response);
+
+        Payment payment = new Payment(AMOUNT, AUTHORIZATION_ID, MERCHANT_REFERENCE_ID);
+
+        paymentService.reversePayment(payment);
+    }
+
+    @Test
+    public void testReversePayment_Failure() throws Exception {
+
+        // setup expected exception
+        IllegalArgumentException cause = new IllegalArgumentException("I caused test to fail");
+
+        thrown.expect(IllegalArgumentException.class);
+
+        Payment payment = new Payment(AMOUNT, AUTHORIZATION_ID, MERCHANT_REFERENCE_ID);
+
+        when(Client.runTransaction(isA(HashMap.class), isA(Properties.class))).thenThrow(cause);
+
+        paymentService.reversePayment(payment);
+    }
+
+    @Test
+    public void testReversePayment_CyberSourceClientException() throws Exception {
+
+        thrown.expect(PaymentException.class);
+        thrown.expectMessage(CyberSourcePaymentServiceImpl.FAILED_TO_REVERSE_AUTHORIZATION_MSG);
+        thrown.expectCause(Matchers.is(clientException));
+
+        Payment payment = new Payment(AMOUNT, AUTHORIZATION_ID, MERCHANT_REFERENCE_ID);
+
+        when(clientException.isCritical()).thenReturn(false);
+        when(Client.runTransaction(isA(HashMap.class), isA(Properties.class))).thenThrow(clientException);
+
+        paymentService.reversePayment(payment);
+    }
+
+    @Test
+    public void testReversePayment_CyberSourceCriticalClientException() throws Exception {
+
+        thrown.expect(FatalPaymentException.class);
+        thrown.expectMessage(CyberSourcePaymentServiceImpl.FAILED_TO_REVERSE_AUTHORIZATION_MSG);
+        thrown.expectCause(Matchers.is(clientException));
+
+        Payment payment = new Payment(AMOUNT, AUTHORIZATION_ID, MERCHANT_REFERENCE_ID);
+
+        when(clientException.isCritical()).thenReturn(true);
+        when(Client.runTransaction(isA(HashMap.class), isA(Properties.class))).thenThrow(clientException);
+
+        paymentService.reversePayment(payment);
+    }
+
+    @Test
+    public void testReversePayment_CyberSourceFaultException() throws Exception {
+
+        thrown.expect(PaymentException.class);
+        thrown.expectMessage(CyberSourcePaymentServiceImpl.FAILED_TO_REVERSE_AUTHORIZATION_MSG);
+        thrown.expectCause(Matchers.is(faultException));
+
+        Payment payment = new Payment(AMOUNT, AUTHORIZATION_ID, MERCHANT_REFERENCE_ID);
+
+        when(faultException.isCritical()).thenReturn(false);
+        when(Client.runTransaction(isA(HashMap.class), isA(Properties.class))).thenThrow(faultException);
+
+        paymentService.reversePayment(payment);
+    }
+
+    @Test
+    public void testReversePayment_CyberSourceCriticalFaultException() throws Exception {
+
+        thrown.expect(FatalPaymentException.class);
+        thrown.expectMessage(CyberSourcePaymentServiceImpl.FAILED_TO_REVERSE_AUTHORIZATION_MSG);
+        thrown.expectCause(Matchers.is(faultException));
+
+        Payment payment = new Payment(AMOUNT, AUTHORIZATION_ID, MERCHANT_REFERENCE_ID);
+
+        when(faultException.isCritical()).thenReturn(true);
+        when(Client.runTransaction(isA(HashMap.class), isA(Properties.class))).thenThrow(faultException);
+
+        paymentService.reversePayment(payment);
+    }
 }
