@@ -6,7 +6,6 @@ import com.gs.api.domain.payment.PaymentConfirmation;
 import com.gs.api.domain.registration.Registration;
 import com.gs.api.domain.registration.RegistrationRequest;
 import com.gs.api.domain.registration.RegistrationResponse;
-import com.gs.api.exception.FatalPaymentException;
 import com.gs.api.exception.PaymentException;
 import com.gs.api.service.authentication.AuthenticationService;
 import com.gs.api.service.registration.RegistrationService;

@@ -26,7 +26,9 @@ public class CyberSourcePaymentServiceImpl implements PaymentService {
 
     static final String REQUEST_ID = "requestID";
     static final String FAILED_TO_COMPLETE_SALE_MSG = "Failed to complete sale with CyberSource";
+    static final String FAILED_TO_REVERSE_AUTHORIZATION_MSG = "Failed to reverse payment authorization with CyberSource";
     static final String REQUEST_CC_CAPTURE_SERVICE_RUN = "ccCaptureService_run";
+    static final String REQUEST_CC_AUTH_REVERSAL_SERVICE_RUN = "ccAuthReversalService_run";
     static final String REQUEST_MERCHANT_REFERENCE_CODE = "merchantReferenceCode";
     static final String REQUEST_CC_CAPTURE_SERVICE_AUTH_REQUEST_ID = "ccCaptureService_authRequestID";
     static final String REQUEST_PURCHASE_TOTALS_CURRENCY = "purchaseTotals_currency";
@@ -84,35 +86,36 @@ public class CyberSourcePaymentServiceImpl implements PaymentService {
     @Override
     public PaymentConfirmation processPayment(final Payment payment) throws PaymentException {
 
-        logger.debug("Processing payment, authorization id {}, amount {}", payment.getAuthorizationId(), payment.getAmount());
+        logger.info("Processing payment, authorization id {}, amount {}", payment.getAuthorizationId(), payment.getAmount());
 
         // create the request parameters for the CyberSource request
-        Map<String, String> request = createRequestParameters(payment);
+        Map<String, String> cyberSourceRequest = createRequestParameters(REQUEST_CC_CAPTURE_SERVICE_RUN, payment);
 
         // create the configuration properties for the CyberSource client
         Properties clientProperties = createClientProperties();
 
+        Map cyberSourceResponse = null;
         try {
             // use the CyberSource client to execute the capture (sale) transaction
-            Map response = Client.runTransaction(request, clientProperties);
+            cyberSourceResponse = Client.runTransaction(cyberSourceRequest, clientProperties);
 
-            String decision = (String) response.get(RESPONSE_DECISION);
+            String decision = (String) cyberSourceResponse.get(RESPONSE_DECISION);
             if (!ACCEPT.equalsIgnoreCase(decision)) {
                 // non-accept response, log and throw payment failure
-                String reasonCode = (String) response.get(RESPONSE_REASON_CODE);
+                String reasonCode = (String) cyberSourceResponse.get(RESPONSE_REASON_CODE);
                 String errorMsg = String.format(FAILED_TO_COMPLETE_SALE_MSG + ", decision %s, reason code %s", decision, reasonCode);
                 logger.debug(errorMsg);
                 throw new PaymentException(errorMsg);
             }
 
-            logger.debug("Successful payment, reference number {}, amount {}", payment.getMerchantReferenceId(), payment.getAmount());
-            return new PaymentConfirmation(payment, (String) response.get(REQUEST_ID));
+            logger.info("Successful payment, reference number {}, amount {}", payment.getMerchantReferenceId(), payment.getAmount());
+            return new PaymentConfirmation(payment, (String) cyberSourceResponse.get(REQUEST_ID));
         }
         catch (ClientException e) {
 
             if (e.isCritical()) {
 
-                handleCriticalException(e, request);
+                handleCriticalError(e, cyberSourceRequest, cyberSourceResponse);
                 throw new FatalPaymentException(FAILED_TO_COMPLETE_SALE_MSG, e);
             }
 
@@ -122,7 +125,7 @@ public class CyberSourcePaymentServiceImpl implements PaymentService {
 
             if (e.isCritical()) {
 
-                handleCriticalException(e, request);
+                handleCriticalError(e, cyberSourceRequest, cyberSourceResponse);
                 throw new FatalPaymentException(FAILED_TO_COMPLETE_SALE_MSG, e);
             }
 
@@ -131,8 +134,52 @@ public class CyberSourcePaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    public void reversePayment(final Payment payment) throws PaymentException{
+    public void reversePayment(final Payment payment) throws PaymentException {
 
+        logger.info("Processing payment authorization reversal, authorization id {}, amount {}", payment.getAuthorizationId(), payment.getAmount());
+
+        // create the request parameters for the CyberSource request
+        Map<String, String> cyberSourceRequest = createRequestParameters(REQUEST_CC_AUTH_REVERSAL_SERVICE_RUN, payment);
+
+        // create the configuration properties for the CyberSource client
+        Properties clientProperties = createClientProperties();
+
+        Map cyberSourceResponse = null;
+        try {
+            // use the CyberSource client to execute the reversal transaction
+            cyberSourceResponse = Client.runTransaction(cyberSourceRequest, clientProperties);
+
+            String decision = (String) cyberSourceResponse.get(RESPONSE_DECISION);
+            if (!ACCEPT.equalsIgnoreCase(decision)) {
+                // non-accept response, log and throw payment failure
+                String reasonCode = (String) cyberSourceResponse.get(RESPONSE_REASON_CODE);
+                String errorMsg = String.format(FAILED_TO_REVERSE_AUTHORIZATION_MSG + ", decision %s, reason code %s", decision, reasonCode);
+                logger.debug(errorMsg);
+                throw new PaymentException(errorMsg);
+            }
+
+            logger.info("Successful payment authorization reversal, reference number {}, amount {}", payment.getMerchantReferenceId(), payment.getAmount());
+        }
+        catch (ClientException e) {
+
+            if (e.isCritical()) {
+
+                handleCriticalError(e, cyberSourceRequest, cyberSourceResponse);
+                throw new FatalPaymentException(FAILED_TO_REVERSE_AUTHORIZATION_MSG, e);
+            }
+
+            throw new PaymentException(FAILED_TO_REVERSE_AUTHORIZATION_MSG, e);
+        }
+        catch (FaultException e) {
+
+            if (e.isCritical()) {
+
+                handleCriticalError(e, cyberSourceRequest, cyberSourceResponse);
+                throw new FatalPaymentException(FAILED_TO_REVERSE_AUTHORIZATION_MSG, e);
+            }
+
+            throw new PaymentException(FAILED_TO_REVERSE_AUTHORIZATION_MSG, e);
+        }
     }
 
     private Properties createClientProperties() {
@@ -181,12 +228,12 @@ public class CyberSourcePaymentServiceImpl implements PaymentService {
         return clientProperties;
     }
 
-    private Map<String, String> createRequestParameters(Payment payment) {
+    private Map<String, String> createRequestParameters(String serviceName, Payment payment) {
 
         Map<String, String> requestParameters = new HashMap<>();
 
         // execute the capture (sale)
-        requestParameters.put(REQUEST_CC_CAPTURE_SERVICE_RUN, Boolean.TRUE.toString());
+        requestParameters.put(serviceName, Boolean.TRUE.toString());
 
         // so that you can efficiently track the order in the CyberSource
         // reports and transaction search screens, you should use the same
@@ -206,7 +253,7 @@ public class CyberSourcePaymentServiceImpl implements PaymentService {
         return requestParameters;
     }
 
-    private void handleCriticalException(Exception e, Map<String, String> request) {
+    private void handleCriticalError(Exception e, Map<String, String> cyberSourceRequest, Map<String, String> cyberSourceResponse) {
 
         logger.error("CyberSource critical-path transaction failure", e);
 

@@ -22,7 +22,7 @@ command below to install it
 - Required configuration for CyberSource, the 3rd party payment system used by the new registration functionality.
   - Create a directory (it can be anywhere), or use an existing if you would prefer, and download the CyberSource test certificate (evalgraduateschool.p12) from http://confluence.agiletrailblazers.com/display/GS/Cybersource+Simple+Order+API+Security+Certificates.
   - Add the following Tomcat VM argument to specify the location of the CyberSource directory<br/>
-  ```-DcybersourceDir=_fullPathToCyberSourceDir_```
+  ```-DcybersourceDir=fullPathToCyberSourceDir```
   - Update the version of Java that is being used by Tomcat with the security jars that support the type of key used by CyberSource.  Replace [JAVA_HOME]/jre/lib/security/local_policy.jar and [JAVA_HOME]/jre/lib/security/US_export_policy.jar with the versions that can be downloaded from http://confluence.agiletrailblazers.com/display/GS/Cybersource+Simple+Order+API+Security+Certificates
 - Add the following Tomcat argument to pick the right properties file<br/>
 -- For Dev:  ```-DpropertiesLoc=/properties/dev```<br/>

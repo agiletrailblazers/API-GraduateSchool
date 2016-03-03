@@ -9,11 +9,15 @@ public interface PaymentService {
     /**
      * Process a payment.
      * @param payment the payment information.
-     * @return payment confirmation.
      * @throws PaymentException error processing the payment
      */
     PaymentConfirmation processPayment(final Payment payment) throws PaymentException;
 
+    /**
+     * Reverse a payment.
+     * @param payment the payment information.
+     * @throws PaymentException error processing the payment reversal
+     */
     void reversePayment(final Payment payment) throws PaymentException;
 
 }
