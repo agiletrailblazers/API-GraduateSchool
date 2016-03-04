@@ -11,6 +11,7 @@ import com.gs.api.domain.registration.Registration;
 import com.gs.api.domain.registration.RegistrationRequest;
 import com.gs.api.domain.registration.RegistrationResponse;
 import com.gs.api.domain.registration.User;
+import com.gs.api.exception.PaymentException;
 import com.gs.api.service.payment.PaymentService;
 
 import org.junit.Before;
@@ -33,9 +34,9 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "classpath:spring/test-root-context.xml" })
@@ -132,6 +133,30 @@ public class RegistrationServiceTest {
         assertSame(createdRegistration2, createdRegistrationResponse.getRegistrations().get(1));
         assertEquals(1, createdRegistrationResponse.getPaymentConfirmations().size());
         assertSame(paymentConfirmation, createdRegistrationResponse.getPaymentConfirmations().get(0));
+    }
+
+    @Test
+    public void testPaymentFailsNoRegistrationCreated() throws Exception {
+        User user = new User(USER_ID, "user1", "", "1234", new Person(), "", "", "", "", userTimestamp);
+        User student1 = new User(STUDENT_ID_1, "student1", "", "1234", new Person(), "", "", "", "", userTimestamp);
+
+        CourseSession session = new CourseSession();
+        session.setClassNumber(SESSION_ID);
+
+        Payment payment = new Payment(100.00, "badAuth123", "badMerchId1234");
+        registrationRequest.getPayments().add(payment);
+        PaymentException pe = new PaymentException("I made payment fail");
+
+        when(paymentService.processPayment(payment)).thenThrow(pe);
+        try {
+            registrationService.register(USER_ID, registrationRequest);
+            fail("Shouldn't reach here");
+        }
+        catch (PaymentException payException) {
+            verify(paymentService).processPayment(payment);
+            verifyZeroInteractions(registrationDao);
+        }
+
     }
 
     @Test
