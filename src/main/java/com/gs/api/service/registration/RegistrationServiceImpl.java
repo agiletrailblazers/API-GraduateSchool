@@ -41,7 +41,17 @@ public class RegistrationServiceImpl implements RegistrationService {
     @Override
     public RegistrationResponse register(String userId, RegistrationRequest registrationRequest) throws Exception {
 
+        List<PaymentConfirmation> confirmedPayments = new ArrayList<>();
         List<Registration> completedRegistrations = new ArrayList<>();
+        // make the payments
+        for (Payment payment : registrationRequest.getPayments()) {
+
+            logger.debug("Processing payment for user {}", userId);
+
+            confirmedPayments.add(paymentService.processPayment(payment));
+
+            logger.info("Successful payment: User {}, payment reference number {}", userId, payment.getMerchantReferenceId());
+        }
 
         for (Registration registration : registrationRequest.getRegistrations()) {
             logger.debug("User {} is registering student {} for class no {}", new String[]{userId,
@@ -71,16 +81,6 @@ public class RegistrationServiceImpl implements RegistrationService {
                     new String[]{userId, registration.getStudentId(), registration.getSessionId(), registration.getOrderNumber()});
         }
 
-        // make the payments
-        List<PaymentConfirmation> confirmedPayments = new ArrayList<>();
-        for (Payment payment : registrationRequest.getPayments()) {
-
-            logger.debug("Processing payment for user {}", userId);
-
-            confirmedPayments.add(paymentService.processPayment(payment));
-
-            logger.info("Successful payment: User {}, payment reference number {}", userId, payment.getMerchantReferenceId());
-        }
 
         // TODO: future story, update payment information in DB with the payment reference number
 
