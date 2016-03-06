@@ -101,7 +101,7 @@ public class PaymentControllerTest {
         mockMvc.perform(post("/payment/reverse")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonModel))
-                .andExpect(status().isPaymentRequired())
+                .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.message").value(is(pe.getMessage())));
 
         verify(paymentService).reversePayment(capturedPayment.capture());

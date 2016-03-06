@@ -2,6 +2,8 @@ package com.gs.api.controller;
 
 import com.gs.api.exception.AuthenticationException;
 import com.gs.api.exception.NotFoundException;
+import com.gs.api.exception.PaymentAcceptedException;
+import com.gs.api.exception.PaymentDeclinedException;
 import com.gs.api.exception.PaymentException;
 
 import org.slf4j.Logger;
@@ -92,11 +94,32 @@ public abstract class BaseController {
     }
 
     /**
-     * Return json formatted error response for fatal payment failure
-     * This exception is thrown when CyberSource marks a failure as critical.
+     * Return json formatted error response for a payment declined failure
      * @return ResponseBody
      */
     @ResponseStatus(HttpStatus.PAYMENT_REQUIRED)
+    @ExceptionHandler({ PaymentDeclinedException.class })
+    @ResponseBody
+    public String handlePaymentDeclined(PaymentDeclinedException ex) {
+        return "{\"message\": \"" + ex.getMessage() + "\"}";
+    }
+
+    /**
+     * Return json formatted error response for a payment accepted exception
+     * @return ResponseBody
+     */
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    @ExceptionHandler({ PaymentAcceptedException.class })
+    @ResponseBody
+    public String handlePaymentAccepted(PaymentAcceptedException ex) {
+        return "{\"message\": \"" + ex.getMessage() + "\"}";
+    }
+
+    /**
+     * Return json formatted error response for a generic payment failure
+     * @return ResponseBody
+     */
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler({ PaymentException.class })
     @ResponseBody
     public String handlePaymentException(PaymentException ex) {

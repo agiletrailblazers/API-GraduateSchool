@@ -5,7 +5,7 @@ import com.cybersource.ws.client.ClientException;
 import com.cybersource.ws.client.FaultException;
 import com.gs.api.domain.payment.Payment;
 import com.gs.api.domain.payment.PaymentConfirmation;
-import com.gs.api.exception.FatalPaymentException;
+import com.gs.api.exception.PaymentAcceptedException;
 import com.gs.api.exception.PaymentException;
 
 import org.slf4j.Logger;
@@ -103,6 +103,10 @@ public class CyberSourcePaymentServiceImpl implements PaymentService {
             if (!ACCEPT.equalsIgnoreCase(decision)) {
                 // non-accept response, log and throw payment failure
                 String reasonCode = (String) cyberSourceResponse.get(RESPONSE_REASON_CODE);
+
+                // TODO send auth reversal for any non-accept reason code; reversal call failure should be captured and logged, but not re-thrown
+                // TODO specifically identified reason codes must throw a payment declined exception, all other reason codes must throw a generic payment exception
+
                 String errorMsg = String.format(FAILED_TO_COMPLETE_SALE_MSG + ", decision %s, reason code %s", decision, reasonCode);
                 logger.debug(errorMsg);
                 throw new PaymentException(errorMsg);
@@ -114,21 +118,23 @@ public class CyberSourcePaymentServiceImpl implements PaymentService {
         catch (ClientException e) {
 
             if (e.isCritical()) {
-
-                handleCriticalError(e, cyberSourceRequest, cyberSourceResponse);
-                throw new FatalPaymentException(FAILED_TO_COMPLETE_SALE_MSG, e);
+                // do not send auth reversal in this case because the transaction may have actually been processed
+                handleNotifications(e, cyberSourceRequest, cyberSourceResponse);
+                throw new PaymentAcceptedException(FAILED_TO_COMPLETE_SALE_MSG, e);
             }
 
+            // TODO send auth reversal; reversal call failure should be captured and logged, but not re-thrown
             throw new PaymentException(FAILED_TO_COMPLETE_SALE_MSG, e);
         }
         catch (FaultException e) {
 
             if (e.isCritical()) {
-
-                handleCriticalError(e, cyberSourceRequest, cyberSourceResponse);
-                throw new FatalPaymentException(FAILED_TO_COMPLETE_SALE_MSG, e);
+                // do not send auth reversal in this case because the transaction may have actually been processed
+                handleNotifications(e, cyberSourceRequest, cyberSourceResponse);
+                throw new PaymentAcceptedException(FAILED_TO_COMPLETE_SALE_MSG, e);
             }
 
+            // TODO send auth reversal; reversal call failure should be captured and logged, but not re-thrown
             throw new PaymentException(FAILED_TO_COMPLETE_SALE_MSG, e);
         }
     }
@@ -161,23 +167,9 @@ public class CyberSourcePaymentServiceImpl implements PaymentService {
             logger.info("Successful payment authorization reversal, reference number {}, amount {}", payment.getMerchantReferenceId(), payment.getAmount());
         }
         catch (ClientException e) {
-
-            if (e.isCritical()) {
-
-                handleCriticalError(e, cyberSourceRequest, cyberSourceResponse);
-                throw new FatalPaymentException(FAILED_TO_REVERSE_AUTHORIZATION_MSG, e);
-            }
-
             throw new PaymentException(FAILED_TO_REVERSE_AUTHORIZATION_MSG, e);
         }
         catch (FaultException e) {
-
-            if (e.isCritical()) {
-
-                handleCriticalError(e, cyberSourceRequest, cyberSourceResponse);
-                throw new FatalPaymentException(FAILED_TO_REVERSE_AUTHORIZATION_MSG, e);
-            }
-
             throw new PaymentException(FAILED_TO_REVERSE_AUTHORIZATION_MSG, e);
         }
     }
@@ -253,11 +245,11 @@ public class CyberSourcePaymentServiceImpl implements PaymentService {
         return requestParameters;
     }
 
-    private void handleCriticalError(Exception e, Map<String, String> cyberSourceRequest, Map<String, String> cyberSourceResponse) {
+    private void handleNotifications(Exception e, Map<String, String> cyberSourceRequest, Map<String, String> cyberSourceResponse) {
 
-        logger.error("CyberSource critical-path transaction failure", e);
+        logger.error("Sending notifications of CyberSource transaction failure", e);
 
-        // TODO future story - send an email to Graduate School operations including the error and the request details?
+        // TODO future story - send an email to Graduate School operations including the error, request and response details?
     }
 
 }

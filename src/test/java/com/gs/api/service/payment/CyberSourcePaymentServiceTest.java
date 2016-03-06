@@ -5,7 +5,7 @@ import com.cybersource.ws.client.ClientException;
 import com.cybersource.ws.client.FaultException;
 import com.gs.api.domain.payment.Payment;
 import com.gs.api.domain.payment.PaymentConfirmation;
-import com.gs.api.exception.FatalPaymentException;
+import com.gs.api.exception.PaymentAcceptedException;
 import com.gs.api.exception.PaymentException;
 
 import org.hamcrest.Matchers;
@@ -191,7 +191,7 @@ public class CyberSourcePaymentServiceTest {
     @Test
     public void testProcessPayment_CyberSourceCriticalClientException() throws Exception {
 
-        thrown.expect(FatalPaymentException.class);
+        thrown.expect(PaymentAcceptedException.class);
         thrown.expectMessage(CyberSourcePaymentServiceImpl.FAILED_TO_COMPLETE_SALE_MSG);
         thrown.expectCause(Matchers.is(clientException));
 
@@ -221,7 +221,7 @@ public class CyberSourcePaymentServiceTest {
     @Test
     public void testProcessPayment_CyberSourceCriticalFaultException() throws Exception {
 
-        thrown.expect(FatalPaymentException.class);
+        thrown.expect(PaymentAcceptedException.class);
         thrown.expectMessage(CyberSourcePaymentServiceImpl.FAILED_TO_COMPLETE_SALE_MSG);
         thrown.expectCause(Matchers.is(faultException));
 
@@ -325,21 +325,6 @@ public class CyberSourcePaymentServiceTest {
     }
 
     @Test
-    public void testReversePayment_CyberSourceCriticalClientException() throws Exception {
-
-        thrown.expect(FatalPaymentException.class);
-        thrown.expectMessage(CyberSourcePaymentServiceImpl.FAILED_TO_REVERSE_AUTHORIZATION_MSG);
-        thrown.expectCause(Matchers.is(clientException));
-
-        Payment payment = new Payment(AMOUNT, AUTHORIZATION_ID, MERCHANT_REFERENCE_ID);
-
-        when(clientException.isCritical()).thenReturn(true);
-        when(Client.runTransaction(isA(HashMap.class), isA(Properties.class))).thenThrow(clientException);
-
-        paymentService.reversePayment(payment);
-    }
-
-    @Test
     public void testReversePayment_CyberSourceFaultException() throws Exception {
 
         thrown.expect(PaymentException.class);
@@ -349,21 +334,6 @@ public class CyberSourcePaymentServiceTest {
         Payment payment = new Payment(AMOUNT, AUTHORIZATION_ID, MERCHANT_REFERENCE_ID);
 
         when(faultException.isCritical()).thenReturn(false);
-        when(Client.runTransaction(isA(HashMap.class), isA(Properties.class))).thenThrow(faultException);
-
-        paymentService.reversePayment(payment);
-    }
-
-    @Test
-    public void testReversePayment_CyberSourceCriticalFaultException() throws Exception {
-
-        thrown.expect(FatalPaymentException.class);
-        thrown.expectMessage(CyberSourcePaymentServiceImpl.FAILED_TO_REVERSE_AUTHORIZATION_MSG);
-        thrown.expectCause(Matchers.is(faultException));
-
-        Payment payment = new Payment(AMOUNT, AUTHORIZATION_ID, MERCHANT_REFERENCE_ID);
-
-        when(faultException.isCritical()).thenReturn(true);
         when(Client.runTransaction(isA(HashMap.class), isA(Properties.class))).thenThrow(faultException);
 
         paymentService.reversePayment(payment);

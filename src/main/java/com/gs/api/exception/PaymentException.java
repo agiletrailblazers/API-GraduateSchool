@@ -1,6 +1,9 @@
 package com.gs.api.exception;
 
-
+/**
+ * Exception to be thrown by the payment service when the payment failed for a reason that
+ * may or may not prevent the request from being made again.  For example, an intermittent connection issue.
+ */
 public class PaymentException extends Exception {
 
     /**

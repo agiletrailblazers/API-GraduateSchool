@@ -11,6 +11,8 @@ import com.gs.api.domain.registration.Registration;
 import com.gs.api.domain.registration.RegistrationRequest;
 import com.gs.api.domain.registration.RegistrationResponse;
 import com.gs.api.domain.registration.User;
+import com.gs.api.exception.PaymentAcceptedException;
+import com.gs.api.exception.PaymentException;
 import com.gs.api.service.payment.PaymentService;
 
 import org.slf4j.Logger;
@@ -24,6 +26,7 @@ import java.util.List;
 @Service
 public class RegistrationServiceImpl implements RegistrationService {
 
+    static final String REGISTRATION_FAILURE_AFTER_SUCCESSFUL_PAYMENT_MSG = "Registration failure after successful payment";
     final Logger logger = LoggerFactory.getLogger(RegistrationServiceImpl.class);
 
     @Autowired
@@ -39,7 +42,7 @@ public class RegistrationServiceImpl implements RegistrationService {
     private PaymentService paymentService;
 
     @Override
-    public RegistrationResponse register(String userId, RegistrationRequest registrationRequest) throws Exception {
+    public RegistrationResponse register(String userId, RegistrationRequest registrationRequest) throws PaymentException {
 
         List<PaymentConfirmation> confirmedPayments = new ArrayList<>();
         List<Registration> completedRegistrations = new ArrayList<>();
@@ -53,36 +56,39 @@ public class RegistrationServiceImpl implements RegistrationService {
             logger.info("Successful payment: User {}, payment reference number {}", userId, payment.getMerchantReferenceId());
         }
 
-        for (Registration registration : registrationRequest.getRegistrations()) {
-            logger.debug("User {} is registering student {} for class no {}", new String[]{userId,
-                    registration.getStudentId(), registration.getSessionId()});
+        try {
+            for (Registration registration : registrationRequest.getRegistrations()) {
+                logger.debug("User {} is registering student {} for class no {}", new String[]{userId,
+                        registration.getStudentId(), registration.getSessionId()});
 
-            //Get actual user, student, session, and courseSession from specified IDs
-            User user = userDao.getUser(userId);
-            if (user == null) {
-                logger.error("No user found for logged in user: {}", userId);
-                throw new Exception("No user found for logged in user " + userId);
+                //Get actual user, student, session, and courseSession from specified IDs
+                User user = userDao.getUser(userId);
+                if (user == null) {
+                    logger.error("No user found for logged in user: {}", userId);
+                    throw new Exception("No user found for logged in user " + userId);
+                }
+
+                User studentUser = userDao.getUser(registration.getStudentId());
+                if (studentUser == null) {
+                    logger.error("No user found for student {}", registration.getStudentId());
+                    throw new Exception("No user found for student " + registration.getSessionId());
+                }
+
+                CourseSession session = sessionDao.getSession(registration.getSessionId());
+                if (session == null) {
+                    logger.error("No course session found for session id {}", registration.getSessionId());
+                    throw new Exception("No course session found for session id " + registration.getSessionId());
+                }
+
+                completedRegistrations.add(registrationDao.registerForCourse(user, studentUser, session));
+                logger.info("Successful registration: User {} registered student {} for class number {}, order number {}",
+                        new String[]{userId, registration.getStudentId(), registration.getSessionId(), registration.getOrderNumber()});
             }
-
-            User studentUser = userDao.getUser(registration.getStudentId());
-            if (studentUser == null) {
-                logger.error("No user found for student {}", registration.getStudentId());
-                throw new Exception("No user found for student " + registration.getSessionId());
-            }
-
-            CourseSession session = sessionDao.getSession(registration.getSessionId());
-            if (session == null) {
-                logger.error("No course session found for session id {}", registration.getSessionId());
-                throw new Exception("No course session found for session id " + registration.getSessionId());
-            }
-
-            completedRegistrations.add(registrationDao.registerForCourse(user, studentUser, session));
-            logger.info("Successful registration: User {} registered student {} for class number {}, order number {}",
-                    new String[]{userId, registration.getStudentId(), registration.getSessionId(), registration.getOrderNumber()});
         }
-
-
-        // TODO: future story, update payment information in DB with the payment reference number
+        catch (Exception e) {
+            // payment was successful but registration failed
+            throw new PaymentAcceptedException(REGISTRATION_FAILURE_AFTER_SUCCESSFUL_PAYMENT_MSG, e);
+        }
 
         RegistrationResponse registrationResponse = new RegistrationResponse(completedRegistrations, confirmedPayments);
 

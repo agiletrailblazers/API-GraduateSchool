@@ -11,11 +11,14 @@ import com.gs.api.domain.registration.Registration;
 import com.gs.api.domain.registration.RegistrationRequest;
 import com.gs.api.domain.registration.RegistrationResponse;
 import com.gs.api.domain.registration.User;
+import com.gs.api.exception.PaymentAcceptedException;
 import com.gs.api.exception.PaymentException;
 import com.gs.api.service.payment.PaymentService;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -31,12 +34,12 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "classpath:spring/test-root-context.xml" })
@@ -67,6 +70,13 @@ public class RegistrationServiceTest {
     private RegistrationServiceImpl registrationService;
 
     private String userTimestamp;
+
+    /*
+        By default, no exceptions are expected to be thrown (i.e. tests will fail if an exception is thrown),
+        but using this rule allows for verification of operations that are expected to throw specific exceptions
+    */
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     @Before
     public void setUp() throws Exception {
@@ -137,17 +147,13 @@ public class RegistrationServiceTest {
 
     @Test
     public void testPaymentFailsNoRegistrationCreated() throws Exception {
-        User user = new User(USER_ID, "user1", "", "1234", new Person(), "", "", "", "", userTimestamp);
-        User student1 = new User(STUDENT_ID_1, "student1", "", "1234", new Person(), "", "", "", "", userTimestamp);
-
-        CourseSession session = new CourseSession();
-        session.setClassNumber(SESSION_ID);
 
         Payment payment = new Payment(100.00, "badAuth123", "badMerchId1234");
         registrationRequest.getPayments().add(payment);
         PaymentException pe = new PaymentException("I made payment fail");
 
         when(paymentService.processPayment(payment)).thenThrow(pe);
+
         try {
             registrationService.register(USER_ID, registrationRequest);
             fail("Shouldn't reach here");
@@ -155,55 +161,50 @@ public class RegistrationServiceTest {
         catch (PaymentException payException) {
             verify(paymentService).processPayment(payment);
             verifyZeroInteractions(registrationDao);
+            verifyZeroInteractions(userDao);
+            verifyZeroInteractions(sessionDao);
         }
-
     }
 
     @Test
     public void testRegisterUserNotFound() throws Exception {
-        when(userDao.getUser(USER_ID)).thenReturn(null);
-        try {
 
-            registrationService.register(USER_ID, registrationRequest);
-            fail("Shouldn't reach here");
-        }
-        catch (Exception e) {
-            assertTrue(e.getMessage().contains("No user found for logged in user"));
-        }
+        thrown.expect(PaymentAcceptedException.class);
+        thrown.expectMessage(RegistrationServiceImpl.REGISTRATION_FAILURE_AFTER_SUCCESSFUL_PAYMENT_MSG);
+
+        when(userDao.getUser(USER_ID)).thenReturn(null);
+
+        registrationService.register(USER_ID, registrationRequest);
     }
 
     @Test
     public void testRegisterStudentNotFound() throws Exception {
+
+        thrown.expect(PaymentAcceptedException.class);
+        thrown.expectMessage(RegistrationServiceImpl.REGISTRATION_FAILURE_AFTER_SUCCESSFUL_PAYMENT_MSG);
+
         User user = new User(USER_ID, "user1", "", "1234", new Person(), "", "", "", "", userTimestamp);
 
         when(userDao.getUser(USER_ID)).thenReturn(user);
         when(userDao.getUser(STUDENT_ID_1)).thenReturn(null);
 
-        try {
-            registrationService.register(USER_ID, registrationRequest);
-            fail("Shouldn't reach here");
-        }
-        catch (Exception e) {
-            assertTrue(e.getMessage().contains("No user found for student"));
-        }
+        registrationService.register(USER_ID, registrationRequest);
     }
 
     @Test
     public void testRegisterSessionNotFound() throws Exception {
+
+        thrown.expect(PaymentAcceptedException.class);
+        thrown.expectMessage(RegistrationServiceImpl.REGISTRATION_FAILURE_AFTER_SUCCESSFUL_PAYMENT_MSG);
+
         User user = new User(USER_ID, "user1", "", "1234", new Person(), "", "", "", "", userTimestamp);
         User student1 = new User(STUDENT_ID_1, "student1", "", "1234", new Person(), "", "", "", "", userTimestamp);
-
 
         when(userDao.getUser(USER_ID)).thenReturn(user);
         when(userDao.getUser(STUDENT_ID_1)).thenReturn(student1);
 
         when(sessionDao.getSession(SESSION_ID)).thenReturn(null);
-        try {
-            registrationService.register(USER_ID, registrationRequest);
-            fail("Shouldn't reach here");
-        }
-        catch (Exception e) {
-            assertTrue(e.getMessage().contains("No course session found for session id"));
-        }
+
+        registrationService.register(USER_ID, registrationRequest);
     }
 }
