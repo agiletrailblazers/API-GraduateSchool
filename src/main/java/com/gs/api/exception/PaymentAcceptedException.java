@@ -1,7 +1,21 @@
 package com.gs.api.exception;
 
 
-public class FatalPaymentException extends PaymentException {
+/**
+ * Exception to be thrown when the payment was accepted but registration was unable to be completed for some reason.
+ */
+public class PaymentAcceptedException extends PaymentException {
+
+    /**
+     * Constructs a new exception with the specified detail message.  The cause is not initialized, and
+     * may subsequently be initialized by a call to {@link #initCause}.
+     *
+     * @param message the detail message. The detail message is saved for later retrieval by the {@link
+     *                #getMessage()} method.
+     */
+    public PaymentAcceptedException(String message) {
+        super(message);
+    }
 
     /**
      * Constructs a new exception with the specified detail message and cause.  <p>Note that the detail
@@ -15,7 +29,7 @@ public class FatalPaymentException extends PaymentException {
      *                or unknown.)
      * @since 1.4
      */
-    public FatalPaymentException(String message, Throwable cause) {
+    public PaymentAcceptedException(String message, Throwable cause) {
         super(message, cause);
     }
 }

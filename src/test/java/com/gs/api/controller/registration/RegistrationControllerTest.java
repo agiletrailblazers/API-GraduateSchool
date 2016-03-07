@@ -6,6 +6,8 @@ import com.gs.api.domain.payment.PaymentConfirmation;
 import com.gs.api.domain.registration.Registration;
 import com.gs.api.domain.registration.RegistrationRequest;
 import com.gs.api.domain.registration.RegistrationResponse;
+import com.gs.api.exception.PaymentAcceptedException;
+import com.gs.api.exception.PaymentDeclinedException;
 import com.gs.api.exception.PaymentException;
 import com.gs.api.service.authentication.AuthenticationService;
 import com.gs.api.service.registration.RegistrationService;
@@ -140,11 +142,7 @@ public class RegistrationControllerTest {
         List<Payment> payments = Collections.singletonList(payment);
         RegistrationRequest registrationRequest = new RegistrationRequest(registrations, payments);
 
-        Registration createdRegistration = new Registration();
-        createdRegistration.setId(REGISTRATION_ID);
-        List<Registration> createdRegistrations = Collections.singletonList(createdRegistration);
-
-        List<PaymentConfirmation> paymentConfirmations = new ArrayList<PaymentConfirmation>();
+        List<PaymentConfirmation> paymentConfirmations = new ArrayList<>();
         for (Payment p : payments){
             paymentConfirmations.add(new PaymentConfirmation(p,null));
         }
@@ -157,8 +155,65 @@ public class RegistrationControllerTest {
         mockMvc.perform(post("/registration/user/" + USER_ID)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonModel))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.message").value(is(pe.getMessage())));
+    }
+
+    @Test
+    public void testCreateRegistration_PaymentDeclinedException() throws Exception {
+
+        Registration registration = new Registration();
+        registration.setStudentId(USER_ID);
+        registration.setSessionId(SESSION_ID);
+        List<Registration> registrations = Collections.singletonList(registration);
+
+        Payment payment = new Payment(PAYMENT_AMOUNT, AUTHORIZATION_ID, MERCHANT_ID);
+        List<Payment> payments = Collections.singletonList(payment);
+        RegistrationRequest registrationRequest = new RegistrationRequest(registrations, payments);
+
+        List<PaymentConfirmation> paymentConfirmations = new ArrayList<>();
+        for (Payment p : payments){
+            paymentConfirmations.add(new PaymentConfirmation(p,null));
+        }
+
+        String jsonModel = new ObjectMapper().writeValueAsString(registrationRequest);
+
+        PaymentDeclinedException pe = new PaymentDeclinedException("I made payment fail");
+        when(registrationService.register(eq(USER_ID), isA(RegistrationRequest.class))).thenThrow(pe);
+
+        mockMvc.perform(post("/registration/user/" + USER_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonModel))
                 .andExpect(status().isPaymentRequired())
                 .andExpect(jsonPath("$.message").value(is(pe.getMessage())));
     }
 
+    @Test
+    public void testCreateRegistration_PaymentAcceptedException() throws Exception {
+
+        Registration registration = new Registration();
+        registration.setStudentId(USER_ID);
+        registration.setSessionId(SESSION_ID);
+        List<Registration> registrations = Collections.singletonList(registration);
+
+        Payment payment = new Payment(PAYMENT_AMOUNT, AUTHORIZATION_ID, MERCHANT_ID);
+        List<Payment> payments = Collections.singletonList(payment);
+        RegistrationRequest registrationRequest = new RegistrationRequest(registrations, payments);
+
+        List<PaymentConfirmation> paymentConfirmations = new ArrayList<>();
+        for (Payment p : payments){
+            paymentConfirmations.add(new PaymentConfirmation(p,null));
+        }
+
+        String jsonModel = new ObjectMapper().writeValueAsString(registrationRequest);
+
+        PaymentAcceptedException pe = new PaymentAcceptedException("I made payment fail");
+        when(registrationService.register(eq(USER_ID), isA(RegistrationRequest.class))).thenThrow(pe);
+
+        mockMvc.perform(post("/registration/user/" + USER_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonModel))
+                .andExpect(status().isAccepted())
+                .andExpect(jsonPath("$.message").value(is(pe.getMessage())));
+    }
 }
