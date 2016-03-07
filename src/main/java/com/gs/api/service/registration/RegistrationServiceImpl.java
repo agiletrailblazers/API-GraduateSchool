@@ -96,14 +96,8 @@ public class RegistrationServiceImpl implements RegistrationService {
     }
 
     @Override
-    public Registration getRegistrationForSession(final String studentId, final String sessionId) throws Exception{
-
-        Registration registration = new Registration();
-        registration.setId("12345");
-        registration.setOrderNumber("23456");
-        registration.setSessionId(studentId);
-        registration.setStudentId(sessionId);
-
-        return registration;
+    public Registration getRegistrationForSession(final String userId, final String sessionId) throws Exception{
+        logger.debug("Getting Registration for student");
+        return registrationDao.getRegistration(userId, sessionId);
     }
 }

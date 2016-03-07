@@ -36,6 +36,7 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -49,6 +50,9 @@ public class RegistrationServiceTest {
     private static final String SESSION_ID = "session12345";
     private static final String STUDENT_ID_1 = "person44444";
     private static final String STUDENT_ID_2 = "person55555";
+
+    private static final String REGISTRATION_ID = "12345";
+    public static final String ORDER_NUMBER = "23456";
 
     //private List<Registration> registrations;
     private RegistrationRequest registrationRequest;
@@ -206,5 +210,26 @@ public class RegistrationServiceTest {
         when(sessionDao.getSession(SESSION_ID)).thenReturn(null);
 
         registrationService.register(USER_ID, registrationRequest);
+    }
+
+    @Test
+    public void testGetRegistrationForSession() throws Exception {
+
+        Registration mockedRegistration = new Registration();
+        mockedRegistration.setId(REGISTRATION_ID);
+        mockedRegistration.setSessionId(SESSION_ID);
+        mockedRegistration.setOrderNumber(ORDER_NUMBER);
+        mockedRegistration.setStudentId(USER_ID);
+
+        when(registrationDao.getRegistration(USER_ID,SESSION_ID)).thenReturn(mockedRegistration);
+
+        Registration createdRegistration = registrationService.getRegistrationForSession(USER_ID, SESSION_ID);
+
+        verify(registrationDao).getRegistration(eq(USER_ID), eq(SESSION_ID));
+
+        assertEquals(USER_ID, createdRegistration.getStudentId());
+        assertEquals(SESSION_ID, createdRegistration.getSessionId());
+        assertEquals(ORDER_NUMBER, createdRegistration.getOrderNumber());
+        assertEquals(REGISTRATION_ID, createdRegistration.getId());
     }
 }

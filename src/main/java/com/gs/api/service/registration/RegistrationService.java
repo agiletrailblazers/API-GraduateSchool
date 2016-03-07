@@ -18,13 +18,13 @@ public interface RegistrationService {
     RegistrationResponse register(final String userId, final RegistrationRequest registrationRequest) throws PaymentException;
 
     /**
-     * Get a Registration object from a student ID and a session ID. 
+     * Get a Registration object from a student ID and a session ID.
      *
-     * @param studentId - user ID of the student
+     * @param userId - user ID of the student
      * @param sessionId - session ID to search for
      * @return
      * @throws Exception
      */
-    Registration getRegistrationForSession(final String studentId, final String sessionId) throws Exception;
+    Registration getRegistrationForSession(final String userId, final String sessionId) throws Exception;
 
 }
