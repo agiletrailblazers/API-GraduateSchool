@@ -50,18 +50,18 @@ public class RegistrationController extends BaseController {
     /**
      * Get the registration object using a particular student ID and session ID
      *
-     * @param studentId
+     * @param userId
      * @param sessionId
      * @return
      * @throws Exception
      */
     @RequestMapping(value = "/user/{uid}/sessionId/{sessionId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public Registration getRegistration(@PathVariable("uid") String studentId, @PathVariable("sessionId") String sessionId) throws Exception {
+    public Registration getRegistration(@PathVariable("uid") String userId, @PathVariable("sessionId") String sessionId) throws Exception {
 
-        logger.debug("Checking for duplicate registration for " + studentId +
+        logger.debug("Checking for duplicate registration for " + userId +
                 " in session " + sessionId + ".");
 
-        return registrationService.getRegistrationForSession(studentId, sessionId);
+        return registrationService.getRegistrationForSession(userId, sessionId);
     }
 
 }

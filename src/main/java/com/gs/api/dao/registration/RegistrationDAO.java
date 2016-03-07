@@ -524,4 +524,14 @@ public class RegistrationDAO {
         logger.debug("Stored Procedure executed successfully");
         return out;
     }
+
+    public Registration getRegistration(String userId, String sessionId) throws Exception{
+        Registration registration = new Registration();
+        registration.setId("12345");
+        registration.setOrderNumber("23456");
+        registration.setSessionId(userId);
+        registration.setStudentId(sessionId);
+
+        return registration;
+    }
 }
