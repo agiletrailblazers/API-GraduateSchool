@@ -44,6 +44,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -53,6 +54,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ContextConfiguration(locations = { "classpath:spring/test-root-context.xml" })
 public class RegistrationControllerTest {
     private static final String SALE_ID = "saleId12345";
+    public static final String ORDER_NUMBER = "23456";
     final Logger logger = LoggerFactory.getLogger(RegistrationControllerTest.class);
 
     private static final String USER_ID = "person654321";
@@ -216,4 +218,30 @@ public class RegistrationControllerTest {
                 .andExpect(status().isAccepted())
                 .andExpect(jsonPath("$.message").value(is(pe.getMessage())));
     }
+
+    @Test
+    public void testGetRegistration() throws Exception {
+        Registration createdRegistration = new Registration();
+        createdRegistration.setId(REGISTRATION_ID);
+        createdRegistration.setSessionId(SESSION_ID);
+        createdRegistration.setOrderNumber(ORDER_NUMBER);
+        createdRegistration.setStudentId(USER_ID);
+
+        when(registrationService.getRegistrationForSession(eq(USER_ID), eq(SESSION_ID))).thenReturn(createdRegistration);
+
+        mockMvc.perform(get("/registration/user/" + USER_ID + "/sessionId/" + SESSION_ID)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(REGISTRATION_ID)))
+                .andExpect(jsonPath("$.orderNumber", is(ORDER_NUMBER)))
+                .andExpect(jsonPath("$.studentId", is(USER_ID)))
+                .andExpect(jsonPath("$.sessionId", is(SESSION_ID)));
+
+        verify(registrationService).getRegistrationForSession(eq(USER_ID), eq(SESSION_ID));
+        assertEquals("Wrong user id", USER_ID, createdRegistration.getStudentId());
+        assertEquals("Wrong session id", SESSION_ID, createdRegistration.getSessionId());
+        assertEquals("Wrong order number", ORDER_NUMBER, createdRegistration.getOrderNumber());
+        assertEquals("Wrong registration id", REGISTRATION_ID, createdRegistration.getId());
+    }
+
 }
