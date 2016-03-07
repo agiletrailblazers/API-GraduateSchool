@@ -20,8 +20,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
 import javax.servlet.http.HttpServletRequest;
 
 @Configuration
@@ -47,6 +45,23 @@ public class RegistrationController extends BaseController {
         authenticationService.verifyUser(request, id);
 
         return registrationService.register(id, registrationRequest);
+    }
+
+    /**
+     * Get the registration object using a particular student ID and session ID
+     *
+     * @param studentId
+     * @param sessionId
+     * @return
+     * @throws Exception
+     */
+    @RequestMapping(value = "/user/{uid}/sessionId/{sessionId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public Registration getRegistration(@PathVariable("uid") String studentId, @PathVariable("sessionId") String sessionId) throws Exception {
+
+        logger.debug("Checking for duplicate registration for " + studentId +
+                " in session " + sessionId + ".");
+
+        return registrationService.getRegistrationForSession(studentId, sessionId);
     }
 
 }

@@ -1,7 +1,8 @@
 package com.gs.api.service.registration;
 
-import com.gs.api.domain.registration.RegistrationRequest;
+import com.gs.api.domain.registration.Registration;
 import com.gs.api.domain.registration.RegistrationResponse;
+import com.gs.api.domain.registration.RegistrationRequest;
 import com.gs.api.exception.PaymentException;
 
 public interface RegistrationService {
@@ -15,5 +16,15 @@ public interface RegistrationService {
      * @throws PaymentException error creating registrations and/or processing payments.
      */
     RegistrationResponse register(final String userId, final RegistrationRequest registrationRequest) throws PaymentException;
+
+    /**
+     * Get a Registration object from a student ID and a session ID. 
+     *
+     * @param studentId - user ID of the student
+     * @param sessionId - session ID to search for
+     * @return
+     * @throws Exception
+     */
+    Registration getRegistrationForSession(final String studentId, final String sessionId) throws Exception;
 
 }
