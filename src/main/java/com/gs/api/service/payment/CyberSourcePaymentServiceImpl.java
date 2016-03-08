@@ -26,7 +26,6 @@ import java.util.Properties;
 @Service
 public class CyberSourcePaymentServiceImpl implements PaymentService {
 
-    static final String[] PAYMENT_DECLINE_REASON_CODES = new String[] {"202", "203", "204", "205", "208", "209", "210", "211", "230", "231", "232", "233"};
     static final String FAILED_PAYMENT_DECLINED_MSG = "Payment declined by CyberSource";
     static final String FAILED_TO_COMPLETE_SALE_MSG = "Failed to complete sale with CyberSource";
     static final String FAILED_TO_REVERSE_AUTHORIZATION_MSG = "Failed to reverse payment authorization with CyberSource";
