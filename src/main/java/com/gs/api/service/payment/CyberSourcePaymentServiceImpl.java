@@ -6,8 +6,10 @@ import com.cybersource.ws.client.FaultException;
 import com.gs.api.domain.payment.Payment;
 import com.gs.api.domain.payment.PaymentConfirmation;
 import com.gs.api.exception.PaymentAcceptedException;
+import com.gs.api.exception.PaymentDeclinedException;
 import com.gs.api.exception.PaymentException;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,9 +26,10 @@ import java.util.Properties;
 @Service
 public class CyberSourcePaymentServiceImpl implements PaymentService {
 
-    static final String REQUEST_ID = "requestID";
+    static final String FAILED_PAYMENT_DECLINED_MSG = "Payment declined by CyberSource";
     static final String FAILED_TO_COMPLETE_SALE_MSG = "Failed to complete sale with CyberSource";
     static final String FAILED_TO_REVERSE_AUTHORIZATION_MSG = "Failed to reverse payment authorization with CyberSource";
+    static final String REQUEST_ID = "requestID";
     static final String REQUEST_CC_CAPTURE_SERVICE_RUN = "ccCaptureService_run";
     static final String REQUEST_CC_AUTH_REVERSAL_SERVICE_RUN = "ccAuthReversalService_run";
     static final String REQUEST_MERCHANT_REFERENCE_CODE = "merchantReferenceCode";
@@ -83,6 +86,9 @@ public class CyberSourcePaymentServiceImpl implements PaymentService {
     @Value("#{systemProperties['cybersourceDir'] ?: ''}")
     private String cybersourceDir;
 
+    @Value("${cybersource.declinedReasonCodes}")
+    private String[] declinedReasonCodes;
+
     @Override
     public PaymentConfirmation processPayment(final Payment payment) throws PaymentException {
 
@@ -98,22 +104,6 @@ public class CyberSourcePaymentServiceImpl implements PaymentService {
         try {
             // use the CyberSource client to execute the capture (sale) transaction
             cyberSourceResponse = Client.runTransaction(cyberSourceRequest, clientProperties);
-
-            String decision = (String) cyberSourceResponse.get(RESPONSE_DECISION);
-            if (!ACCEPT.equalsIgnoreCase(decision)) {
-                // non-accept response, log and throw payment failure
-                String reasonCode = (String) cyberSourceResponse.get(RESPONSE_REASON_CODE);
-
-                // TODO send auth reversal for any non-accept reason code; reversal call failure should be captured and logged, but not re-thrown
-                // TODO specifically identified reason codes must throw a payment declined exception, all other reason codes must throw a generic payment exception
-
-                String errorMsg = String.format(FAILED_TO_COMPLETE_SALE_MSG + ", decision %s, reason code %s", decision, reasonCode);
-                logger.debug(errorMsg);
-                throw new PaymentException(errorMsg);
-            }
-
-            logger.info("Successful payment, reference number {}, amount {}", payment.getMerchantReferenceId(), payment.getAmount());
-            return new PaymentConfirmation(payment, (String) cyberSourceResponse.get(REQUEST_ID));
         }
         catch (ClientException e) {
 
@@ -122,8 +112,8 @@ public class CyberSourcePaymentServiceImpl implements PaymentService {
                 handleNotifications(e, cyberSourceRequest, cyberSourceResponse);
                 throw new PaymentAcceptedException(FAILED_TO_COMPLETE_SALE_MSG, e);
             }
-
-            // TODO send auth reversal; reversal call failure should be captured and logged, but not re-thrown
+            logger.error("Payment failed, reversing authorization", e);
+            reversePaymentSilently(payment);
             throw new PaymentException(FAILED_TO_COMPLETE_SALE_MSG, e);
         }
         catch (FaultException e) {
@@ -133,10 +123,37 @@ public class CyberSourcePaymentServiceImpl implements PaymentService {
                 handleNotifications(e, cyberSourceRequest, cyberSourceResponse);
                 throw new PaymentAcceptedException(FAILED_TO_COMPLETE_SALE_MSG, e);
             }
-
-            // TODO send auth reversal; reversal call failure should be captured and logged, but not re-thrown
+            logger.error("Payment failed, reversing authorization", e);
+            reversePaymentSilently(payment);
             throw new PaymentException(FAILED_TO_COMPLETE_SALE_MSG, e);
         }
+        catch (Exception e) {
+            logger.error("Payment failed, reversing authorization", e);
+            reversePaymentSilently(payment);
+            throw new PaymentException(FAILED_TO_COMPLETE_SALE_MSG, e);
+        }
+
+        String decision = (String) cyberSourceResponse.get(RESPONSE_DECISION);
+        if (!ACCEPT.equalsIgnoreCase(decision)) {
+            reversePaymentSilently(payment);
+
+            String errorMsg;
+            // non-accept response, log and throw payment failure
+            String reasonCode = (String) cyberSourceResponse.get(RESPONSE_REASON_CODE);
+            if(ArrayUtils.contains(declinedReasonCodes, reasonCode)) {
+                errorMsg = String.format(FAILED_PAYMENT_DECLINED_MSG + ", decision %s, reason code %s", decision, reasonCode);
+                logger.debug(errorMsg);
+                throw new PaymentDeclinedException(errorMsg);
+            }
+            else {
+                errorMsg = String.format(FAILED_TO_COMPLETE_SALE_MSG + ", decision %s, reason code %s", decision, reasonCode);
+                logger.debug(errorMsg);
+                throw new PaymentException(errorMsg);
+            }
+        }
+
+        logger.info("Successful payment, reference number {}, amount {}", payment.getMerchantReferenceId(), payment.getAmount());
+        return new PaymentConfirmation(payment, (String) cyberSourceResponse.get(REQUEST_ID));
     }
 
     @Override
@@ -160,7 +177,7 @@ public class CyberSourcePaymentServiceImpl implements PaymentService {
                 // non-accept response, log and throw payment failure
                 String reasonCode = (String) cyberSourceResponse.get(RESPONSE_REASON_CODE);
                 String errorMsg = String.format(FAILED_TO_REVERSE_AUTHORIZATION_MSG + ", decision %s, reason code %s", decision, reasonCode);
-                logger.debug(errorMsg);
+                logger.error(errorMsg);
                 throw new PaymentException(errorMsg);
             }
 
@@ -243,6 +260,15 @@ public class CyberSourcePaymentServiceImpl implements PaymentService {
         requestParameters.put(REQUEST_PURCHASE_TOTALS_GRAND_TOTAL_AMOUNT, new DecimalFormat("#.00").format(payment.getAmount()));
 
         return requestParameters;
+    }
+
+    private void reversePaymentSilently(final Payment payment) {
+        try {
+            reversePayment(payment);
+        }
+        catch (PaymentException e) {
+            logger.debug("Logging authorization reversal failure but continuing to process");
+        }
     }
 
     private void handleNotifications(Exception e, Map<String, String> cyberSourceRequest, Map<String, String> cyberSourceResponse) {
