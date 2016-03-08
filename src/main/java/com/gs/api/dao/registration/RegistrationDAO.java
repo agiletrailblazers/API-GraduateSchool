@@ -10,12 +10,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.stereotype.Repository;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import javax.sql.DataSource;
@@ -64,6 +69,9 @@ public class RegistrationDAO {
     private String getChargeSequenceQuery;
     @Value("${sql.registration.paymentId.sequence}")
     private String getPaymentSequenceQuery;
+
+    @Value("${sql.registration.getExisting.query}")
+    private String existingRegistrationQuery;
 
     @Autowired
     public void setDataSource(DataSource dataSource) {
@@ -525,13 +533,57 @@ public class RegistrationDAO {
         return out;
     }
 
+    /**
+     * Get a Registration object from user ID and course session ID
+     *
+     * @param userId - ID of the student registered/registering for a session
+     * @param sessionId - ID of the session (not course) to look up
+     * @return
+     * @throws Exception
+     */
     public Registration getRegistration(String userId, String sessionId) throws Exception{
-        Registration registration = new Registration();
-        registration.setId("12345");
-        registration.setOrderNumber("23456");
-        registration.setSessionId(userId);
-        registration.setStudentId(sessionId);
+        logger.debug("Getting registration from the database");
+        logger.debug(existingRegistrationQuery);
 
-        return registration;
+        try {
+            List<Registration> registrations = this.jdbcTemplate.query(existingRegistrationQuery,
+                    new Object[] { userId, sessionId },
+                    new RegistrationRowMapper());
+            logger.debug("Found {} registrations", registrations.size());
+            if(registrations.size() > 1 ){
+                throw new Exception("Multiple Registrations found");
+            } else if(registrations.size() < 1){
+                logger.debug("No registration found for user " + userId + " and session " + sessionId);
+                return null;
+            }
+
+            return registrations.get(0);
+
+        }
+        catch (EmptyResultDataAccessException e) {
+            logger.debug("Registration not found - {}", e);
+            return null;
+        }
+        catch (Exception e) {
+            logger.error("Error retrieving registration - {}", e);
+            throw e;
+        }
+    }
+
+    protected final class RegistrationRowMapper implements RowMapper<Registration> {
+        /**
+         * Map row for Registration object from result set - basic fields
+         */
+        public Registration mapRow(ResultSet rs, int rowNum) throws SQLException {
+
+            Registration registration = new Registration();
+            registration.setId(rs.getString("reg_id"));
+            registration.setOrderNumber(rs.getString("order_no"));
+            registration.setStudentId(rs.getString("student_id"));
+            registration.setSessionId(rs.getString("session_id"));
+
+            return registration;
+        }
     }
 }
+
