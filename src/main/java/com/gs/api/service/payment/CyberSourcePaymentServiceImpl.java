@@ -127,7 +127,7 @@ public class CyberSourcePaymentServiceImpl implements PaymentService {
             reversePaymentSilently(payment);
             throw new PaymentException(FAILED_TO_COMPLETE_SALE_MSG, e);
         }
-        catch (IllegalArgumentException e) {
+        catch (Exception e) {
             logger.error("Payment failed, reversing authorization", e);
             reversePaymentSilently(payment);
             throw new PaymentException(FAILED_TO_COMPLETE_SALE_MSG, e);
