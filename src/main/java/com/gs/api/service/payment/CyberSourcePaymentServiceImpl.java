@@ -87,6 +87,9 @@ public class CyberSourcePaymentServiceImpl implements PaymentService {
     @Value("#{systemProperties['cybersourceDir'] ?: ''}")
     private String cybersourceDir;
 
+    @Value("${cybersource.declinedReasonCodes}")
+    private String[] declinedReasonCodes;
+
     @Override
     public PaymentConfirmation processPayment(final Payment payment) throws PaymentException {
 
@@ -102,29 +105,6 @@ public class CyberSourcePaymentServiceImpl implements PaymentService {
         try {
             // use the CyberSource client to execute the capture (sale) transaction
             cyberSourceResponse = Client.runTransaction(cyberSourceRequest, clientProperties);
-
-            String decision = (String) cyberSourceResponse.get(RESPONSE_DECISION);
-            if (!ACCEPT.equalsIgnoreCase(decision)) {
-                String errorMsg;
-                // non-accept response, log and throw payment failure
-                String reasonCode = (String) cyberSourceResponse.get(RESPONSE_REASON_CODE);
-                if(ArrayUtils.contains(PAYMENT_DECLINE_REASON_CODES, reasonCode)) {
-                    errorMsg = String.format(FAILED_PAYMENT_DECLINED_MSG + ", decision %s, reason code %s", decision, reasonCode);
-                    logger.error(errorMsg);
-                    reversePaymentSilently(payment);
-                    throw new PaymentDeclinedException(errorMsg);
-                }
-                //TODO Future stories will add other explicit reason code checks
-                else {
-                    errorMsg = String.format(FAILED_TO_COMPLETE_SALE_MSG + ", decision %s, reason code %s", decision, reasonCode);
-                    logger.error(errorMsg);
-                    reversePaymentSilently(payment);
-                    throw new PaymentException(errorMsg);
-                }
-            }
-
-            logger.info("Successful payment, reference number {}, amount {}", payment.getMerchantReferenceId(), payment.getAmount());
-            return new PaymentConfirmation(payment, (String) cyberSourceResponse.get(REQUEST_ID));
         }
         catch (ClientException e) {
 
@@ -153,6 +133,28 @@ public class CyberSourcePaymentServiceImpl implements PaymentService {
             reversePaymentSilently(payment);
             throw new PaymentException(FAILED_TO_COMPLETE_SALE_MSG, e);
         }
+
+        String decision = (String) cyberSourceResponse.get(RESPONSE_DECISION);
+        if (!ACCEPT.equalsIgnoreCase(decision)) {
+            reversePaymentSilently(payment);
+
+            String errorMsg;
+            // non-accept response, log and throw payment failure
+            String reasonCode = (String) cyberSourceResponse.get(RESPONSE_REASON_CODE);
+            if(ArrayUtils.contains(declinedReasonCodes, reasonCode)) {
+                errorMsg = String.format(FAILED_PAYMENT_DECLINED_MSG + ", decision %s, reason code %s", decision, reasonCode);
+                logger.debug(errorMsg);
+                throw new PaymentDeclinedException(errorMsg);
+            }
+            else {
+                errorMsg = String.format(FAILED_TO_COMPLETE_SALE_MSG + ", decision %s, reason code %s", decision, reasonCode);
+                logger.debug(errorMsg);
+                throw new PaymentException(errorMsg);
+            }
+        }
+
+        logger.info("Successful payment, reference number {}, amount {}", payment.getMerchantReferenceId(), payment.getAmount());
+        return new PaymentConfirmation(payment, (String) cyberSourceResponse.get(REQUEST_ID));
     }
 
     @Override

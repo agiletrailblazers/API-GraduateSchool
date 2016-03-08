@@ -59,6 +59,8 @@ public class CyberSourcePaymentServiceTest {
     private static final String OTHER_REJECTED_REASON_CODE = "200";
     private static final String CYBERSOURCE_DIR = "/some/test/dir";
     private static final int MAX_LOG_SIZE = 10;
+    private static final String[] PAYMENT_DECLINE_REASON_CODES = new String[] {"202", "203", "204", "205", "208", "209", "210", "211", "230", "231", "232", "233"};
+
 
     private CyberSourcePaymentServiceImpl paymentService;
 
@@ -97,6 +99,7 @@ public class CyberSourcePaymentServiceTest {
         ReflectionTestUtils.setField(paymentService, "timeout", TIMEOUT);
         ReflectionTestUtils.setField(paymentService, "enableLog", FALSE);
         ReflectionTestUtils.setField(paymentService, "logMaximumSize", MAX_LOG_SIZE);
+        ReflectionTestUtils.setField(paymentService, "declinedReasonCodes", PAYMENT_DECLINE_REASON_CODES);
     }
 
     @Test
