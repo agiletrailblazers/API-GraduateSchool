@@ -4,24 +4,26 @@ import com.gs.api.domain.course.CourseSession;
 import com.gs.api.domain.registration.Registration;
 import com.gs.api.domain.registration.User;
 import com.gs.api.exception.NotFoundException;
+
 import oracle.jdbc.OracleTypes;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.stereotype.Repository;
 
-import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+
+import javax.sql.DataSource;
 
 @Repository
 public class RegistrationDAO {
@@ -539,33 +541,20 @@ public class RegistrationDAO {
      * @return
      * @throws Exception
      */
-    public Registration getRegistration(String userId, String sessionId) throws Exception{
+    public List<Registration> getRegistration(String userId, String sessionId) throws Exception {
         logger.debug("Getting registration from the database");
         logger.debug(existingRegistrationQuery);
 
-        try {
-            List<Registration> registrations = this.jdbcTemplate.query(existingRegistrationQuery,
-                    new Object[] { userId, sessionId, sessionId, sessionId },
-                    new RegistrationRowMapper());
-            logger.debug("Found {} registrations", registrations.size());
-            if(registrations.size() > 1 ){
-                throw new Exception("Multiple Registrations found");
-            } else if(registrations.size() < 1){
-                logger.debug("No registration found for user " + userId + " and session " + sessionId);
-                throw new NotFoundException("No registration found for user " + userId + " and session " + sessionId);
-            }
+        List<Registration> registrations = this.jdbcTemplate.query(existingRegistrationQuery,
+                new Object[] { userId, sessionId, sessionId, sessionId },
+                new RegistrationRowMapper());
+        logger.debug("Found {} registrations", registrations.size());
+        if(registrations.isEmpty()) {
+            logger.debug("No registration found for user " + userId + " and session " + sessionId);
+            throw new NotFoundException("No registration found for user " + userId + " and session " + sessionId);
+        }
 
-            return registrations.get(0);
-
-        }
-        catch (EmptyResultDataAccessException e) {
-            logger.debug("Registration not found - {}", e);
-            return null;
-        }
-        catch (Exception e) {
-            logger.error("Error retrieving registration - {}", e);
-            throw e;
-        }
+        return registrations;
     }
 
     protected final class RegistrationRowMapper implements RowMapper<Registration> {

@@ -6,6 +6,7 @@ import com.gs.api.domain.payment.PaymentConfirmation;
 import com.gs.api.domain.registration.Registration;
 import com.gs.api.domain.registration.RegistrationRequest;
 import com.gs.api.domain.registration.RegistrationResponse;
+import com.gs.api.exception.AuthenticationException;
 import com.gs.api.exception.PaymentAcceptedException;
 import com.gs.api.exception.PaymentDeclinedException;
 import com.gs.api.exception.PaymentException;
@@ -20,8 +21,6 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
@@ -32,6 +31,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -42,7 +42,9 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -55,7 +57,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class RegistrationControllerTest {
     private static final String SALE_ID = "saleId12345";
     public static final String ORDER_NUMBER = "23456";
-    final Logger logger = LoggerFactory.getLogger(RegistrationControllerTest.class);
 
     private static final String USER_ID = "person654321";
     private static final String SESSION_ID = "session654321";
@@ -220,6 +221,35 @@ public class RegistrationControllerTest {
     }
 
     @Test
+    public void testCreateRegistration_WrongUser() throws Exception {
+
+        Registration registration = new Registration();
+        registration.setStudentId(USER_ID);
+        registration.setSessionId(SESSION_ID);
+        List<Registration> registrations = Collections.singletonList(registration);
+
+        Payment payment = new Payment(PAYMENT_AMOUNT, AUTHORIZATION_ID, MERCHANT_ID);
+        List<Payment> payments = Collections.singletonList(payment);
+        RegistrationRequest registrationRequest = new RegistrationRequest(registrations, payments);
+
+        List<PaymentConfirmation> paymentConfirmations = new ArrayList<>();
+        for (Payment p : payments){
+            paymentConfirmations.add(new PaymentConfirmation(p,null));
+        }
+
+        String jsonModel = new ObjectMapper().writeValueAsString(registrationRequest);
+
+        doThrow(new AuthenticationException("test user is a fraud")).when(authenticationService).verifyUser(isA(HttpServletRequest.class), eq(USER_ID));
+
+        mockMvc.perform(post("/registration/user/" + USER_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonModel))
+                .andExpect(status().isUnauthorized());
+
+        verifyZeroInteractions(registrationService);
+    }
+
+    @Test
     public void testGetRegistration() throws Exception {
         Registration createdRegistration = new Registration();
         createdRegistration.setId(REGISTRATION_ID);
@@ -227,15 +257,15 @@ public class RegistrationControllerTest {
         createdRegistration.setOrderNumber(ORDER_NUMBER);
         createdRegistration.setStudentId(USER_ID);
 
-        when(registrationService.getRegistrationForSession(eq(USER_ID), eq(SESSION_ID))).thenReturn(createdRegistration);
+        when(registrationService.getRegistrationForSession(eq(USER_ID), eq(SESSION_ID))).thenReturn(Arrays.asList(createdRegistration));
 
-        mockMvc.perform(get("/registration/user/" + USER_ID + "/sessionId/" + SESSION_ID)
+        mockMvc.perform(get("/registration/user/" + USER_ID + "/session/" + SESSION_ID)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(REGISTRATION_ID)))
-                .andExpect(jsonPath("$.orderNumber", is(ORDER_NUMBER)))
-                .andExpect(jsonPath("$.studentId", is(USER_ID)))
-                .andExpect(jsonPath("$.sessionId", is(SESSION_ID)));
+                .andExpect(jsonPath("$.[0].id", is(REGISTRATION_ID)))
+                .andExpect(jsonPath("$.[0].orderNumber", is(ORDER_NUMBER)))
+                .andExpect(jsonPath("$.[0].studentId", is(USER_ID)))
+                .andExpect(jsonPath("$.[0].sessionId", is(SESSION_ID)));
 
         verify(registrationService).getRegistrationForSession(eq(USER_ID), eq(SESSION_ID));
         assertEquals("Wrong user id", USER_ID, createdRegistration.getStudentId());

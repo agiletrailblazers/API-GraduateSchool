@@ -466,7 +466,7 @@ public class RegistrationDAOTest {
         when(jdbcTemplate.query(anyString(), any(Object[].class), any(RegistrationDAO.RegistrationRowMapper.class))).
                 thenReturn(Collections.singletonList(registration));
 
-        Registration returnedRegistration = registrationDAO.getRegistration(STUDENT_USER_ID, OFFERING_SESSION_ID);
+        List<Registration> returnedRegistration = registrationDAO.getRegistration(STUDENT_USER_ID, OFFERING_SESSION_ID);
 
         verify(jdbcTemplate).query(eq(existingRegistrationQuery), getRegistrationQueryParamsCaptor.capture(), any(RegistrationDAO.RegistrationRowMapper.class));
         Object[] capturedQueryParams = getRegistrationQueryParamsCaptor.getValue();
@@ -475,10 +475,10 @@ public class RegistrationDAOTest {
 
         assertNotNull("Expected a registration to be found", returnedRegistration);
 
-        assertEquals("Wrong Registration ID", REGISTRATION_ID, returnedRegistration.getId());
-        assertEquals("Wrong Order Number", ORDER_NUMBER, returnedRegistration.getOrderNumber());
-        assertEquals("Wrong User ID", STUDENT_USER_ID, returnedRegistration.getStudentId());
-        assertEquals("Wrong Session ID", OFFERING_SESSION_ID, returnedRegistration.getSessionId());
+        assertEquals("Wrong Registration ID", REGISTRATION_ID, returnedRegistration.get(0).getId());
+        assertEquals("Wrong Order Number", ORDER_NUMBER, returnedRegistration.get(0).getOrderNumber());
+        assertEquals("Wrong User ID", STUDENT_USER_ID, returnedRegistration.get(0).getStudentId());
+        assertEquals("Wrong Session ID", OFFERING_SESSION_ID, returnedRegistration.get(0).getSessionId());
     }
 
     @Test
@@ -504,19 +504,15 @@ public class RegistrationDAOTest {
         when(jdbcTemplate.query(anyString(), any(Object[].class), any(RegistrationDAO.RegistrationRowMapper.class))).
                 thenReturn(registrationList);
 
+        List<Registration> returnedRegistrations = registrationDAO.getRegistration(STUDENT_USER_ID, OFFERING_SESSION_ID);
 
+        verify(jdbcTemplate).query(eq(existingRegistrationQuery), getRegistrationQueryParamsCaptor.capture(), any(RegistrationDAO.RegistrationRowMapper.class));
+        Object[] capturedQueryParams = getRegistrationQueryParamsCaptor.getValue();
+        assertNotNull("Expected parameters", capturedQueryParams);
+        assertArrayEquals("wrong parameters", expectedQueryParams, capturedQueryParams);
 
-        try {
-            registrationDAO.getRegistration(STUDENT_USER_ID, OFFERING_SESSION_ID);
-            assertTrue(false); //Should never reach this line
-        }
-        catch (Exception e) {
-
-            verify(jdbcTemplate).query(eq(existingRegistrationQuery), getRegistrationQueryParamsCaptor.capture(), any(RegistrationDAO.RegistrationRowMapper.class));
-            Object[] capturedQueryParams = getRegistrationQueryParamsCaptor.getValue();
-            assertNotNull("Expected parameters", capturedQueryParams);
-            assertArrayEquals("wrong parameters", expectedQueryParams, capturedQueryParams);
-        }
+        assertNotNull("Expected a registration to be found", returnedRegistrations);
+        assertEquals("wrong registrations", registrationList, returnedRegistrations);
     }
 
     @Test

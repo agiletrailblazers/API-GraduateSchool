@@ -1,9 +1,11 @@
 package com.gs.api.service.registration;
 
 import com.gs.api.domain.registration.Registration;
-import com.gs.api.domain.registration.RegistrationResponse;
 import com.gs.api.domain.registration.RegistrationRequest;
+import com.gs.api.domain.registration.RegistrationResponse;
 import com.gs.api.exception.PaymentException;
+
+import java.util.List;
 
 public interface RegistrationService {
 
@@ -22,9 +24,9 @@ public interface RegistrationService {
      *
      * @param userId - user ID of the student
      * @param sessionId - session ID to search for
-     * @return
+     * @return list of registrations for the specific session and student.
      * @throws Exception
      */
-    Registration getRegistrationForSession(final String userId, final String sessionId) throws Exception;
+    List<Registration> getRegistrationForSession(final String userId, final String sessionId) throws Exception;
 
 }
