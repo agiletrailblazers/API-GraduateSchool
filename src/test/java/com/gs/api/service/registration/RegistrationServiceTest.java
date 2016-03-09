@@ -28,6 +28,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -221,15 +222,15 @@ public class RegistrationServiceTest {
         mockedRegistration.setOrderNumber(ORDER_NUMBER);
         mockedRegistration.setStudentId(USER_ID);
 
-        when(registrationDao.getRegistration(USER_ID,SESSION_ID)).thenReturn(mockedRegistration);
+        when(registrationDao.getRegistration(USER_ID,SESSION_ID)).thenReturn(Arrays.asList(mockedRegistration));
 
-        Registration createdRegistration = registrationService.getRegistrationForSession(USER_ID, SESSION_ID);
+        List<Registration> createdRegistration = registrationService.getRegistrationForSession(USER_ID, SESSION_ID);
 
         verify(registrationDao).getRegistration(eq(USER_ID), eq(SESSION_ID));
 
-        assertEquals(USER_ID, createdRegistration.getStudentId());
-        assertEquals(SESSION_ID, createdRegistration.getSessionId());
-        assertEquals(ORDER_NUMBER, createdRegistration.getOrderNumber());
-        assertEquals(REGISTRATION_ID, createdRegistration.getId());
+        assertEquals(USER_ID, createdRegistration.get(0).getStudentId());
+        assertEquals(SESSION_ID, createdRegistration.get(0).getSessionId());
+        assertEquals(ORDER_NUMBER, createdRegistration.get(0).getOrderNumber());
+        assertEquals(REGISTRATION_ID, createdRegistration.get(0).getId());
     }
 }
