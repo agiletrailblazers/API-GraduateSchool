@@ -37,6 +37,7 @@
 				"441196a0-d77e-e730-45e4-052980d89172",
 				"eafa44d1-5e0a-d73a-3402-540d85e971a7",
 				"21d668a4-a962-0281-766c-5cb3aab53a14",
+				"531c1a74-5e50-4b47-6542-6bdf41498f70",
 				"8cc01474-e2fa-baa8-969d-d5994cc43492",
 				"e851c6f5-20c6-afd0-d79b-c55dc274f356",
 				"668f2cac-a7ba-6f08-e530-8ac738f4a56a"
@@ -219,6 +220,25 @@
 			"time": 1455831887742,
 			"name": "Site - Search",
 			"description": "Search the site by a keyword",
+			"collectionId": "4c2b3198-777b-09b6-f6a9-52ea4b95fada",
+			"responses": []
+		},
+		{
+			"id": "531c1a74-5e50-4b47-6542-6bdf41498f70",
+			"headers": "Authorization: {{authentication.authenticated_token}}\nContent-Type: application/json\n",
+			"url": "http://{{url}}:{{port}}/api/registration/user/{{authentication.user_id}}/session/555555",
+			"preRequestScript": "",
+			"pathVariables": {},
+			"method": "GET",
+			"data": [],
+			"dataMode": "params",
+			"version": 2,
+			"tests": "tests[\"Status code is 404\"] = responseCode.code === 404;\n",
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"time": 1457553875001,
+			"name": "Get Registrations for User by Session",
+			"description": "Verify that no registrations for the user",
 			"collectionId": "4c2b3198-777b-09b6-f6a9-52ea4b95fada",
 			"responses": []
 		},
