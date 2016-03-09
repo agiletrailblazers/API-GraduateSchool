@@ -3,15 +3,11 @@ package com.gs.api.dao.registration;
 import com.gs.api.domain.course.CourseSession;
 import com.gs.api.domain.registration.Registration;
 import com.gs.api.domain.registration.User;
-
+import com.gs.api.exception.NotFoundException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -20,16 +16,14 @@ import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.util.Date;
-import java.util.HashMap;
+import java.sql.ResultSet;
+import java.util.*;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.*;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -74,6 +68,8 @@ public class RegistrationDAOTest {
     private ArgumentCaptor<SqlParameterSource> orderCompleteCaptor;
     @Captor
     private ArgumentCaptor<Object[]> getOrderNoCaptor;
+    @Captor
+    private ArgumentCaptor<Object[]> getRegistrationQueryParamsCaptor;
 
 
     @Value("${sql.registration.getOrderNo.query}")
@@ -105,6 +101,8 @@ public class RegistrationDAOTest {
     private String getChargeSequenceQuery;
     @Value("${sql.registration.paymentId.sequence}")
     private String getPaymentSequenceQuery;
+    @Value("${sql.registration.getExisting.query}")
+    private String existingRegistrationQuery;
 
     private User loggedInUser;
 
@@ -121,6 +119,9 @@ public class RegistrationDAOTest {
     private static final String USER_USER_ID = "empl00001";
     private static final String STUDENT_USER_ID = "persn12345";
     private static final String STUDENT_ACCOUNT_ID = "acct01123";
+    private static final String REGISTRATION_ID = "12345";
+    private static final String ORDER_NUMBER = "23456";
+    private RegistrationDAO.RegistrationRowMapper rowMapper;
 
     @Before
     public void setUp() throws Exception {
@@ -140,6 +141,9 @@ public class RegistrationDAOTest {
         student = new User();
         student.setId(STUDENT_USER_ID);
         student.setAccountId(STUDENT_ACCOUNT_ID);
+
+        rowMapper = registrationDAO.new RegistrationRowMapper();
+
     }
 
     @Test
@@ -447,5 +451,111 @@ public class RegistrationDAOTest {
             verify(insertChargeActor).execute(any(SqlParameterSource.class));
             verify(insertPaymentActor).execute(any(SqlParameterSource.class));
         }
+    }
+
+    @Test
+     public void testGetRegistration() throws Exception{
+        Object[] expectedQueryParams = new Object[] { STUDENT_USER_ID, OFFERING_SESSION_ID, OFFERING_SESSION_ID, OFFERING_SESSION_ID};
+
+        Registration registration = new Registration();
+        registration.setId(REGISTRATION_ID);
+        registration.setOrderNumber(ORDER_NUMBER);
+        registration.setSessionId(OFFERING_SESSION_ID);
+        registration.setStudentId(STUDENT_USER_ID);
+
+        when(jdbcTemplate.query(anyString(), any(Object[].class), any(RegistrationDAO.RegistrationRowMapper.class))).
+                thenReturn(Collections.singletonList(registration));
+
+        Registration returnedRegistration = registrationDAO.getRegistration(STUDENT_USER_ID, OFFERING_SESSION_ID);
+
+        verify(jdbcTemplate).query(eq(existingRegistrationQuery), getRegistrationQueryParamsCaptor.capture(), any(RegistrationDAO.RegistrationRowMapper.class));
+        Object[] capturedQueryParams = getRegistrationQueryParamsCaptor.getValue();
+        assertNotNull("Expected parameters", capturedQueryParams);
+        assertArrayEquals("wrong parameters", expectedQueryParams, capturedQueryParams);
+
+        assertNotNull("Expected a registration to be found", returnedRegistration);
+
+        assertEquals("Wrong Registration ID", REGISTRATION_ID, returnedRegistration.getId());
+        assertEquals("Wrong Order Number", ORDER_NUMBER, returnedRegistration.getOrderNumber());
+        assertEquals("Wrong User ID", STUDENT_USER_ID, returnedRegistration.getStudentId());
+        assertEquals("Wrong Session ID", OFFERING_SESSION_ID, returnedRegistration.getSessionId());
+    }
+
+    @Test
+    public void testGetRegistrationMultipleResults() throws Exception{
+        Object[] expectedQueryParams = new Object[] { STUDENT_USER_ID, OFFERING_SESSION_ID, OFFERING_SESSION_ID, OFFERING_SESSION_ID};
+
+        Registration registration = new Registration();
+        registration.setId(REGISTRATION_ID);
+        registration.setOrderNumber(ORDER_NUMBER);
+        registration.setSessionId(OFFERING_SESSION_ID);
+        registration.setStudentId(STUDENT_USER_ID);
+
+        Registration registration2 = new Registration();
+        registration.setId(REGISTRATION_ID+"2");
+        registration.setOrderNumber(ORDER_NUMBER + "2");
+        registration.setSessionId(OFFERING_SESSION_ID);
+        registration.setStudentId(STUDENT_USER_ID);
+
+        List<Registration> registrationList = new ArrayList<Registration>();
+        registrationList.add(registration);
+        registrationList.add(registration2);
+
+        when(jdbcTemplate.query(anyString(), any(Object[].class), any(RegistrationDAO.RegistrationRowMapper.class))).
+                thenReturn(registrationList);
+
+
+
+        try {
+            registrationDAO.getRegistration(STUDENT_USER_ID, OFFERING_SESSION_ID);
+            assertTrue(false); //Should never reach this line
+        }
+        catch (Exception e) {
+
+            verify(jdbcTemplate).query(eq(existingRegistrationQuery), getRegistrationQueryParamsCaptor.capture(), any(RegistrationDAO.RegistrationRowMapper.class));
+            Object[] capturedQueryParams = getRegistrationQueryParamsCaptor.getValue();
+            assertNotNull("Expected parameters", capturedQueryParams);
+            assertArrayEquals("wrong parameters", expectedQueryParams, capturedQueryParams);
+        }
+    }
+
+    @Test
+    public void testGetRegistrationNoResults() throws Exception{
+        Object[] expectedQueryParams = new Object[] { STUDENT_USER_ID, OFFERING_SESSION_ID, OFFERING_SESSION_ID, OFFERING_SESSION_ID};
+
+        final List<Registration> emptyRegistrationList = new ArrayList<Registration>();
+
+        when(jdbcTemplate.query(anyString(), any(Object[].class), any(RegistrationDAO.RegistrationRowMapper.class))).
+                thenReturn(emptyRegistrationList);
+
+        try {
+            registrationDAO.getRegistration(STUDENT_USER_ID, OFFERING_SESSION_ID);
+            assertTrue(false); //Should never reach this line
+        }
+        catch (NotFoundException e) {
+
+            verify(jdbcTemplate).query(eq(existingRegistrationQuery), getRegistrationQueryParamsCaptor.capture(), any(RegistrationDAO.RegistrationRowMapper.class));
+            Object[] capturedQueryParams = getRegistrationQueryParamsCaptor.getValue();
+            assertNotNull("Expected parameters", capturedQueryParams);
+            assertArrayEquals("wrong parameters", expectedQueryParams, capturedQueryParams);
+        }
+
+    }
+
+    @Test
+    public void testRegistrationDAO_RowMapper() throws Exception {
+        ResultSet rs = mock(ResultSet.class);
+
+        when(rs.getString("reg_id")).thenReturn(REGISTRATION_ID);
+        when(rs.getString("order_no")).thenReturn(ORDER_NUMBER);
+        when(rs.getString("student_id")).thenReturn(STUDENT_USER_ID);
+        when(rs.getString("session_id")).thenReturn(OFFERING_SESSION_ID);
+
+        Registration returnedRegistration = rowMapper.mapRow(rs, 0);
+        assertNotNull(returnedRegistration);
+        assertEquals(REGISTRATION_ID, returnedRegistration.getId());
+        assertEquals(ORDER_NUMBER, returnedRegistration.getOrderNumber());
+        assertEquals(STUDENT_USER_ID, returnedRegistration.getStudentId());
+        assertEquals(OFFERING_SESSION_ID, returnedRegistration.getSessionId());
     }
 }

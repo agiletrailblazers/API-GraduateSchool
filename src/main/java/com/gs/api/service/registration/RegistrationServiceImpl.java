@@ -94,4 +94,10 @@ public class RegistrationServiceImpl implements RegistrationService {
 
         return registrationResponse;
     }
+
+    @Override
+    public Registration getRegistrationForSession(final String userId, final String sessionId) throws Exception{
+        logger.debug("Getting Registration for student");
+        return registrationDao.getRegistration(userId, sessionId);
+    }
 }

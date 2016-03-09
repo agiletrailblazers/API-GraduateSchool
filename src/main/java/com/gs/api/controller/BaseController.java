@@ -5,7 +5,6 @@ import com.gs.api.exception.NotFoundException;
 import com.gs.api.exception.PaymentAcceptedException;
 import com.gs.api.exception.PaymentDeclinedException;
 import com.gs.api.exception.PaymentException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.propertyeditors.StringArrayPropertyEditor;
@@ -125,5 +124,6 @@ public abstract class BaseController {
     public String handlePaymentException(PaymentException ex) {
         return "{\"message\": \"" + ex.getMessage() + "\"}";
     }
+
 
 }
