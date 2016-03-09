@@ -1,7 +1,10 @@
 package com.gs.api.controller;
 
-import com.gs.api.exception.*;
-
+import com.gs.api.exception.AuthenticationException;
+import com.gs.api.exception.NotFoundException;
+import com.gs.api.exception.PaymentAcceptedException;
+import com.gs.api.exception.PaymentDeclinedException;
+import com.gs.api.exception.PaymentException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.propertyeditors.StringArrayPropertyEditor;
@@ -122,15 +125,5 @@ public abstract class BaseController {
         return "{\"message\": \"" + ex.getMessage() + "\"}";
     }
 
-    /**
-     * Return json formatted error response when a duplicate registration is found
-     * @return ResponseBody
-     */
-    @ResponseStatus(HttpStatus.CONFLICT)
-    @ExceptionHandler({ DuplicateRegistrationException.class })
-    @ResponseBody
-    public String handleDuplicateRegistrationException(DuplicateRegistrationException ex) {
-        return "{\"message\": \"" + ex.getMessage() + "\"}";
-    }
 
 }

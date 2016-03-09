@@ -3,15 +3,11 @@ package com.gs.api.dao.registration;
 import com.gs.api.domain.course.CourseSession;
 import com.gs.api.domain.registration.Registration;
 import com.gs.api.domain.registration.User;
-
+import com.gs.api.exception.NotFoundException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -459,7 +455,7 @@ public class RegistrationDAOTest {
 
     @Test
      public void testGetRegistration() throws Exception{
-        Object[] expectedQueryParams = new Object[] { STUDENT_USER_ID, OFFERING_SESSION_ID};
+        Object[] expectedQueryParams = new Object[] { STUDENT_USER_ID, OFFERING_SESSION_ID, OFFERING_SESSION_ID, OFFERING_SESSION_ID};
 
         Registration registration = new Registration();
         registration.setId(REGISTRATION_ID);
@@ -487,7 +483,7 @@ public class RegistrationDAOTest {
 
     @Test
     public void testGetRegistrationMultipleResults() throws Exception{
-        Object[] expectedQueryParams = new Object[] { STUDENT_USER_ID, OFFERING_SESSION_ID};
+        Object[] expectedQueryParams = new Object[] { STUDENT_USER_ID, OFFERING_SESSION_ID, OFFERING_SESSION_ID, OFFERING_SESSION_ID};
 
         Registration registration = new Registration();
         registration.setId(REGISTRATION_ID);
@@ -525,21 +521,24 @@ public class RegistrationDAOTest {
 
     @Test
     public void testGetRegistrationNoResults() throws Exception{
-        Object[] expectedQueryParams = new Object[] { STUDENT_USER_ID, OFFERING_SESSION_ID};
+        Object[] expectedQueryParams = new Object[] { STUDENT_USER_ID, OFFERING_SESSION_ID, OFFERING_SESSION_ID, OFFERING_SESSION_ID};
 
         final List<Registration> emptyRegistrationList = new ArrayList<Registration>();
 
         when(jdbcTemplate.query(anyString(), any(Object[].class), any(RegistrationDAO.RegistrationRowMapper.class))).
                 thenReturn(emptyRegistrationList);
 
-        Registration returnedRegistration = registrationDAO.getRegistration(STUDENT_USER_ID, OFFERING_SESSION_ID);
+        try {
+            registrationDAO.getRegistration(STUDENT_USER_ID, OFFERING_SESSION_ID);
+            assertTrue(false); //Should never reach this line
+        }
+        catch (NotFoundException e) {
 
-        verify(jdbcTemplate).query(eq(existingRegistrationQuery), getRegistrationQueryParamsCaptor.capture(), any(RegistrationDAO.RegistrationRowMapper.class));
-        Object[] capturedQueryParams = getRegistrationQueryParamsCaptor.getValue();
-        assertNotNull("Expected parameters", capturedQueryParams);
-        assertArrayEquals("wrong parameters", expectedQueryParams, capturedQueryParams);
-
-        assertNull("Expected a registration not to be found", returnedRegistration);
+            verify(jdbcTemplate).query(eq(existingRegistrationQuery), getRegistrationQueryParamsCaptor.capture(), any(RegistrationDAO.RegistrationRowMapper.class));
+            Object[] capturedQueryParams = getRegistrationQueryParamsCaptor.getValue();
+            assertNotNull("Expected parameters", capturedQueryParams);
+            assertArrayEquals("wrong parameters", expectedQueryParams, capturedQueryParams);
+        }
 
     }
 

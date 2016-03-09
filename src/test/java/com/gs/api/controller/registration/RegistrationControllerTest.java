@@ -6,7 +6,6 @@ import com.gs.api.domain.payment.PaymentConfirmation;
 import com.gs.api.domain.registration.Registration;
 import com.gs.api.domain.registration.RegistrationRequest;
 import com.gs.api.domain.registration.RegistrationResponse;
-import com.gs.api.exception.DuplicateRegistrationException;
 import com.gs.api.exception.PaymentAcceptedException;
 import com.gs.api.exception.PaymentDeclinedException;
 import com.gs.api.exception.PaymentException;
@@ -243,30 +242,6 @@ public class RegistrationControllerTest {
         assertEquals("Wrong session id", SESSION_ID, createdRegistration.getSessionId());
         assertEquals("Wrong order number", ORDER_NUMBER, createdRegistration.getOrderNumber());
         assertEquals("Wrong registration id", REGISTRATION_ID, createdRegistration.getId());
-    }
-
-    @Test
-    public void testDuplicateRegistrationException() throws Exception {
-
-        DuplicateRegistrationException dre = new DuplicateRegistrationException("This is an expected failure in the test");
-        when(registrationService.getRegistrationForSession(eq(USER_ID), eq(SESSION_ID))).thenThrow(dre);
-
-        mockMvc.perform(get("/registration/user/" + USER_ID + "/sessionId/" + SESSION_ID)
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.message").value(is(dre.getMessage())));
-    }
-
-    @Test
-    public void testDuplicateRegistrationExceptionWithThrowable() throws Exception {
-
-        DuplicateRegistrationException dre = new DuplicateRegistrationException("This is an expected failure in the test", new Exception("This is a nested Exception"));
-        when(registrationService.getRegistrationForSession(eq(USER_ID), eq(SESSION_ID))).thenThrow(dre);
-
-        mockMvc.perform(get("/registration/user/" + USER_ID + "/sessionId/" + SESSION_ID)
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.message").value(is(dre.getMessage())));
     }
 
 }

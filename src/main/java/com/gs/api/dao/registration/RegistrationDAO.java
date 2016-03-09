@@ -3,9 +3,8 @@ package com.gs.api.dao.registration;
 import com.gs.api.domain.course.CourseSession;
 import com.gs.api.domain.registration.Registration;
 import com.gs.api.domain.registration.User;
-
+import com.gs.api.exception.NotFoundException;
 import oracle.jdbc.OracleTypes;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,13 +16,12 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.stereotype.Repository;
 
+import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-
-import javax.sql.DataSource;
 
 @Repository
 public class RegistrationDAO {
@@ -547,14 +545,14 @@ public class RegistrationDAO {
 
         try {
             List<Registration> registrations = this.jdbcTemplate.query(existingRegistrationQuery,
-                    new Object[] { userId, sessionId },
+                    new Object[] { userId, sessionId, sessionId, sessionId },
                     new RegistrationRowMapper());
             logger.debug("Found {} registrations", registrations.size());
             if(registrations.size() > 1 ){
                 throw new Exception("Multiple Registrations found");
             } else if(registrations.size() < 1){
                 logger.debug("No registration found for user " + userId + " and session " + sessionId);
-                return null;
+                throw new NotFoundException("No registration found for user " + userId + " and session " + sessionId);
             }
 
             return registrations.get(0);
