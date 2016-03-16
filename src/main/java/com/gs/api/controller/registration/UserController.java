@@ -1,6 +1,7 @@
 package com.gs.api.controller.registration;
 
 import com.gs.api.controller.BaseController;
+import com.gs.api.domain.registration.Timezone;
 import com.gs.api.domain.registration.User;
 import com.gs.api.service.registration.UserService;
 
@@ -11,6 +12,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Configuration
 @RestController
@@ -51,5 +54,13 @@ public class UserController extends BaseController {
         logger.debug("Get User {}", id);
 
         return userService.getUser(id);
+    }
+
+    @RequestMapping(value = "/timezones", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<Timezone> getTimezones() throws Exception {
+
+        logger.debug("Get timezones");
+
+        return userService.getTimezones();
     }
 }

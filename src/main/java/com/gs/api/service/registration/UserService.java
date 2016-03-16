@@ -1,7 +1,10 @@
 package com.gs.api.service.registration;
 
 import com.gs.api.domain.authentication.AuthCredentials;
+import com.gs.api.domain.registration.Timezone;
 import com.gs.api.domain.registration.User;
+
+import java.util.List;
 
 public interface UserService {
 
@@ -35,4 +38,12 @@ public interface UserService {
      * @throws Exception error getting the user.
      */
     User getUser(final String userId) throws Exception;
+
+    /**
+     * Gets a list of timezones
+     * @return the list of timezones
+     * @throws Exception error getting timezones
+     */
+    List<Timezone> getTimezones() throws Exception;
+
 }
