@@ -2,6 +2,7 @@ package com.gs.api.dao.registration;
 
 import com.gs.api.domain.Address;
 import com.gs.api.domain.Person;
+import com.gs.api.domain.registration.Timezone;
 import com.gs.api.domain.registration.User;
 
 import org.junit.Before;
@@ -12,6 +13,8 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
@@ -23,6 +26,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.sql.ResultSet;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -42,6 +46,9 @@ public class UserDAOTest {
 
     @Value("${sql.user.login.query}")
     private String sqlForUserLogin;
+
+    @Value("${sql.user.timezones.query}")
+    private String sqlForTimezones;
 
     @Value("${sql.user.personInsert.procedure}")
     private String insertUserStoredProcedureName;
@@ -76,7 +83,6 @@ public class UserDAOTest {
     private static final String DOB = "05/05/1955";
     private static final String LAST_FOUR_SSN = "5555";
     private static final String TIMEZONE_ID = "testId";
-    private static final String TIMEZONE_ID_DEFAULT = "tzone000000000000007";
     private static final Boolean VETERAN_STATUS = true;
     private static final String SPLIT = "domin000000000000001";
     private static final String CURRENCY_ID = "crncy000000000000167";
@@ -84,7 +90,8 @@ public class UserDAOTest {
 
     private User user;
 
-    private UserDAO.UserRowMapper rowMapper;
+    private UserDAO.UserRowMapper userRowMapper;
+    private UserDAO.TimezoneRowMapper timezoneRowMapper;
 
     @InjectMocks
     @Autowired
@@ -154,7 +161,8 @@ public class UserDAOTest {
 
         user.setPerson(person);
 
-        rowMapper = userDAO.new UserRowMapper();
+        userRowMapper = userDAO.new UserRowMapper();
+        timezoneRowMapper = userDAO.new TimezoneRowMapper();
     }
 
     @Test
@@ -220,30 +228,6 @@ public class UserDAOTest {
         assertEquals(expectedPersonId, listEntryParameters.get(1).getValue("xperson_id"));
         assertEquals("listl000000000001004", listEntryParameters.get(1).getValue("xlist_id"));
     }
-
-    @Test
-    public void testInsertUserNoTimezoneNoVeteranStatus() throws Exception {
-        HashMap<String, Object> sqlResult = new HashMap<>();
-
-        user.setTimezoneId(null);
-
-        when(jdbcTemplate.queryForObject(getPersIdSequenceQuery, String.class)).thenReturn("100");
-        doReturn(sqlResult).when(userInsertActor).execute(any(SqlParameterSource.class));
-
-        when(jdbcTemplate.queryForObject(getProfileIdSequenceQuery, String.class)).thenReturn("1000");
-        doReturn(sqlResult).when(profileInsertActor).execute(any(SqlParameterSource.class));
-
-        when(jdbcTemplate.queryForObject(getListEntryIdSequenceQuery, String.class)).thenReturn("1000");
-        doReturn(sqlResult).when(listEntryActor).execute(any(SqlParameterSource.class));
-
-        userDAO.insertNewUser(user);
-
-        verify(userInsertActor).execute(insertUserCaptor.capture());
-        SqlParameterSource userParameters = insertUserCaptor.getValue();
-        assertEquals(user.getTimezoneId(), userParameters.getValue("xtimezone_id"));
-        assertEquals(TIMEZONE_ID_DEFAULT, userParameters.getValue("xtimezone_id"));
-    }
-
 
     @Test
     public void testFailToInsertUser() throws Exception {
@@ -371,7 +355,7 @@ public class UserDAOTest {
         when(rs.getString("STATE")).thenReturn(ADDRESS_STATE);
         when(rs.getString("ZIP")).thenReturn(ADDRESS_ZIP);
 
-        User returnedUser = rowMapper.mapRow(rs, 0);
+        User returnedUser = userRowMapper.mapRow(rs, 0);
         assertNotNull(returnedUser);
         assertEquals(USER_ID, returnedUser.getId());
         assertEquals(USERNAME, returnedUser.getUsername());
@@ -403,7 +387,7 @@ public class UserDAOTest {
         when(rs.getString("USER_ID")).thenReturn(USER_ID);
         when(rs.getString("VETERAN")).thenReturn(null);
         when(rs.getString("TIME_STAMP")).thenReturn(USER_TIMESTAMP);
-        User user = rowMapper.mapRow(rs, 0);
+        User user = userRowMapper.mapRow(rs, 0);
         assertNotNull(user);
         assertEquals(USER_ID, user.getId());
         assertNull(user.getPerson().getVeteran());
@@ -416,7 +400,7 @@ public class UserDAOTest {
         when(rs.getString("USER_ID")).thenReturn(USER_ID);
         when(rs.getString("VETERAN")).thenReturn("y");
         when(rs.getString("TIME_STAMP")).thenReturn(USER_TIMESTAMP);
-        User user = rowMapper.mapRow(rs, 0);
+        User user = userRowMapper.mapRow(rs, 0);
         assertNotNull(user);
         assertEquals(USER_ID, user.getId());
         assertTrue(user.getPerson().getVeteran());
@@ -433,7 +417,7 @@ public class UserDAOTest {
         Date parsed = format.parse("20110210");
         java.sql.Date sqlDateOfBirth = new java.sql.Date(parsed.getTime());
         when(rs.getDate("DATE_OF_BIRTH")).thenReturn(sqlDateOfBirth);
-        User user = rowMapper.mapRow(rs, 0);
+        User user = userRowMapper.mapRow(rs, 0);
         assertNotNull(user);
         assertEquals(USER_ID, user.getId());
         assertEquals(sqlDateOfBirth.toString(), user.getPerson().getDateOfBirth());
@@ -446,7 +430,7 @@ public class UserDAOTest {
         when(rs.getString("USER_ID")).thenReturn(USER_ID);
         when(rs.getString("SS_NO")).thenReturn("00000" + LAST_FOUR_SSN);
         when(rs.getString("TIME_STAMP")).thenReturn(USER_TIMESTAMP);
-        User user = rowMapper.mapRow(rs, 0);
+        User user = userRowMapper.mapRow(rs, 0);
         assertNotNull(user);
         assertEquals(USER_ID, user.getId());
         assertEquals(LAST_FOUR_SSN, user.getLastFourSSN());
@@ -459,7 +443,7 @@ public class UserDAOTest {
         when(rs.getString("USER_ID")).thenReturn(USER_ID);
         when(rs.getString("SS_NO")).thenReturn("123");
         when(rs.getString("TIME_STAMP")).thenReturn(USER_TIMESTAMP);
-        User user = rowMapper.mapRow(rs, 0);
+        User user = userRowMapper.mapRow(rs, 0);
         assertNotNull(user);
         assertEquals(USER_ID, user.getId());
         assertNull(user.getLastFourSSN());
@@ -473,7 +457,7 @@ public class UserDAOTest {
         when(rs.getString("USER_ID")).thenReturn(USER_ID);
         when(rs.getString("SS_NO")).thenReturn(LAST_FOUR_SSN);
         when(rs.getString("TIME_STAMP")).thenReturn(USER_TIMESTAMP);
-        User user = rowMapper.mapRow(rs, 0);
+        User user = userRowMapper.mapRow(rs, 0);
         assertNotNull(user);
         assertEquals(USER_ID, user.getId());
         assertEquals(LAST_FOUR_SSN, user.getLastFourSSN());
@@ -532,5 +516,45 @@ public class UserDAOTest {
         assertArrayEquals("wrong parameters", expectedQueryParams, capturedQueryParams);
 
         assertNull("No user should be found", returnedUser);
+    }
+
+    @Test
+    public void testGetTimezonesSuccess() throws Exception {
+        when(jdbcTemplate.query(anyString(), any(UserDAO.TimezoneRowMapper.class))).thenAnswer(new Answer<List<Timezone>>() {
+            @Override
+            public List<Timezone> answer(InvocationOnMock invocation) throws Throwable {
+                return new ArrayList<Timezone>();
+            }
+        });
+        List<Timezone> list = userDAO.getTimezones();
+        assertNotNull(list);
+        assertEquals(0, list.size());
+    }
+
+    @Test
+    public void testGetTimezones_RuntimeException() throws Exception {
+        when(jdbcTemplate.query(anyString(), any(UserDAO.TimezoneRowMapper.class))).thenThrow(new RuntimeException("random exception"));
+
+        try {
+            userDAO.getTimezones();
+            assertTrue(false); //Should never reach this line
+        }
+        catch (Exception e) {
+            assertNotNull(e);
+            assertTrue(e instanceof Exception);
+        }
+    }
+
+    @Test
+    public void testTimezoneDAO_RowMapper() throws Exception {
+        String expectedId = "tmz0011";
+        String expectedName = "Eastern Time";
+        ResultSet rs = mock(ResultSet.class);
+        when(rs.getString("ID")).thenReturn(expectedId);
+        when(rs.getString("NAME")).thenReturn(expectedName);
+        Timezone timezone = timezoneRowMapper.mapRow(rs, 0);
+        assertNotNull(timezone);
+        assertEquals(expectedId, timezone.getId());
+        assertEquals(expectedName, timezone.getName());
     }
 }

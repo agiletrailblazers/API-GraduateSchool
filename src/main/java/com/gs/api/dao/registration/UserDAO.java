@@ -2,6 +2,7 @@ package com.gs.api.dao.registration;
 
 import com.gs.api.domain.Address;
 import com.gs.api.domain.Person;
+import com.gs.api.domain.registration.Timezone;
 import com.gs.api.domain.registration.User;
 
 import oracle.jdbc.OracleTypes;
@@ -22,6 +23,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import javax.sql.DataSource;
@@ -58,6 +60,9 @@ public class UserDAO {
     @Value("${sql.user.single.query}")
     private String sqlForSingleUser;
 
+    @Value("${sql.user.timezones.query}")
+    private String sqlForTimezones;
+
     @Autowired
     public void setDataSource(DataSource dataSource) {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
@@ -65,6 +70,19 @@ public class UserDAO {
         this.profileInsertActor = new SimpleJdbcCall(this.jdbcTemplate).withProcedureName(insertProfileStoredProcedureName);
         this.listEntryActor = new SimpleJdbcCall(this.jdbcTemplate).withProcedureName(insertfgtListEntryStoredProcedureName);
         this.deleteUserActor = new SimpleJdbcCall(this.jdbcTemplate).withProcedureName(deleteUserStoredProcedureName);
+    }
+
+    /**
+     * Get the list of timezones
+     * @return list of timezones
+     * @throws Exception
+     */
+    public List<Timezone> getTimezones() throws Exception {
+        logger.debug("Getting list of timezones - " + sqlForTimezones);
+
+        final List<Timezone> timezones = this.jdbcTemplate.query(sqlForTimezones, new TimezoneRowMapper());
+        logger.debug("Found {} timezones", timezones.size());
+        return timezones;
     }
 
     /**
@@ -149,9 +167,6 @@ public class UserDAO {
         String split = "domin000000000000001";
         String homeDomain = "domin000000000000001"; //not sure why this is the same as above but different fields in DB
         String currency = "crncy000000000000167"; //We could execute a query to find active currency in system but this is standard
-        if(user.getTimezoneId() == null) {
-            user.setTimezoneId("tzone000000000000007"); //default timezone to make SP function till API is implemented
-        }
 
         //Generate person id
         String personId = "persn" + this.jdbcTemplate.queryForObject(getPersIdSequenceQuery, String.class);
@@ -431,6 +446,18 @@ public class UserDAO {
             user.setPerson(person);
 
             return user;
+        }
+    }
+
+    protected final class TimezoneRowMapper implements RowMapper<Timezone> {
+        /**
+         * Map a row for a Timezone object from a result set
+         */
+        public Timezone mapRow(ResultSet rs, int rowNum) throws SQLException {
+            Timezone timezone = new Timezone();
+            timezone.setId(rs.getString("ID"));
+            timezone.setName(rs.getString("NAME"));
+            return timezone;
         }
     }
 }

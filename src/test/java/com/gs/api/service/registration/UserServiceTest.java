@@ -4,6 +4,7 @@ import com.gs.api.dao.registration.UserDAO;
 import com.gs.api.domain.Address;
 import com.gs.api.domain.Person;
 import com.gs.api.domain.authentication.AuthCredentials;
+import com.gs.api.domain.registration.Timezone;
 import com.gs.api.domain.registration.User;
 import com.gs.api.exception.NotFoundException;
 
@@ -19,10 +20,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -154,4 +160,32 @@ public class UserServiceTest {
         userService.getUser(USER_ID);
     }
 
+    @Test
+    public void testGetTimezones() throws Exception {
+        Timezone expectedTimezone = new Timezone();
+        expectedTimezone.setId("tmz123");
+        expectedTimezone.setName("Easternish");
+        List<Timezone> expectedList  = new ArrayList<Timezone>();
+        expectedList.add(expectedTimezone);
+        when(userDao.getTimezones()).thenReturn(expectedList);
+        List<Timezone> returnedTimezones = userService.getTimezones();
+        assertEquals(1, returnedTimezones.size());
+        assertEquals(returnedTimezones.get(0).getId(), expectedTimezone.getId());
+        assertEquals(returnedTimezones.get(0).getName(), expectedTimezone.getName());
+
+    }
+
+    @Test
+    public void testGetTimezones_RuntimeException() throws Exception {
+
+        when(userDao.getTimezones()).thenThrow(new RuntimeException("random exception"));
+        try {
+            userService.getTimezones();
+            assertTrue(false); //Should never reach this line
+        }
+        catch (Exception e) {
+            assertNotNull(e);
+            assertTrue(e instanceof Exception);
+        }
+    }
 }

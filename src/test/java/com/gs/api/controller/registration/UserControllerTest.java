@@ -1,6 +1,7 @@
 package com.gs.api.controller.registration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gs.api.domain.registration.Timezone;
 import com.gs.api.domain.registration.User;
 import com.gs.api.exception.NotFoundException;
 import com.gs.api.service.registration.UserService;
@@ -21,6 +22,9 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
@@ -122,5 +126,34 @@ public class UserControllerTest {
                 .andExpect(status().isNotFound());
 
         verify(userService).getUser(id);
+    }
+
+    @Test
+    public void testGetTimezones() throws Exception {
+        Timezone expectedTimezone = new Timezone();
+        expectedTimezone.setId("tmz123");
+        expectedTimezone.setName("Easternish");
+        List<Timezone> expectedList  = new ArrayList<Timezone>();
+        expectedList.add(expectedTimezone);
+        when(userService.getTimezones()).thenReturn(expectedList);
+
+        mockMvc.perform(get("/user/timezones")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.[0].id", is(expectedTimezone.getId())))
+                .andExpect(jsonPath("$.[0].name", is(expectedTimezone.getName())));
+
+        verify(userService).getTimezones();
+    }
+
+    @Test
+    public void testGetTimezones_RuntimeException() throws Exception {
+        when(userService.getTimezones()).thenThrow(new RuntimeException("The test broke stuff intentionally"));
+
+        mockMvc.perform(get("/user/timezones")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError());
+
+        verify(userService).getTimezones();
     }
 }
