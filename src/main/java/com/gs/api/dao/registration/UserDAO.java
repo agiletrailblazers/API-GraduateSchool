@@ -78,8 +78,7 @@ public class UserDAO {
      * @throws Exception
      */
     public List<Timezone> getTimezones() throws Exception {
-        logger.debug("Getting list of timezones");
-        logger.debug(sqlForTimezones);
+        logger.debug("Getting list of timezones - " + sqlForTimezones);
 
         final List<Timezone> timezones = this.jdbcTemplate.query(sqlForTimezones, new TimezoneRowMapper());
         logger.debug("Found {} timezones", timezones.size());
