@@ -24,9 +24,6 @@ import javax.servlet.http.HttpServletResponse;
 @Component("authTokenFilter")
 public class AuthTokenFilter implements Filter {
 
-    @Value("${auth.token.filter.active}")
-    private boolean authTokenFilterActive;
-
     @Value("${auth.token.filter.uri.no.token.required}")
     private String[] noTokenRequiredList;
 
@@ -49,24 +46,20 @@ public class AuthTokenFilter implements Filter {
         final HttpServletResponse httpResponse = (HttpServletResponse) servletResponse;
 
         try {
+            // if the requested URI IS NOT on the "no token required" list then it must be verified for either guest or authenticated access
+            String requestedURI = httpRequest.getRequestURI();
+            logger.debug("Applying auth token filter for URI {}", requestedURI);
 
-            if (authTokenFilterActive) {
+            if (!ArrayUtils.contains(noTokenRequiredList, requestedURI)) {
 
-                // if the requested URI IS NOT on the "no token required" list then it must be verified for either guest or authenticated access
-                String requestedURI = httpRequest.getRequestURI();
-                logger.debug("Applying auth token filter for URI {}", requestedURI);
-
-                if (!ArrayUtils.contains(noTokenRequiredList, requestedURI)) {
-
-                    if (isGuestTokenRequired(requestedURI)) {
-                        logger.debug("URI {} requires a guest token", requestedURI);
-                        authenticationService.validateGuestAccess(httpRequest);
-                    }
-                    else {
-                        // any URI not specifically listed on the guest token required list must have an authenticated token
-                        logger.debug("URI {} requires an authenticated token", requestedURI);
-                        authenticationService.validateAuthenticatedAccess(httpRequest);
-                    }
+                if (isGuestTokenRequired(requestedURI)) {
+                    logger.debug("URI {} requires a guest token", requestedURI);
+                    authenticationService.validateGuestAccess(httpRequest);
+                }
+                else {
+                    // any URI not specifically listed on the guest token required list must have an authenticated token
+                    logger.debug("URI {} requires an authenticated token", requestedURI);
+                    authenticationService.validateAuthenticatedAccess(httpRequest);
                 }
             }
 

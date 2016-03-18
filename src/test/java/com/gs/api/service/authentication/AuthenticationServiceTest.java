@@ -61,9 +61,6 @@ public class AuthenticationServiceTest {
     @Value("${auth.token.expire.minutes}")
     private int authTokenExpireMinutes;
 
-    @Value("${auth.token.filter.active}")
-    private boolean authTokenFilterActive;
-
     @Autowired
     private WebApplicationContext applicationContext;
 
@@ -419,8 +416,6 @@ public class AuthenticationServiceTest {
     @Test
     public void testVerifyUser_WrongUser() throws Exception{
 
-        ReflectionTestUtils.setField(authenticationService, "authTokenFilterActive", true);
-
         // setup expected exception
         thrown.expect(AuthenticationException.class);
         thrown.expectMessage(AuthenticationServiceImpl.MISMATCHED_USER_MSG);
@@ -434,8 +429,6 @@ public class AuthenticationServiceTest {
 
     @Test
     public void testVerifyUser_ValidUser() throws Exception{
-
-        ReflectionTestUtils.setField(authenticationService, "authTokenFilterActive", true);
 
         when(request.getAttribute(authUserAttribute)).thenReturn(USER_ID);
 

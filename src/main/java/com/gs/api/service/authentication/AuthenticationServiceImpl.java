@@ -58,9 +58,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Value("${auth.token.expire.minutes}")
     private int authTokenExpireMinutes;
 
-    @Value("${auth.token.filter.active}")
-    private boolean authTokenFilterActive;
-
     @Override
     public AuthToken generateToken() throws AuthenticationException {
 
@@ -152,11 +149,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public void verifyUser(HttpServletRequest request, String userId) throws AuthenticationException {
-
-        if (authTokenFilterActive) {
-            if (!StringUtils.equals(userId, (String) request.getAttribute(authUserAttribute))) {
-                throw new AuthenticationException(MISMATCHED_USER_MSG);
-            }
+        if (!StringUtils.equals(userId, (String) request.getAttribute(authUserAttribute))) {
+            throw new AuthenticationException(MISMATCHED_USER_MSG);
         }
     }
 

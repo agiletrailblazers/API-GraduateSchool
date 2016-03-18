@@ -51,26 +51,8 @@ public class AuthTokenFilterTest {
 
     @Before
     public void setup() {
-        ReflectionTestUtils.setField(filter, "authTokenFilterActive", true);
         ReflectionTestUtils.setField(filter, "guestTokenRequiredList", AUTHENTICATION_WHITELIST);
         ReflectionTestUtils.setField(filter, "noTokenRequiredList", ALLOWED_URI);
-    }
-
-    @Test
-    public void testDoFilter_filterNotActive() throws Exception {
-
-        ReflectionTestUtils.setField(filter, "authTokenFilterActive", false);
-
-        // simply calling this to get coverage on a method that is a NOOP
-        filter.init(null);
-
-        filter.doFilter(request, response, filterChain);
-
-        // simply calling this to get coverage on a method that is a NOOP
-        filter.destroy();
-
-        verifyZeroInteractions(authenticationService);
-        verify(filterChain).doFilter(request, response);
     }
 
     @Test
@@ -84,6 +66,8 @@ public class AuthTokenFilterTest {
         verifyNoMoreInteractions(request);
         verifyZeroInteractions(authenticationService);
         verify(filterChain).doFilter(request, response);
+
+        filter.destroy();
     }
 
     @Test
@@ -96,6 +80,8 @@ public class AuthTokenFilterTest {
         verify(request).getRequestURI();
         verify(authenticationService).validateGuestAccess(request);
         verify(filterChain).doFilter(request, response);
+
+        filter.destroy();
     }
 
     @Test
@@ -108,6 +94,8 @@ public class AuthTokenFilterTest {
         verify(request).getRequestURI();
         verify(authenticationService).validateGuestAccess(request);
         verify(filterChain).doFilter(request, response);
+
+        filter.destroy();
     }
 
     @Test
@@ -120,6 +108,8 @@ public class AuthTokenFilterTest {
         verify(request).getRequestURI();
         verify(authenticationService).validateGuestAccess(request);
         verify(filterChain).doFilter(request, response);
+
+        filter.destroy();
     }
 
     @Test
@@ -132,6 +122,8 @@ public class AuthTokenFilterTest {
         verify(request).getRequestURI();
         verify(authenticationService).validateAuthenticatedAccess(request);
         verify(filterChain).doFilter(request, response);
+
+        filter.destroy();
     }
 
     @Test
@@ -149,6 +141,8 @@ public class AuthTokenFilterTest {
         verify(response).setHeader("Content-Type", "application/json");
         verify(response).setStatus(401);
         verifyZeroInteractions(filterChain);
+
+        filter.destroy();
     }
 
     @Test
@@ -166,6 +160,8 @@ public class AuthTokenFilterTest {
         verify(response).setHeader("Content-Type", "application/json");
         verify(response).setStatus(401);
         verifyZeroInteractions(filterChain);
+
+        filter.destroy();
     }
 
 }
