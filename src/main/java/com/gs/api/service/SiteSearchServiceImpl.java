@@ -1,15 +1,10 @@
 package com.gs.api.service;
 
-import com.gs.api.domain.Page;
-import com.gs.api.domain.SitePagesSearchResponse;
-import com.gs.api.rest.object.SiteSearchContainer;
-import com.gs.api.rest.object.SiteSearchDoc;
-import com.gs.api.search.util.HttpRequestBuilder;
-import com.gs.api.search.util.NavRangeBuilder;
-import com.gs.api.search.util.SearchUrlBuilder;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,9 +15,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestOperations;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import com.gs.api.domain.Page;
+import com.gs.api.domain.SitePagesSearchResponse;
+import com.gs.api.rest.object.SiteSearchContainer;
+import com.gs.api.rest.object.SiteSearchDoc;
+import com.gs.api.search.util.HttpRequestBuilder;
+import com.gs.api.search.util.NavRangeBuilder;
+import com.gs.api.search.util.SearchUrlBuilder;
+import com.gs.api.search.util.TitleBuilder;
 
 @Service
 public class SiteSearchServiceImpl implements SiteSearchService {
@@ -31,9 +31,6 @@ public class SiteSearchServiceImpl implements SiteSearchService {
 
     @Value("${site.search.solr.query}")
     private String siteSearchSolrQuery;
-
-    @Value("${site.search.title.exclude}")
-    private String siteSearchTitleExclude;
 
     @Autowired(required = true)
     private RestOperations restTemplate;
@@ -47,6 +44,9 @@ public class SiteSearchServiceImpl implements SiteSearchService {
     @Autowired
     private NavRangeBuilder navRangeBuilder;
 
+    @Autowired
+    private TitleBuilder titleBuilder;
+    
     /**
      * Perform a search for Site
      *
@@ -87,7 +87,7 @@ public class SiteSearchServiceImpl implements SiteSearchService {
         List<Page> pages = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(docs)) {
             for (SiteSearchDoc doc : docs) {
-                Page newPage = new Page(parseTitle(doc.getTitle(),doc.getContent()), doc.getUrl(),doc.getContent());
+                Page newPage = new Page(titleBuilder.parseTitle(doc.getTitle(),doc.getContent(), doc.getUrl()), doc.getUrl(),doc.getContent());
                 pages.add(newPage);
             }
             response.setPages(pages.toArray(new Page[pages.size()]));
@@ -107,19 +107,6 @@ public class SiteSearchServiceImpl implements SiteSearchService {
             response.setPageNavRange(navRangeBuilder.createNavRange(currentPage, totalPages));
         }
         return response;
-    }
-
-    /**
-     * remove parts of the title we don't want to display
-     * @param title the title
-     * @param content the content I will use if the title is empty
-     * @return title
-     */
-    private String parseTitle(String title, String content) {
-        if (StringUtils.isEmpty(title)) {
-            title = StringUtils.substring(content,0,20);
-        }
-        return StringUtils.replace(title, siteSearchTitleExclude, "").trim();
     }
 
 }
