@@ -2,7 +2,6 @@ package com.gs.api.service;
 
 import com.gs.api.domain.Page;
 import com.gs.api.domain.SitePagesSearchResponse;
-import com.gs.api.exception.NotFoundException;
 import com.gs.api.rest.object.SiteSearchContainer;
 import com.gs.api.rest.object.SiteSearchDoc;
 import com.gs.api.rest.object.SiteSearchResponse;
