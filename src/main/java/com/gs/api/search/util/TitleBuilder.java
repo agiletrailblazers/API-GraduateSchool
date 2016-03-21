@@ -18,24 +18,19 @@ public class TitleBuilder {
      * @return title
      */
     public String parseTitle(String title, String content, String url) {
-
-        String [] splitSiteSearchTitleExclude=StringUtils.split(siteSearchTitleExclude, ",");
         if (StringUtils.isEmpty(title)) {
-
             if (StringUtils.endsWithAny(url, ".pdf", ".docx")) {
-
                 title = StringUtils.substringAfterLast(url, "/");
-            }
-            else {
-                title = StringUtils.substring(content,0,20);
+            } else {
+                title = StringUtils.substring(content, 0, 20);
             }
         }
-        for (String  siteSearchTitle: splitSiteSearchTitleExclude ) {
-            title =  StringUtils.replace(title,siteSearchTitle , "");
+        String[] splitSiteSearchTitleExclude = StringUtils.split(siteSearchTitleExclude, ",");
+        for (String siteSearchTitle : splitSiteSearchTitleExclude) {
+            title = StringUtils.replace(title, siteSearchTitle, "");
 
         }
-        return  title.trim();
+        return title.trim();
     }
-
 
 }
