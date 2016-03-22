@@ -4,14 +4,38 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.gs.api.domain.Person;
 
+import org.hibernate.validator.constraints.Email;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
+
 @JsonInclude(Include.ALWAYS)
 public class User {
 
     private String id;
+
+    @NotNull(message = "Required field")
+    @Size(min = 1, max = 1020, message="Length must be between 1 and 1020 characters")
+    @Email(message = "Improperly formatted email address")
     private String username;
+
+    @NotNull(message = "Required field")
+    @Size(min = 1, max = 1020, message="Length must be between 1 and 1020 characters")
+    // TODO is there a pattern for allowed characters?
     private String password;
+
+    @NotNull(message = "Required field")
+    @Size(min = 4, max = 4, message = "Length must be 4 characters")
+    @Pattern(regexp = "[0-9]*", message = "Contains non-numeric characters")
     private String lastFourSSN;
+
+    @NotNull(message = "Required field")
+    @Size(min = 1, max = 20, message = "Length must be between 1 and 20 characters")
+    @Pattern(regexp = "[a-zA-Z0-9]*", message = "Contains non-alphanumeric characters")
     private String timezoneId;
+
     private String accountId;
     private String currencyId;
     private String split;
@@ -19,6 +43,8 @@ public class User {
     // keeping it as a string because the DB currently has timestamps with different formats
     private String timestamp;
 
+    @NotNull(message = "Required field")
+    @Valid
     private Person person;
 
     public User() { }

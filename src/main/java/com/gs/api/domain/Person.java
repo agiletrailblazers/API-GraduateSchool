@@ -3,18 +3,54 @@ package com.gs.api.domain;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
+import org.hibernate.validator.constraints.Email;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
+
 @JsonInclude(Include.ALWAYS)
 public class Person {
 
+    @NotNull(message = "Required field")
+    @Size(min = 1, max = 100, message="Length must be between 1 and 100 characters")
+    // TODO is there a pattern for allowed characters?
     private String firstName;
+
+    @Size(min = 1, max = 100, message="Length must be between 1 and 100 characters")
+    // TODO is there a pattern for allowed characters?
     private String middleName;
+
+    @NotNull(message = "Required field")
+    @Size(min = 1, max = 100, message="Length must be between 1 and 100 characters")
+    // TODO is there a pattern for allowed characters?
     private String lastName;
+
+    @NotNull(message = "Required field")
+    @Size(min = 1, max = 1020, message="Length must be between 1 and 1020 characters")
+    @Email(message = "Improperly formatted email address")
     private String emailAddress;
+
+    @NotNull(message = "Required field")
+    @Size(min = 1, max = 100, message="Length must be between 1 and 100 characters")
+    // TODO is there a pattern for allowed characters?
     private String primaryPhone;
+
+    @Size(min = 1, max = 100, message="Length must be between 1 and 100 characters")
+    // TODO is there a pattern for allowed characters?
     private String secondaryPhone;
+
+    @NotNull(message = "Required field")
+    @Valid
     private Address primaryAddress;
+
+    @Valid
     private Address secondaryAddress;
+
     private Boolean veteran;
+
+    @NotNull(message = "Required field")
+    // TODO do we need a custom validator or just a pattern match?
     private String dateOfBirth;
 
     public String getFirstName() {

@@ -3,15 +3,40 @@ package com.gs.api.domain;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
+
 @JsonInclude(Include.NON_NULL)
 public class Address {
 
     private String id;
+
+    @NotNull(message = "Required field")
+    @Size(min = 1, max = 1020, message="Length must be between 1 and 1020 characters")
+    // TODO is there a pattern for allowed characters?
     private String address1;
+
+    @Size(min = 1, max = 1020, message="Length must be between 1 and 1020 characters")
+    // TODO is there a pattern for allowed characters?
     private String address2;
+
+    @Size(min = 1, max = 1020, message="Length must be between 1 and 1020 characters")
+    // TODO is there a pattern for allowed characters?
     private String address3;
+
+    @NotNull(message = "Required field")
+    @Size(min = 1, max = 200, message="Length must be between 1 and 200 characters")
+    // TODO is there a pattern for allowed characters?
     private String city;
+
+    @NotNull(message = "Required field")
+    @Size(min = 1, max = 200, message="Length must be between 1 and 200 characters")
+    // TODO is there a pattern for allowed characters?
     private String state;
+
+    @NotNull(message = "Required field")
+    @Size(min = 1, max = 200, message="Length must be between 1 and 200 characters")
+    // TODO is there a pattern for allowed characters?
     private String postalCode;
 
     public String getId() {
