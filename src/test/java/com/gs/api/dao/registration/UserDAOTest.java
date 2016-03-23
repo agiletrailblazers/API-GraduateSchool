@@ -80,7 +80,7 @@ public class UserDAOTest {
     private static final String ADDRESS_ZIP = "55555";
     private static final String PHONE = "555-555-5555";
     private static final String PASSWORD = "test1234";
-    private static final String DOB = "05/05/1955";
+    private static final String DOB = "19550505";
     private static final String LAST_FOUR_SSN = "5555";
     private static final String TIMEZONE_ID = "testId";
     private static final Boolean VETERAN_STATUS = true;
