@@ -117,5 +117,16 @@ public class CourseServiceTest {
     }
 
 
+    @Test
+    public void testGetAllSessions() throws Exception {
+        when(sessionDAO.getAllSessions(anyString(),anyString())).thenReturn(CourseTestHelper.createSessions());
+        List<CourseSession> sessions = courseService.getAllSessions("12345","12345");
+        assertNotNull(sessions);
+        assertEquals(2, sessions.size());
+        assertEquals("1", sessions.get(0).getClassNumber());
+        verify(sessionDAO, times(1)).getAllSessions(anyString(),anyString());
+    }
+
+
     
 }

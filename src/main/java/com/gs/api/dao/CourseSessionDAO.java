@@ -13,12 +13,16 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 import javax.sql.DataSource;
 
@@ -27,16 +31,25 @@ public class CourseSessionDAO {
 
     private static final Logger logger = LoggerFactory.getLogger(CourseSessionDAO.class);
     private JdbcTemplate jdbcTemplate;
+    private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     @Value("${sql.course.session.query}")
     private String sql;
 
+    @Value("${sql.course.sessions.query}")
+    private String sqlForSession;
+
     @Value("${sql.course.session.single.query}")
     private String sqlForSingleSession;
 
+    @Value("${sql.course.session.all.query}")
+    private String sqlForAllSession;
+
     @Autowired
     public void setDataSource(DataSource dataSource) {
+
         this.jdbcTemplate = new JdbcTemplate(dataSource);
+        this.namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
     }
 
     /**
@@ -70,12 +83,58 @@ public class CourseSessionDAO {
      */
     public CourseSession getSession(String sessionId) {
         logger.debug("Getting course session information for sessionId {}", sessionId);
-        logger.debug(sqlForSingleSession);
+        logger.debug(sqlForSession.concat(sqlForSingleSession));
         try {
-            final CourseSession session = this.jdbcTemplate.queryForObject(sqlForSingleSession, new Object[] { sessionId, sessionId, sessionId },
+            List<String> courseSessionStatus = new ArrayList<String>();
+            List<String> courseSessionId = new ArrayList<String>();
+            courseSessionStatus.add("C");
+            courseSessionStatus.add("S");
+            courseSessionId.add(sessionId);
+            Map<String,Object>  params = new HashMap<String, Object>();
+            params.put("courseSessionStatus",courseSessionStatus);
+            params.put("courseSessionId",courseSessionId);
+
+            final CourseSession session = this.namedParameterJdbcTemplate.queryForObject(sqlForSession.concat(sqlForSingleSession), params,
                     new SessionsRowMapper());
             logger.debug("Found session for session id {}", sessionId);
             return session;
+        }
+        catch (IncorrectResultSizeDataAccessException e) {
+            logger.warn("Too many sessions found", e);
+            return null;
+        }
+    }
+
+    public List<CourseSession> getAllSessions(String status,String sessionDomain) {
+        logger.debug("Getting course session information for sessionId {}");
+        logger.debug(sqlForSession.concat(sqlForAllSession));
+        List<String> courseSessionStatus = new ArrayList<String>();
+        List<String> courseSessionDomain = new ArrayList<String>();
+        try {
+            if (status != null ) {
+                courseSessionStatus.add(status.toUpperCase());
+            } else {
+                courseSessionStatus.add("C");
+                courseSessionStatus.add("S");
+            }
+            if (sessionDomain != null ) {
+                if (sessionDomain.equalsIgnoreCase("CD")) {
+                    courseSessionDomain.add("domin000000000001085");
+                } else if (sessionDomain.equalsIgnoreCase("EP")) {
+                    courseSessionDomain.add("domin000000000001089");
+                } else {
+                    courseSessionDomain.add(sessionDomain);
+                }
+            } else {
+                courseSessionDomain.add("domin000000000001085");
+                courseSessionDomain.add("domin000000000001089");
+            }
+            Map<String,Object>  params = new HashMap<String, Object>();
+            params.put("courseSessionStatus",courseSessionStatus);
+            params.put("courseSessionDomain",courseSessionDomain);
+            final List<CourseSession> sessions = this.namedParameterJdbcTemplate.query(sqlForSession.concat(sqlForAllSession),params,
+                    new SessionsRowMapper());
+            return sessions;
         }
         catch (IncorrectResultSizeDataAccessException e) {
             logger.warn("Too many sessions found", e);
@@ -116,6 +175,8 @@ public class CourseSessionDAO {
             location.setCity(rs.getString("CITY"));
             location.setState(rs.getString("STATE"));
             location.setPostalCode(rs.getString("ZIP"));
+            session.setCurricumTitle(rs.getString("CURRICUM_TITLE"));
+            session.setCourseDomain(rs.getString("COURSE_DOMAIN"));
             session.setLocation(location);
             if (!StringUtils.isEmpty(rs.getString("PERSON_NO"))) {
                 CourseInstructor instructor = new CourseInstructor();

@@ -68,4 +68,8 @@ public class CourseServiceImpl implements CourseService {
         return courseDao.getCourses();
     }
 
+    public List<CourseSession> getAllSessions(String courseStatus,String sessionDomain ) throws Exception {
+        return sessionDao.getAllSessions(courseStatus,sessionDomain);
+    }
+
 }

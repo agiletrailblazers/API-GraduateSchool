@@ -149,4 +149,18 @@ public class CourseController extends BaseController {
         return categoryService.getCategories();
     }
 
+
+    @RequestMapping(value = "/sessions", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody List<CourseSession> getAllSessions(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String sessiondomain) throws Exception {
+        logger.debug("Course sessions initiated : {}");
+        final List<CourseSession> sessions = courseService.getAllSessions(status,sessiondomain);
+        if (CollectionUtils.isEmpty(sessions)){
+            logger.error("No sessions found");
+            throw new NotFoundException("No sessions found for course");
+        }
+        return sessions;
+    }
+
 }

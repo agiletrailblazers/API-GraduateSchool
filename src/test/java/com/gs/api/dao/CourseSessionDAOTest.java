@@ -20,13 +20,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -48,6 +51,11 @@ public class CourseSessionDAOTest {
     
     @Mock
     private JdbcTemplate jdbcTemplate;
+
+    @Mock
+    private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+
+
     
     private CourseSessionDAO.SessionsRowMapper rowMapper;
 
@@ -56,6 +64,9 @@ public class CourseSessionDAOTest {
 
     @Captor
     private ArgumentCaptor<Object[]> singleSessionQueryParamsCaptor;
+
+    @Captor
+    private ArgumentCaptor<HashMap<String,Object>> singleNamedSessionQueryParamsCaptor;
 
     @Before
     public void setUp() throws Exception {
@@ -134,54 +145,157 @@ public class CourseSessionDAOTest {
 
     @Test
     public void testGetSession() throws Exception {
+        String sessionId ="1123";
+        List<String> courseSessionStatus = new ArrayList<String>();
+        List<String> courseSessionId = new ArrayList<String>();
+        courseSessionStatus.add("C");
+        courseSessionStatus.add("S");
+        courseSessionId.add(sessionId);
+        Map<String,Object> params = new HashMap<String, Object>();
+        Map<String,Object> expectedQueryParams = new HashMap<String, Object>();
+        expectedQueryParams.put("courseSessionStatus",courseSessionStatus);
+        expectedQueryParams.put("courseSessionId",courseSessionId);
 
-        String sessionId = "55555";
-        Object[] expectedQueryParams = new Object[] {sessionId, sessionId, sessionId};
-
-        when(jdbcTemplate.queryForObject(anyString(), any(Object[].class), any(SessionsRowMapper.class))).thenReturn(CourseTestHelper.createSession(sessionId));
+        params.put("courseSessionStatus",courseSessionStatus);
+        params.put("courseSessionId",courseSessionId);
+        when(namedParameterJdbcTemplate.queryForObject(anyString(), any(HashMap.class), any(SessionsRowMapper.class))).thenReturn(CourseTestHelper.createSession(sessionId));
 
         CourseSession session = sessionDAO.getSession(sessionId);
         assertNotNull("Expected a session to be found", session);
         assertTrue("Wrong session", sessionId.equals(session.getClassNumber()));
 
-        verify(jdbcTemplate).queryForObject(eq(sqlForSingleSession), singleSessionQueryParamsCaptor.capture(), any(SessionsRowMapper.class));
-        Object[] capturedQueryParams = singleSessionQueryParamsCaptor.getValue();
+        verify(namedParameterJdbcTemplate).queryForObject(eq(sqlForSingleSession), singleNamedSessionQueryParamsCaptor.capture(), any(SessionsRowMapper.class));
+        HashMap<String, Object> capturedQueryParams = singleNamedSessionQueryParamsCaptor.getValue();
         assertNotNull("Expected parameters", capturedQueryParams);
-        assertArrayEquals("wrong parameters", expectedQueryParams, capturedQueryParams);
+        assertEquals(expectedQueryParams.size(),capturedQueryParams.size());
     }
+
+
 
     @Test
     public void testGetSession_NoSessionFound() throws Exception {
+        String sessionId ="1123";
+        List<String> courseSessionStatus = new ArrayList<String>();
+        List<String> courseSessionId = new ArrayList<String>();
+        courseSessionStatus.add("C");
+        courseSessionStatus.add("S");
+        courseSessionId.add(sessionId);
+        Map<String,Object> params = new HashMap<String, Object>();
+        params.put("courseSessionStatus",courseSessionStatus);
+        params.put("courseSessionId",courseSessionId);
 
-        String sessionId = "55555";
-        Object[] expectedQueryParams = new Object[] {sessionId, sessionId, sessionId};
-
-        when(jdbcTemplate.queryForObject(anyString(), any(Object[].class), any(SessionsRowMapper.class))).thenReturn(null);
+        when(namedParameterJdbcTemplate.queryForObject(anyString(), any(HashMap.class), any(SessionsRowMapper.class))).thenReturn(null);
 
         CourseSession session = sessionDAO.getSession(sessionId);
         assertNull("No session should be found", session);
 
-        verify(jdbcTemplate).queryForObject(eq(sqlForSingleSession), singleSessionQueryParamsCaptor.capture(), any(SessionsRowMapper.class));
-        Object[] capturedQueryParams = singleSessionQueryParamsCaptor.getValue();
+        verify(namedParameterJdbcTemplate).queryForObject(eq(sqlForSingleSession), singleNamedSessionQueryParamsCaptor.capture(), any(SessionsRowMapper.class));
+        HashMap<String, Object> capturedQueryParams = singleNamedSessionQueryParamsCaptor.getValue();
         assertNotNull("Expected parameters", capturedQueryParams);
-        assertArrayEquals("wrong parameters", expectedQueryParams, capturedQueryParams);
+
     }
 
     @Test
     public void testGetSession_IncorrectResultSize() throws Exception {
 
-        String sessionId = "55555";
-        Object[] expectedQueryParams = new Object[] {sessionId, sessionId, sessionId};
+        String sessionId ="5555";
+        List<String> courseSessionId = new ArrayList<String>();
+        courseSessionId.add(sessionId);
+        Map<String,Object> params = new HashMap<String, Object>();
+        params.put("courseSessionId",courseSessionId);
+        Map<String,Object> expectedQueryParams =  new HashMap<String, Object>();
 
-        when(jdbcTemplate.queryForObject(anyString(), any(Object[].class), any(SessionsRowMapper.class))).thenThrow(new IncorrectResultSizeDataAccessException(1, 2));
+        when(namedParameterJdbcTemplate.queryForObject(anyString(), any(HashMap.class), any(SessionsRowMapper.class))).thenThrow(new IncorrectResultSizeDataAccessException(1, 2));
 
         CourseSession session = sessionDAO.getSession(sessionId);
         assertNull("No session should be returned", session);
 
-        verify(jdbcTemplate).queryForObject(eq(sqlForSingleSession), singleSessionQueryParamsCaptor.capture(), any(SessionsRowMapper.class));
-        Object[] capturedQueryParams = singleSessionQueryParamsCaptor.getValue();
+        verify(namedParameterJdbcTemplate).queryForObject(eq(sqlForSingleSession), singleNamedSessionQueryParamsCaptor.capture(), any(SessionsRowMapper.class));
+        HashMap<String,Object> capturedQueryParams = singleNamedSessionQueryParamsCaptor.getValue();
         assertNotNull("Expected parameters", capturedQueryParams);
-        assertArrayEquals("wrong parameters", expectedQueryParams, capturedQueryParams);
+
     }
 
+    @Test
+    public void testgetAllSessionDAO_GetResult() throws Exception {
+
+        when(namedParameterJdbcTemplate.query(anyString(), any(HashMap.class), any(SessionsRowMapper.class))).thenAnswer(new Answer<List<CourseSession>>() {
+                    @Override
+                    public List<CourseSession> answer(InvocationOnMock invocation) throws Throwable {
+                        return CourseTestHelper.createSessions();
+                    }
+                });
+        List<CourseSession> list = sessionDAO.getAllSessions("C","EP");
+        assertNotNull(list);
+        assertEquals(2, list.size());
+
+    }
+
+    @Test
+    public void testgetAllSessionDAO_GetResultForDayTime() throws Exception {
+
+        when(namedParameterJdbcTemplate.query(anyString(), any(HashMap.class), any(SessionsRowMapper.class))).thenAnswer(new Answer<List<CourseSession>>() {
+            @Override
+            public List<CourseSession> answer(InvocationOnMock invocation) throws Throwable {
+                return CourseTestHelper.createSessions();
+            }
+        });
+        List<CourseSession> list = sessionDAO.getAllSessions("C","CD");
+        assertNotNull(list);
+        assertEquals(2, list.size());
+    }
+
+    @Test
+    public void testgetAllSessionDAO_GetResultEmptySessionDomain() throws Exception {
+
+        when(namedParameterJdbcTemplate.query(anyString(), any(HashMap.class), any(SessionsRowMapper.class))).thenAnswer(new Answer<List<CourseSession>>() {
+            @Override
+            public List<CourseSession> answer(InvocationOnMock invocation) throws Throwable {
+                return CourseTestHelper.createSessions();
+            }
+        });
+        List<CourseSession> list = sessionDAO.getAllSessions("C",null);
+        assertNotNull(list);
+        assertEquals(2, list.size());
+
+    }
+
+    @Test
+    public void testgetAllSessionDAO_GetResultEmptyStatusCode() throws Exception {
+
+        when(namedParameterJdbcTemplate.query(anyString(), any(HashMap.class), any(SessionsRowMapper.class))).thenAnswer(new Answer<List<CourseSession>>() {
+            @Override
+            public List<CourseSession> answer(InvocationOnMock invocation) throws Throwable {
+                return CourseTestHelper.createSessions();
+            }
+        });
+        List<CourseSession> list = sessionDAO.getAllSessions(null,"123");
+        assertNotNull(list);
+        assertEquals(2, list.size());
+
+    }
+
+    @Test
+    public void testgetAllSessionDAO_EmptyResultException() throws Exception {
+
+        when(namedParameterJdbcTemplate.query(anyString(), any(HashMap.class), any(SessionsRowMapper.class)))
+                .thenThrow(new EmptyResultDataAccessException(1));
+        List<CourseSession> list = sessionDAO.getAllSessions("c","");
+        assertNull(list);
+
+    }
+
+    @Test
+    public void testgetAllSessionDAO_RuntimeException() throws Exception {
+
+        when(namedParameterJdbcTemplate.query(anyString(), any(HashMap.class), any(SessionsRowMapper.class)))       .thenThrow(new RuntimeException("random exception"));
+        try {
+            sessionDAO.getAllSessions("C","123");
+            assertTrue(false);   //should not get here
+        } catch( Exception e) {
+            assertNotNull(e);
+            assertTrue(e instanceof Exception);
+        }
+
+    }
 }

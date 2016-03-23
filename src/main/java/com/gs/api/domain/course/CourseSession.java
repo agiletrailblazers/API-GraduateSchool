@@ -25,6 +25,30 @@ public class CourseSession {
     private CourseInstructor instructor;
     private String offeringSessionId;
     private String courseId;
+    private String curricumTitle;
+    private String courseDomain;
+
+    public String getCourseDomain() {
+        return courseDomain;
+    }
+
+    public void setCourseDomain(String courseDomain) {
+        this.courseDomain = courseDomain;
+    }
+
+
+
+    public String getCurricumTitle() {
+        return curricumTitle;
+    }
+
+    public void setCurricumTitle(String curricumTitle) {
+        this.curricumTitle = curricumTitle;
+    }
+
+
+
+
 
     public String getClassNumber() {
         return classNumber;

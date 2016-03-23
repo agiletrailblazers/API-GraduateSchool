@@ -34,4 +34,6 @@ public interface CourseService {
      */
     CourseSession getSession(String sessionId) throws Exception;
 
+    List<CourseSession> getAllSessions(String courseStatus,String sessionDomain) throws Exception;
+
 }
