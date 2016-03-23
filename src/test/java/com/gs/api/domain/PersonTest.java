@@ -2,7 +2,7 @@ package com.gs.api.domain;
 
 import com.gs.api.helper.ValidationHelper;
 import org.apache.commons.lang.RandomStringUtils;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import javax.validation.ConstraintViolation;
@@ -11,9 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Created by mfried on 3/22/16.
@@ -37,10 +35,10 @@ public class PersonTest {
     public static final String SECONDARY_ADDRESS_TEXT = "secondaryAddress";
     private Validator validator = ValidationHelper.getValidator();
 
-    private Address validAddress;
+    private static Address validAddress;
 
-    @Before
-    public void init(){
+    @BeforeClass
+    public static void setUpClass(){
         validAddress = new Address();
         validAddress.setAddress1("123 Main Street");
         validAddress.setAddress2("101");
@@ -105,7 +103,7 @@ public class PersonTest {
         invalidPerson.setPrimaryPhone("");
         invalidPerson.setSecondaryPhone("");
         invalidPerson.setPrimaryAddress(validAddress);
-        invalidPerson.setDateOfBirth("");
+        invalidPerson.setDateOfBirth(DATE_OF_BIRTH);
 
         HashMap<String, List<ConstraintViolation<Object>>> violations =  ValidationHelper.convertConstraintViolationsToHashMap(validator.validate(invalidPerson));
 
@@ -119,9 +117,9 @@ public class PersonTest {
         assertNotNull(violations.get(EMAIL_ADDRESS_TEXT));
         assertTrue(ValidationHelper.getMessagesFromList(violations.get(EMAIL_ADDRESS_TEXT)).contains("Length must be between 1 and 1020 characters"));
         assertNotNull(violations.get(PRIMARY_PHONE_TEXT));
-        assertTrue(ValidationHelper.getMessagesFromList(violations.get(PRIMARY_PHONE_TEXT)).contains("Length must be between 1 and 100 characters"));
+        assertTrue(ValidationHelper.getMessagesFromList(violations.get(PRIMARY_PHONE_TEXT)).contains("Length must be between 10 and 100 characters"));
         assertNotNull(violations.get(SECONDARY_PHONE_TEXT));
-        assertTrue(ValidationHelper.getMessagesFromList(violations.get(SECONDARY_PHONE_TEXT)).contains("Length must be between 1 and 100 characters"));
+        assertTrue(ValidationHelper.getMessagesFromList(violations.get(SECONDARY_PHONE_TEXT)).contains("Length must be between 10 and 100 characters"));
 
         //Test for correct fields
         assertNull(violations.get(SECONDARY_ADDRESS_TEXT));
@@ -152,9 +150,9 @@ public class PersonTest {
         assertNotNull(violations.get(EMAIL_ADDRESS_TEXT));
         assertTrue(ValidationHelper.getMessagesFromList(violations.get(EMAIL_ADDRESS_TEXT)).contains("Length must be between 1 and 1020 characters"));
         assertNotNull(violations.get(PRIMARY_PHONE_TEXT));
-        assertTrue(ValidationHelper.getMessagesFromList(violations.get(PRIMARY_PHONE_TEXT)).contains("Length must be between 1 and 100 characters"));
+        assertTrue(ValidationHelper.getMessagesFromList(violations.get(PRIMARY_PHONE_TEXT)).contains("Length must be between 10 and 100 characters"));
         assertNotNull(violations.get(SECONDARY_PHONE_TEXT));
-        assertTrue(ValidationHelper.getMessagesFromList(violations.get(SECONDARY_PHONE_TEXT)).contains("Length must be between 1 and 100 characters"));
+        assertTrue(ValidationHelper.getMessagesFromList(violations.get(SECONDARY_PHONE_TEXT)).contains("Length must be between 10 and 100 characters"));
 
         //Test for correct fields
         assertNull(violations.get(SECONDARY_ADDRESS_TEXT));
@@ -162,7 +160,7 @@ public class PersonTest {
     }
 
     @Test
-    public void testInvalidInfoBadFormatting(){
+    public void testInvalidInfoEmailFormatting(){
         Person invalidPerson = new Person();
         invalidPerson.setFirstName(FIRST_NAME);
         invalidPerson.setLastName(LAST_NAME);
@@ -172,9 +170,37 @@ public class PersonTest {
         invalidPerson.setDateOfBirth(DATE_OF_BIRTH);
 
         HashMap<String, List<ConstraintViolation<Object>>> violations =  ValidationHelper.convertConstraintViolationsToHashMap(validator.validate(invalidPerson));
+        assertNotNull(violations.get(EMAIL_ADDRESS_TEXT));
+        assertTrue(ValidationHelper.getMessagesFromList(violations.get(EMAIL_ADDRESS_TEXT)).contains("Improperly formatted email address"));
 
+        invalidPerson.setEmailAddress("IMPROPER@EMAIL@ADDRESS");
+        violations =  ValidationHelper.convertConstraintViolationsToHashMap(validator.validate(invalidPerson));
         assertNotNull(violations.get(EMAIL_ADDRESS_TEXT));
         assertTrue(ValidationHelper.getMessagesFromList(violations.get(EMAIL_ADDRESS_TEXT)).contains("Improperly formatted email address"));
     }
 
+    @Test
+    public void testInvalidInfoBadDOBFormatting(){
+        Person invalidPerson = new Person();
+        invalidPerson.setFirstName(FIRST_NAME);
+        invalidPerson.setLastName(LAST_NAME);
+        invalidPerson.setEmailAddress(EMAIL_ADDRESS);
+        invalidPerson.setPrimaryPhone(PRIMARY_PHONE);
+        invalidPerson.setPrimaryAddress(validAddress);
+
+        invalidPerson.setDateOfBirth("2016010");
+        HashMap<String, List<ConstraintViolation<Object>>> violations =  ValidationHelper.convertConstraintViolationsToHashMap(validator.validate(invalidPerson));
+        assertNotNull(violations.get(DATE_OF_BIRTH_TEXT));
+        assertTrue(ValidationHelper.getMessagesFromList(violations.get(DATE_OF_BIRTH_TEXT)).contains("Date of Birth is not in yyyyMMdd format"));
+
+        invalidPerson.setDateOfBirth("Jan 1 2016");
+        violations =  ValidationHelper.convertConstraintViolationsToHashMap(validator.validate(invalidPerson));
+        assertNotNull(violations.get(DATE_OF_BIRTH_TEXT));
+        assertTrue(ValidationHelper.getMessagesFromList(violations.get(DATE_OF_BIRTH_TEXT)).contains("Date of Birth is not in yyyyMMdd format"));
+
+        invalidPerson.setDateOfBirth("201601011030");
+        violations =  ValidationHelper.convertConstraintViolationsToHashMap(validator.validate(invalidPerson));
+        assertNotNull(violations.get(DATE_OF_BIRTH_TEXT));
+        assertTrue(ValidationHelper.getMessagesFromList(violations.get(DATE_OF_BIRTH_TEXT)).contains("Date of Birth is not in yyyyMMdd format"));
+    }
 }

@@ -22,7 +22,7 @@ public class User {
     private String username;
 
     @NotNull(message = "Required field")
-    @Size(min = 1, max = 1020, message="Length must be between 1 and 1020 characters")
+    @Size(min = 5, max = 1020, message="Length must be between 5 and 1020 characters")
     // TODO is there a pattern for allowed characters?
     private String password;
 

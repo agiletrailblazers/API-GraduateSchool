@@ -10,7 +10,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Created by mfried on 3/22/16.
@@ -89,9 +91,9 @@ public class AddressTest {
         assertNotNull(violations.get(CITY_TEXT));
         assertTrue(ValidationHelper.getMessagesFromList(violations.get(CITY_TEXT)).contains("Length must be between 1 and 200 characters"));
         assertNotNull(violations.get(STATE_TEXT));
-        assertTrue(ValidationHelper.getMessagesFromList(violations.get(STATE_TEXT)).contains("Length must be between 1 and 200 characters"));
+        assertTrue(ValidationHelper.getMessagesFromList(violations.get(STATE_TEXT)).contains("Length must be between 1 and 2 characters"));
         assertNotNull(violations.get(POSTAL_CODE_TEXT));
-        assertTrue(ValidationHelper.getMessagesFromList(violations.get(POSTAL_CODE_TEXT)).contains("Length must be between 1 and 200 characters"));
+        assertTrue(ValidationHelper.getMessagesFromList(violations.get(POSTAL_CODE_TEXT)).contains("Length must be between 5 and 10 characters"));
     }
 
     @Test
@@ -101,8 +103,8 @@ public class AddressTest {
         invalidAddress.setAddress2(RandomStringUtils.randomAlphabetic(1021));
         invalidAddress.setAddress3(RandomStringUtils.randomAlphabetic(1021));
         invalidAddress.setCity(RandomStringUtils.randomAlphabetic(201));
-        invalidAddress.setState(RandomStringUtils.randomAlphabetic(201));
-        invalidAddress.setPostalCode(RandomStringUtils.randomNumeric(201));
+        invalidAddress.setState(RandomStringUtils.randomAlphabetic(3));
+        invalidAddress.setPostalCode(RandomStringUtils.randomNumeric(11));
 
         HashMap<String, List<ConstraintViolation<Object>>> violations =  ValidationHelper.convertConstraintViolationsToHashMap(validator.validate(invalidAddress));
 
@@ -115,8 +117,47 @@ public class AddressTest {
         assertNotNull(violations.get(CITY_TEXT));
         assertTrue(ValidationHelper.getMessagesFromList(violations.get(CITY_TEXT)).contains("Length must be between 1 and 200 characters"));
         assertNotNull(violations.get(STATE_TEXT));
-        assertTrue(ValidationHelper.getMessagesFromList(violations.get(STATE_TEXT)).contains("Length must be between 1 and 200 characters"));
+        assertTrue(ValidationHelper.getMessagesFromList(violations.get(STATE_TEXT)).contains("Length must be between 1 and 2 characters"));
         assertNotNull(violations.get(POSTAL_CODE_TEXT));
-        assertTrue(ValidationHelper.getMessagesFromList(violations.get(POSTAL_CODE_TEXT)).contains("Length must be between 1 and 200 characters"));
+        assertTrue(ValidationHelper.getMessagesFromList(violations.get(POSTAL_CODE_TEXT)).contains("Length must be between 5 and 10 characters"));
+    }
+
+    @Test
+    public void testPostalCodeFormat(){
+        Address address = new Address();
+        address.setAddress1(ADDRESS_1);
+        address.setAddress2(ADDRESS_2);
+        address.setAddress3(ADDRESS_3);
+        address.setCity(CITY);
+        address.setState(STATE);
+
+        //Tests for Good Postal Code
+        address.setPostalCode("12345");
+        HashMap<String, List<ConstraintViolation<Object>>> violations =  ValidationHelper.convertConstraintViolationsToHashMap(validator.validate(address));
+        assertTrue(violations.isEmpty());
+
+        address.setPostalCode("12345-1234");
+        violations =  ValidationHelper.convertConstraintViolationsToHashMap(validator.validate(address));
+        assertTrue(violations.isEmpty());
+
+        address.setPostalCode("123451234");
+        violations =  ValidationHelper.convertConstraintViolationsToHashMap(validator.validate(address));
+        assertTrue(violations.isEmpty());
+
+        //Tests for Bad Postal Code
+        address.setPostalCode("12345-");
+        violations =  ValidationHelper.convertConstraintViolationsToHashMap(validator.validate(address));
+        assertNotNull(violations.get(POSTAL_CODE_TEXT));
+        assertTrue(ValidationHelper.getMessagesFromList(violations.get(POSTAL_CODE_TEXT)).contains("Postal Code is not in 5 or 9 digit format"));
+
+        address.setPostalCode("123451");
+        violations =  ValidationHelper.convertConstraintViolationsToHashMap(validator.validate(address));
+        assertNotNull(violations.get(POSTAL_CODE_TEXT));
+        assertTrue(ValidationHelper.getMessagesFromList(violations.get(POSTAL_CODE_TEXT)).contains("Postal Code is not in 5 or 9 digit format"));
+
+        address.setPostalCode("12345 1234");
+        violations =  ValidationHelper.convertConstraintViolationsToHashMap(validator.validate(address));
+        assertNotNull(violations.get(POSTAL_CODE_TEXT));
+        assertTrue(ValidationHelper.getMessagesFromList(violations.get(POSTAL_CODE_TEXT)).contains("Postal Code is not in 5 or 9 digit format"));
     }
 }

@@ -2,11 +2,11 @@ package com.gs.api.domain;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-
 import org.hibernate.validator.constraints.Email;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
 @JsonInclude(Include.ALWAYS)
@@ -14,16 +14,13 @@ public class Person {
 
     @NotNull(message = "Required field")
     @Size(min = 1, max = 100, message="Length must be between 1 and 100 characters")
-    // TODO is there a pattern for allowed characters?
     private String firstName;
 
     @Size(min = 1, max = 100, message="Length must be between 1 and 100 characters")
-    // TODO is there a pattern for allowed characters?
     private String middleName;
 
     @NotNull(message = "Required field")
     @Size(min = 1, max = 100, message="Length must be between 1 and 100 characters")
-    // TODO is there a pattern for allowed characters?
     private String lastName;
 
     @NotNull(message = "Required field")
@@ -32,12 +29,10 @@ public class Person {
     private String emailAddress;
 
     @NotNull(message = "Required field")
-    @Size(min = 1, max = 100, message="Length must be between 1 and 100 characters")
-    // TODO is there a pattern for allowed characters?
+    @Size(min = 10, max = 100, message="Length must be between 10 and 100 characters")
     private String primaryPhone;
 
-    @Size(min = 1, max = 100, message="Length must be between 1 and 100 characters")
-    // TODO is there a pattern for allowed characters?
+    @Size(min = 10, max = 100, message="Length must be between 10 and 100 characters")
     private String secondaryPhone;
 
     @NotNull(message = "Required field")
@@ -50,7 +45,7 @@ public class Person {
     private Boolean veteran;
 
     @NotNull(message = "Required field")
-    // TODO do we need a custom validator or just a pattern match?
+    @Pattern(regexp = "[0-9]{8}", message = "Date of Birth is not in yyyyMMdd format")
     private String dateOfBirth;
 
     public String getFirstName() {

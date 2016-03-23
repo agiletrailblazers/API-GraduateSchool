@@ -191,9 +191,9 @@ public class UserControllerTest {
         person.setFirstName("Joe");
         person.setLastName("Tester");
         person.setEmailAddress("joe.tester@test.com");
-        person.setDateOfBirth("05/05/1955");
+        person.setDateOfBirth("19550505");
         person.setPrimaryPhone("5555555555");
-        user.setPerson(person);
+
 
         Address address = new Address();
         address.setAddress1("55 Test Street");
@@ -201,6 +201,8 @@ public class UserControllerTest {
         address.setState("TT");
         address.setPostalCode("55555");
         person.setPrimaryAddress(address);
+
+        user.setPerson(person);
 
         return user;
     }
