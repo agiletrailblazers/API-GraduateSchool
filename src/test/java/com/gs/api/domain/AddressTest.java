@@ -14,9 +14,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-/**
- * Created by mfried on 3/22/16.
- */
 public class AddressTest {
 
     public static final String ADDRESS_1 = "123 Main Street";

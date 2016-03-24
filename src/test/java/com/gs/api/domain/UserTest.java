@@ -16,9 +16,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-/**
- * Created by mfried on 3/22/16.
- */
 public class UserTest {
     public static final String PASSWORD = "password";
     public static final String LAST_FOUR_SSN = "1234";

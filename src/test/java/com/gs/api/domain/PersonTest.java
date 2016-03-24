@@ -13,9 +13,6 @@ import java.util.Set;
 
 import static org.junit.Assert.*;
 
-/**
- * Created by mfried on 3/22/16.
- */
 public class PersonTest {
     public static final String FIRST_NAME = "FirstName";
     public static final String MIDDLE_NAME = "MiddleName";
