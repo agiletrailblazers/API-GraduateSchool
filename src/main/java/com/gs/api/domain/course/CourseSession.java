@@ -25,20 +25,9 @@ public class CourseSession {
     private CourseInstructor instructor;
     private String offeringSessionId;
     private String courseId;
+    private String courseCode;
+    private String courseTitle;
     private String curricumTitle;
-
-
-    public String getCurricumTitle() {
-        return curricumTitle;
-    }
-
-    public void setCurricumTitle(String curricumTitle) {
-        this.curricumTitle = curricumTitle;
-    }
-
-
-
-
 
     public String getClassNumber() {
         return classNumber;
@@ -175,4 +164,35 @@ public class CourseSession {
     public void setCourseId(String courseId) {
         this.courseId = courseId;
     }
+
+    public String getCourseCode() {
+        return courseCode;
+    }
+
+    public void setCourseCode(String courseCode) {
+        this.courseCode = courseCode;
+    }
+
+    public String getCourseTitle() {
+        return courseTitle;
+    }
+
+    public void setCourseTitle(String courseTitle) {
+        this.courseTitle = courseTitle;
+    }
+
+
+    public String getCurricumTitle() {
+        return curricumTitle;
+    }
+
+    public void setCurricumTitle(String curricumTitle) {
+        this.curricumTitle = curricumTitle;
+    }
+
+
+
+
+
+
 }

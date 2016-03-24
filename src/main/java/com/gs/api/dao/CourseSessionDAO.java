@@ -175,6 +175,8 @@ public class CourseSessionDAO {
                 instructor.setLastName(rs.getString("LNAME"));
                 session.setInstructor(instructor);
             }
+            session.setCourseCode(rs.getString("CD_CRS_COURSE"));
+            session.setCourseTitle(rs.getString("NM_CRS"));
             return session;
         }
     }
