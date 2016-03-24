@@ -4,6 +4,7 @@ import com.gs.api.domain.course.CourseInstructor;
 import com.gs.api.domain.course.CourseSession;
 import com.gs.api.domain.course.Location;
 
+import com.gs.api.search.util.SessionQueryParamsBuilder;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +46,10 @@ public class CourseSessionDAO {
     @Value("${sql.course.session.all.query}")
     private String sqlForAllSession;
 
+
+    @Autowired
+    private SessionQueryParamsBuilder sessionQueryParamsBuilder;
+
     @Autowired
     public void setDataSource(DataSource dataSource) {
 
@@ -81,20 +86,13 @@ public class CourseSessionDAO {
      * @param sessionId the session id (class number)
      * @return the course session details
      */
-    public CourseSession getSession(String sessionId) {
+    public CourseSession getSession(String sessionId)  {
         logger.debug("Getting course session information for sessionId {}", sessionId);
-        logger.debug(sqlForSession.concat(sqlForSingleSession));
+        String sessionIdQuery = sqlForSession.concat(sqlForSingleSession);
+        logger.debug(sessionIdQuery);
+        Map<String,Object> params = sessionQueryParamsBuilder.buildSessionQueryParams(sessionId);
         try {
-            List<String> courseSessionStatus = new ArrayList<String>();
-            List<String> courseSessionId = new ArrayList<String>();
-            courseSessionStatus.add("C");
-            courseSessionStatus.add("S");
-            courseSessionId.add(sessionId);
-            Map<String,Object>  params = new HashMap<String, Object>();
-            params.put("courseSessionStatus",courseSessionStatus);
-            params.put("courseSessionId",courseSessionId);
-
-            final CourseSession session = this.namedParameterJdbcTemplate.queryForObject(sqlForSession.concat(sqlForSingleSession), params,
+            final CourseSession session = this.namedParameterJdbcTemplate.queryForObject(sessionIdQuery, params,
                     new SessionsRowMapper());
             logger.debug("Found session for session id {}", sessionId);
             return session;
@@ -105,41 +103,33 @@ public class CourseSessionDAO {
         }
     }
 
-    public List<CourseSession> getAllSessions(String status,String sessionDomain) {
-        logger.debug("Getting course session information for sessionId {}");
-        logger.debug(sqlForSession.concat(sqlForAllSession));
-        List<String> courseSessionStatus = new ArrayList<String>();
-        List<String> courseSessionDomain = new ArrayList<String>();
+
+    /**
+     * Get  all active course sessions details
+     * @param params the query parameter for course Sessions Query
+     * @param status the session status C-G2G
+     * @param sessionDomain the session domain Type
+     * @return the list of course session details
+     */
+    public List<CourseSession> getAllSessions(Map<String,Object> params,String status,String sessionDomain) {
+        logger.debug("Getting course sessions information for status {} - {}",status,sessionDomain);
+        String courseSessionsQuery = sqlForSession.concat(sqlForAllSession);
+        logger.debug(courseSessionsQuery);
         try {
-            if (status != null ) {
-                courseSessionStatus.add(status.toUpperCase());
-            } else {
-                courseSessionStatus.add("C");
-                courseSessionStatus.add("S");
-            }
-            if (sessionDomain != null ) {
-                if (sessionDomain.equalsIgnoreCase("CD")) {
-                    courseSessionDomain.add("domin000000000001085");
-                } else if (sessionDomain.equalsIgnoreCase("EP")) {
-                    courseSessionDomain.add("domin000000000001089");
-                } else {
-                    courseSessionDomain.add(sessionDomain);
-                }
-            } else {
-                courseSessionDomain.add("domin000000000001085");
-                courseSessionDomain.add("domin000000000001089");
-            }
-            Map<String,Object>  params = new HashMap<String, Object>();
-            params.put("courseSessionStatus",courseSessionStatus);
-            params.put("courseSessionDomain",courseSessionDomain);
-            final List<CourseSession> sessions = this.namedParameterJdbcTemplate.query(sqlForSession.concat(sqlForAllSession),params,
+            final List<CourseSession> sessions = this.namedParameterJdbcTemplate.query(courseSessionsQuery,params,
                     new SessionsRowMapper());
+            logger.debug("Sessions Found");
             return sessions;
         }
-        catch (IncorrectResultSizeDataAccessException e) {
-            logger.warn("Too many sessions found", e);
+        catch (EmptyResultDataAccessException e) {
+            logger.warn("Sessions not found", e);
             return null;
         }
+        catch (Exception e) {
+            logger.error("Error retrieving Sessions", e);
+            throw e;
+        }
+
     }
 
     /**

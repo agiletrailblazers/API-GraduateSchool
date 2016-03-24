@@ -34,6 +34,12 @@ public interface CourseService {
      */
     CourseSession getSession(String sessionId) throws Exception;
 
+    /**
+     * Get sessions from database
+     * @param courseStatus the session status C-G2G
+     * @param sessionDomain the session domain Type
+     * @return List of sessions
+     */
     List<CourseSession> getAllSessions(String courseStatus,String sessionDomain) throws Exception;
 
 }

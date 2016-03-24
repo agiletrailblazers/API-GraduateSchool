@@ -6,11 +6,13 @@ import com.gs.api.dao.CourseSessionDAO;
 import com.gs.api.domain.course.Course;
 import com.gs.api.domain.course.CourseSession;
 
+import com.gs.api.search.util.SessionQueryParamsBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
 import java.util.List;
 
 @Service
@@ -26,6 +28,9 @@ public class CourseServiceImpl implements CourseService {
     
     @Autowired
     private CourseSessionDAO sessionDao;
+
+    @Autowired
+    private SessionQueryParamsBuilder sessionQueryParamsBuilder;
     
     /*
      * (non-Javadoc)
@@ -68,8 +73,14 @@ public class CourseServiceImpl implements CourseService {
         return courseDao.getCourses();
     }
 
-    public List<CourseSession> getAllSessions(String courseStatus,String sessionDomain ) throws Exception {
-        return sessionDao.getAllSessions(courseStatus,sessionDomain);
+    /*
+     * (non-Javadoc)
+     * @see com.gs.api.service.CourseService#getCourses()
+    */
+    @Override
+    public List<CourseSession> getAllSessions(String courseStatus, String sessionDomain ) throws Exception {
+        Map<String,Object> params = sessionQueryParamsBuilder.buildCourseSessionsQueryParams(courseStatus, sessionDomain);
+        return sessionDao.getAllSessions(params, courseStatus, sessionDomain);
     }
 
 }

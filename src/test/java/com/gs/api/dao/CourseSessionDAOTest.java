@@ -2,6 +2,7 @@ package com.gs.api.dao;
 
 import com.gs.api.dao.CourseSessionDAO.SessionsRowMapper;
 import com.gs.api.domain.course.CourseSession;
+import com.gs.api.domain.course.CourseSessionDomain;
 import com.gs.api.helper.CourseTestHelper;
 
 import org.junit.After;
@@ -218,79 +219,52 @@ public class CourseSessionDAOTest {
 
     @Test
     public void testgetAllSessionDAO_GetResult() throws Exception {
-
+        List<String> courseSessionStatus = new ArrayList<String>();
+        List<String> courseSessionDomain = new ArrayList<String>();
+        courseSessionStatus.add(CourseSessionDomain.C.name());
+        courseSessionDomain.add(CourseSessionDomain.domin000000000001085.name());
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("courseSessionStatus", courseSessionStatus);
+        params.put("courseSessionDomain", courseSessionDomain);
         when(namedParameterJdbcTemplate.query(anyString(), any(HashMap.class), any(SessionsRowMapper.class))).thenAnswer(new Answer<List<CourseSession>>() {
                     @Override
                     public List<CourseSession> answer(InvocationOnMock invocation) throws Throwable {
                         return CourseTestHelper.createSessions();
                     }
                 });
-        List<CourseSession> list = sessionDAO.getAllSessions("C","EP");
+        List<CourseSession> list = sessionDAO.getAllSessions(params,"C","domin000000000001085");
         assertNotNull(list);
         assertEquals(2, list.size());
 
     }
 
-    @Test
-    public void testgetAllSessionDAO_GetResultForDayTime() throws Exception {
-
-        when(namedParameterJdbcTemplate.query(anyString(), any(HashMap.class), any(SessionsRowMapper.class))).thenAnswer(new Answer<List<CourseSession>>() {
-            @Override
-            public List<CourseSession> answer(InvocationOnMock invocation) throws Throwable {
-                return CourseTestHelper.createSessions();
-            }
-        });
-        List<CourseSession> list = sessionDAO.getAllSessions("C","CD");
-        assertNotNull(list);
-        assertEquals(2, list.size());
-    }
-
-    @Test
-    public void testgetAllSessionDAO_GetResultEmptySessionDomain() throws Exception {
-
-        when(namedParameterJdbcTemplate.query(anyString(), any(HashMap.class), any(SessionsRowMapper.class))).thenAnswer(new Answer<List<CourseSession>>() {
-            @Override
-            public List<CourseSession> answer(InvocationOnMock invocation) throws Throwable {
-                return CourseTestHelper.createSessions();
-            }
-        });
-        List<CourseSession> list = sessionDAO.getAllSessions("C",null);
-        assertNotNull(list);
-        assertEquals(2, list.size());
-
-    }
-
-    @Test
-    public void testgetAllSessionDAO_GetResultEmptyStatusCode() throws Exception {
-
-        when(namedParameterJdbcTemplate.query(anyString(), any(HashMap.class), any(SessionsRowMapper.class))).thenAnswer(new Answer<List<CourseSession>>() {
-            @Override
-            public List<CourseSession> answer(InvocationOnMock invocation) throws Throwable {
-                return CourseTestHelper.createSessions();
-            }
-        });
-        List<CourseSession> list = sessionDAO.getAllSessions(null,"123");
-        assertNotNull(list);
-        assertEquals(2, list.size());
-
-    }
-
-    @Test
     public void testgetAllSessionDAO_EmptyResultException() throws Exception {
-
+        List<String> courseSessionStatus = new ArrayList<String>();
+        List<String> courseSessionDomain = new ArrayList<String>();
+        courseSessionStatus.add(CourseSessionDomain.C.name());
+        courseSessionDomain.add(CourseSessionDomain.domin000000000001085.name());
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("courseSessionStatus", courseSessionStatus);
+        params.put("courseSessionDomain", courseSessionDomain);
         when(namedParameterJdbcTemplate.query(anyString(), any(HashMap.class), any(SessionsRowMapper.class)))
                 .thenThrow(new EmptyResultDataAccessException(1));
-        List<CourseSession> list = sessionDAO.getAllSessions("c","");
+        List<CourseSession> list = sessionDAO.getAllSessions(params,"C","domin000000000001085");
         assertNull(list);
 
     }
 
     @Test
     public void testgetAllSessionDAO_RuntimeException() throws Exception {
-
+        List<String> courseSessionStatus = new ArrayList<String>();
+        List<String> courseSessionDomain = new ArrayList<String>();
+        courseSessionStatus.add(CourseSessionDomain.C.name());
+        courseSessionDomain.add(CourseSessionDomain.domin000000000001085.name());
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("courseSessionStatus", courseSessionStatus);
+        params.put("courseSessionDomain", courseSessionDomain);
         when(namedParameterJdbcTemplate.query(anyString(), any(HashMap.class), any(SessionsRowMapper.class)))       .thenThrow(new RuntimeException("random exception"));
         try {
-            sessionDAO.getAllSessions("C","123");
+            sessionDAO.getAllSessions(params,"C","123");
             assertTrue(false);   //should not get here
         } catch( Exception e) {
             assertNotNull(e);
