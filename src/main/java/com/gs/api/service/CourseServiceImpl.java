@@ -6,11 +6,13 @@ import com.gs.api.dao.CourseSessionDAO;
 import com.gs.api.domain.course.Course;
 import com.gs.api.domain.course.CourseSession;
 
+import com.gs.api.search.util.SessionQueryParamsBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
 import java.util.List;
 
 @Service
@@ -26,6 +28,9 @@ public class CourseServiceImpl implements CourseService {
     
     @Autowired
     private CourseSessionDAO sessionDao;
+
+    @Autowired
+    private SessionQueryParamsBuilder sessionQueryParamsBuilder;
     
     /*
      * (non-Javadoc)
@@ -43,20 +48,20 @@ public class CourseServiceImpl implements CourseService {
 
     /*
      * (non-Javadoc)
-     * @see com.gs.api.service.CourseService#getSessions(java.lang.String)
+     * @see com.gs.api.service.CourseService#getSessionsByCourseId(java.lang.String)
      */
     @Override
-    public List<CourseSession> getSessions(String id) throws Exception {
-        return sessionDao.getSessions(id);
+    public List<CourseSession> getSessionsByCourseId(String id) throws Exception {
+        return sessionDao.getSessionsByCourseId(id);
     }
 
     /*
      * (non-Javadoc)
-     * @see com.gs.api.service.CourseService#getSession(java.lang.String)
+     * @see com.gs.api.service.CourseService#getSessionById(java.lang.String)
      */
     @Override
-    public CourseSession getSession(String sessionId) throws Exception {
-        return sessionDao.getSession(sessionId);
+    public CourseSession getSessionById(String sessionId) throws Exception {
+        return sessionDao.getSessionById(sessionId);
     }
 
     /*
@@ -66,6 +71,15 @@ public class CourseServiceImpl implements CourseService {
     @Override
     public List<Course> getCourses() throws Exception {
         return courseDao.getCourses();
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see com.gs.api.service.CourseService#getSessions()
+    */
+    @Override
+    public List<CourseSession> getSessions(String courseStatus, String sessionDomain ) throws Exception {
+        return sessionDao.getSessions(courseStatus, sessionDomain);
     }
 
 }

@@ -109,9 +109,9 @@ public class CourseController extends BaseController {
      * @throws Exception
      */
     @RequestMapping(value = "/{id}/sessions", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody List<CourseSession> getSessions(@PathVariable("id") String id) throws Exception {
+    public @ResponseBody List<CourseSession> getSessionsByCourseId(@PathVariable("id") String id) throws Exception {
         logger.debug("Course sessions initiated with  course courseId: {}", id);
-        final List<CourseSession> sessions = courseService.getSessions(id);
+        final List<CourseSession> sessions = courseService.getSessionsByCourseId(id);
         if (CollectionUtils.isEmpty(sessions)){
             logger.error("No sessions found for courseId {}", id);
             throw new NotFoundException("No sessions found for course courseId " + id);
@@ -126,9 +126,9 @@ public class CourseController extends BaseController {
      * @throws Exception
      */
     @RequestMapping(value = "/session/{sessionId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody CourseSession getSession(@PathVariable("sessionId") String sessionId) throws Exception {
+    public @ResponseBody CourseSession getSessionById(@PathVariable("sessionId") String sessionId) throws Exception {
         logger.debug("Get course session by session id {}", sessionId);
-        final CourseSession session = courseService.getSession(sessionId);
+        final CourseSession session = courseService.getSessionById(sessionId);
         if (session == null) {
             String msg = String.format("No session found for session id %s", sessionId);
             logger.error(msg);
@@ -147,6 +147,20 @@ public class CourseController extends BaseController {
     public @ResponseBody CourseCategory[] getCategories() throws Exception {
         logger.debug("Category/subject search initiated");
         return categoryService.getCategories();
+    }
+
+
+    @RequestMapping(value = "/sessions", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody List<CourseSession> getSessions(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String sessiondomain) throws Exception {
+        logger.debug("Course sessions initiated");
+        final List<CourseSession> sessions = courseService.getSessions(status,sessiondomain);
+        if (CollectionUtils.isEmpty(sessions)){
+            logger.debug("No sessions found");
+            throw new NotFoundException("No sessions found for course");
+        }
+        return sessions;
     }
 
 }

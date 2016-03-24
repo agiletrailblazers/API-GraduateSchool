@@ -19,6 +19,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -96,26 +97,38 @@ public class CourseServiceTest {
     }
     
     @Test
-    public void testGetSessions() throws Exception {
-        when(sessionDAO.getSessions(anyString())).thenReturn(CourseTestHelper.createSessions());
-        List<CourseSession> sessions = courseService.getSessions("12345");
+    public void testGetSessionsByCourseId() throws Exception {
+        when(sessionDAO.getSessionsByCourseId(anyString())).thenReturn(CourseTestHelper.createSessions());
+        List<CourseSession> sessions = courseService.getSessionsByCourseId("12345");
         assertNotNull(sessions);
         assertEquals(2, sessions.size());
         assertEquals("1", sessions.get(0).getClassNumber());
-        verify(sessionDAO, times(1)).getSessions(anyString());
+        verify(sessionDAO, times(1)).getSessionsByCourseId(anyString());
     }
     
     @Test
-    public void testGetSession() throws Exception {
+    public void testGetSessionById() throws Exception {
         String sessionId = "55555";
 
-        when(sessionDAO.getSession(sessionId)).thenReturn(CourseTestHelper.createSession(sessionId));
+        when(sessionDAO.getSessionById(sessionId)).thenReturn(CourseTestHelper.createSession(sessionId));
 
-        CourseSession session = courseService.getSession(sessionId);
+        CourseSession session = courseService.getSessionById(sessionId);
         assertNotNull("Expected a session to be found", session);
         assertEquals("Wrong session found", sessionId, session.getClassNumber());
     }
 
+    @Test
+    public void testGetSessions() throws Exception {
+        when(sessionDAO.getSessions(anyString(),anyString())).thenReturn(CourseTestHelper.createSessions());
+        List<CourseSession> sessions = courseService.getSessions("C","12345");
+        assertNotNull(sessions);
+        assertEquals(2, sessions.size());
+        assertEquals("1", sessions.get(0).getClassNumber());
+        verify(sessionDAO, times(1)).getSessions(anyString(), anyString());
+    }
 
-    
+
+
+
+
 }
