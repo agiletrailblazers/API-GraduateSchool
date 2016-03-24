@@ -1,15 +1,22 @@
 package com.gs.api.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gs.api.domain.error.ValidationError;
 import com.gs.api.exception.AuthenticationException;
 import com.gs.api.exception.NotFoundException;
 import com.gs.api.exception.PaymentAcceptedException;
 import com.gs.api.exception.PaymentDeclinedException;
 import com.gs.api.exception.PaymentException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.propertyeditors.StringArrayPropertyEditor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.InitBinder;
@@ -17,6 +24,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Common code for Controllers 
@@ -125,5 +134,26 @@ public abstract class BaseController {
         return "{\"message\": \"" + ex.getMessage() + "\"}";
     }
 
+    /**
+     * Return json formatted error response for requests containing invalid data in the request.
+     * @return ResponseBody
+     */
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler({ MethodArgumentNotValidException.class })
+    @ResponseBody
+    public String handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) throws JsonProcessingException {
+
+        // get the errors
+        BindingResult result = ex.getBindingResult();
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        List<ValidationError> validationErrors = new ArrayList<>();
+        for (FieldError error : result.getFieldErrors()) {
+            ValidationError validationError = new ValidationError(error.getField(), error.getDefaultMessage());
+            validationErrors.add(validationError);
+        }
+        return "{\"validationErrors\":" + mapper.writeValueAsString(validationErrors) + "}";
+    }
 
 }

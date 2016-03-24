@@ -3,15 +3,36 @@ package com.gs.api.domain;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
+
 @JsonInclude(Include.NON_NULL)
 public class Address {
 
     private String id;
+
+    @NotNull(message = "Required field")
+    @Size(min = 1, max = 1020, message="Length must be between 1 and 1020 characters")
     private String address1;
+
+    @Size(min = 1, max = 1020, message="Length must be between 1 and 1020 characters")
     private String address2;
+
+    @Size(min = 1, max = 1020, message="Length must be between 1 and 1020 characters")
     private String address3;
+
+    @NotNull(message = "Required field")
+    @Size(min = 1, max = 200, message="Length must be between 1 and 200 characters")
     private String city;
+
+    @NotNull(message = "Required field")
+    @Size(min = 1, max = 2, message="Length must be between 1 and 2 characters")
     private String state;
+
+    @NotNull(message = "Required field")
+    @Size(min = 5, max = 10, message="Length must be between 5 and 10 characters")
+    @Pattern(regexp = "[0-9]{5}(-?[0-9]{4})?", message = "Postal Code is not in 5 or 9 digit format")
     private String postalCode;
 
     public String getId() {
