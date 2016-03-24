@@ -9,9 +9,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
-/**
- * Created by mfried on 3/22/16.
- */
 public class ValidationHelper {
 
     public static final String REQUIRED_FIELD = "Required field";
