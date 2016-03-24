@@ -74,7 +74,7 @@ public class RegistrationServiceImpl implements RegistrationService {
                     throw new Exception("No user found for student " + registration.getSessionId());
                 }
 
-                CourseSession session = sessionDao.getSession(registration.getSessionId());
+                CourseSession session = sessionDao.getSessionById(registration.getSessionId());
                 if (session == null) {
                     logger.error("No course session found for session id {}", registration.getSessionId());
                     throw new Exception("No course session found for session id " + registration.getSessionId());

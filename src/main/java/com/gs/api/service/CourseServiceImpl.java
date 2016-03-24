@@ -48,20 +48,20 @@ public class CourseServiceImpl implements CourseService {
 
     /*
      * (non-Javadoc)
-     * @see com.gs.api.service.CourseService#getSessions(java.lang.String)
+     * @see com.gs.api.service.CourseService#getSessionsByCourseId(java.lang.String)
      */
     @Override
-    public List<CourseSession> getSessions(String id) throws Exception {
-        return sessionDao.getSessions(id);
+    public List<CourseSession> getSessionsByCourseId(String id) throws Exception {
+        return sessionDao.getSessionsByCourseId(id);
     }
 
     /*
      * (non-Javadoc)
-     * @see com.gs.api.service.CourseService#getSession(java.lang.String)
+     * @see com.gs.api.service.CourseService#getSessionById(java.lang.String)
      */
     @Override
-    public CourseSession getSession(String sessionId) throws Exception {
-        return sessionDao.getSession(sessionId);
+    public CourseSession getSessionById(String sessionId) throws Exception {
+        return sessionDao.getSessionById(sessionId);
     }
 
     /*
@@ -75,12 +75,11 @@ public class CourseServiceImpl implements CourseService {
 
     /*
      * (non-Javadoc)
-     * @see com.gs.api.service.CourseService#getCourses()
+     * @see com.gs.api.service.CourseService#getSessions()
     */
     @Override
-    public List<CourseSession> getAllSessions(String courseStatus, String sessionDomain ) throws Exception {
-        Map<String,Object> params = sessionQueryParamsBuilder.buildCourseSessionsQueryParams(courseStatus, sessionDomain);
-        return sessionDao.getAllSessions(params, courseStatus, sessionDomain);
+    public List<CourseSession> getSessions(String courseStatus, String sessionDomain ) throws Exception {
+        return sessionDao.getSessions(courseStatus, sessionDomain);
     }
 
 }

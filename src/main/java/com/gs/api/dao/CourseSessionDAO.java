@@ -44,7 +44,7 @@ public class CourseSessionDAO {
     private String sqlForSingleSession;
 
     @Value("${sql.course.session.all.query}")
-    private String sqlForAllSession;
+    private String sqlForSessions;
 
 
     @Autowired
@@ -62,7 +62,7 @@ public class CourseSessionDAO {
      * @param courseId Load this course by this ID
      * @return Course
      */
-    public List<CourseSession> getSessions(String courseId) {
+    public List<CourseSession> getSessionsByCourseId(String courseId) {
         logger.debug("Getting course competency from database for course id {}", courseId);
         logger.debug(sql);
         try {
@@ -86,7 +86,7 @@ public class CourseSessionDAO {
      * @param sessionId the session id (class number)
      * @return the course session details
      */
-    public CourseSession getSession(String sessionId)  {
+    public CourseSession getSessionById(String sessionId)  {
         logger.debug("Getting course session information for sessionId {}", sessionId);
         String sessionIdQuery = sqlForSession.concat(sqlForSingleSession);
         logger.debug(sessionIdQuery);
@@ -103,19 +103,18 @@ public class CourseSessionDAO {
         }
     }
 
-
     /**
      * Get  all active course sessions details
-     * @param params the query parameter for course Sessions Query
      * @param status the session status C-G2G
      * @param sessionDomain the session domain Type
      * @return the list of course session details
      */
-    public List<CourseSession> getAllSessions(Map<String,Object> params,String status,String sessionDomain) {
+    public List<CourseSession> getSessions(String status,String sessionDomain) {
         logger.debug("Getting course sessions information for status {} - {}",status,sessionDomain);
-        String courseSessionsQuery = sqlForSession.concat(sqlForAllSession);
+        String courseSessionsQuery = sqlForSession.concat(sqlForSessions);
         logger.debug(courseSessionsQuery);
         try {
+            Map<String,Object> params = sessionQueryParamsBuilder.buildCourseSessionsQueryParams(status, sessionDomain);
             final List<CourseSession> sessions = this.namedParameterJdbcTemplate.query(courseSessionsQuery,params,
                     new SessionsRowMapper());
             logger.debug("Sessions Found");

@@ -152,23 +152,23 @@ public class CourseControllerTest {
     }
     
     @Test
-    public void testGetSessions() throws Exception {
-        when(courseService.getSessions(anyString())).thenReturn(CourseTestHelper.createSessions());
+    public void testGetSessionsByCourseId() throws Exception {
+        when(courseService.getSessionsByCourseId(anyString())).thenReturn(CourseTestHelper.createSessions());
         mockMvc.perform(get("/courses/1/sessions").accept(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$[0].classNumber").value(is("1")))
                 .andExpect(jsonPath("$[1].classNumber").value(is("2")));
-        verify(courseService, times(1)).getSessions(anyString());
+        verify(courseService, times(1)).getSessionsByCourseId(anyString());
     }
     
     @Test
-    public void testGetSessions_NotFound() throws Exception {
-        when(courseService.getSessions(anyString())).thenReturn(null);
+    public void testGetSessionsByCourseId_NotFound() throws Exception {
+        when(courseService.getSessionsByCourseId(anyString())).thenReturn(null);
         mockMvc.perform(get("/courses/1/sessions").accept(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentType("application/json"));
-        verify(courseService, times(1)).getSessions(anyString());
+        verify(courseService, times(1)).getSessionsByCourseId(anyString());
     }
     
     @Test
@@ -229,10 +229,10 @@ public class CourseControllerTest {
     }
 
     @Test
-    public void testGetSession() throws Exception {
+    public void testGetSessionById() throws Exception {
         String sessionId = "55555";
 
-        when(courseService.getSession(sessionId)).thenReturn(CourseTestHelper.createSession(sessionId));
+        when(courseService.getSessionById(sessionId)).thenReturn(CourseTestHelper.createSession(sessionId));
 
         mockMvc.perform(get("/courses/session/{sessionId}", sessionId).accept(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
@@ -242,21 +242,21 @@ public class CourseControllerTest {
 
 
     @Test
-    public void testGetAllSessions_NotFound() throws Exception {
+    public void testGetSessions_NotFound() throws Exception {
         String courseStatus ="C";
         String sessionDomain="123";
-        when(courseService.getAllSessions(courseStatus,sessionDomain)).thenReturn(null);
+        when(courseService.getSessions(courseStatus,sessionDomain)).thenReturn(null);
         mockMvc.perform(get("/courses/sessions?status=c&coursedomain=CD").accept(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentType("application/json"));
-        verify(courseService, times(1)).getAllSessions(anyString(),anyString());
+        verify(courseService, times(1)).getSessions(anyString(),anyString());
     }
 
     @Test
-    public void testGetSession_NotFound() throws Exception {
+    public void testGetSessionById_NotFound() throws Exception {
         String sessionId = "55555";
 
-        when(courseService.getSession(sessionId)).thenReturn(null);
+        when(courseService.getSessionById(sessionId)).thenReturn(null);
 
         mockMvc.perform(get("/courses/session/{sessionId}", sessionId).accept(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isNotFound())
@@ -264,14 +264,14 @@ public class CourseControllerTest {
     }
 
     @Test
-    public void testGetAllSessions() throws Exception {
-        when(courseService.getAllSessions(anyString(),anyString())).thenReturn(CourseTestHelper.createSessions());
+    public void testGetSessions() throws Exception {
+        when(courseService.getSessions(anyString(),anyString())).thenReturn(CourseTestHelper.createSessions());
         mockMvc.perform(get("/courses/sessions?status=C").accept(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$[0].classNumber").value(is("1")))
                 .andExpect(jsonPath("$[1].classNumber").value(is("2")));
-        verify(courseService, times(1)).getAllSessions(anyString(),anyString());
+        verify(courseService, times(1)).getSessions(anyString(),anyString());
     }
 
 

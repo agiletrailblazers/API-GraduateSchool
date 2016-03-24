@@ -25,14 +25,14 @@ public interface CourseService {
      * @param id get a session by this id
      * @return List of sessions
      */
-    List<CourseSession> getSessions(String id) throws Exception;
+    List<CourseSession> getSessionsByCourseId(String id) throws Exception;
 
     /**
      * Get session from database by session id
      * @param sessionId the session id
      * @return the session
      */
-    CourseSession getSession(String sessionId) throws Exception;
+    CourseSession getSessionById(String sessionId) throws Exception;
 
     /**
      * Get sessions from database
@@ -40,6 +40,6 @@ public interface CourseService {
      * @param sessionDomain the session domain Type
      * @return List of sessions
      */
-    List<CourseSession> getAllSessions(String courseStatus,String sessionDomain) throws Exception;
+    List<CourseSession> getSessions(String courseStatus,String sessionDomain) throws Exception;
 
 }

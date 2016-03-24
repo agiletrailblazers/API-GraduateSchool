@@ -123,7 +123,7 @@ public class RegistrationServiceTest {
         when(userDao.getUser(USER_ID)).thenReturn(user);
         when(userDao.getUser(STUDENT_ID_1)).thenReturn(student1);
         when(userDao.getUser(STUDENT_ID_2)).thenReturn(student2);
-        when(sessionDao.getSession(SESSION_ID)).thenReturn(session);
+        when(sessionDao.getSessionById(SESSION_ID)).thenReturn(session);
         when(paymentService.processPayment(payment)).thenReturn(paymentConfirmation);
 
         Registration createdRegistration1 = new Registration();
@@ -137,7 +137,7 @@ public class RegistrationServiceTest {
         RegistrationResponse createdRegistrationResponse = registrationService.register(USER_ID, registrationRequest);
 
         verify(userDao, times(4)).getUser(any(String.class));
-        verify(sessionDao, times(2)).getSession(any(String.class));
+        verify(sessionDao, times(2)).getSessionById(any(String.class));
         verify(paymentService).processPayment(payment);
         verify(registrationDao, times(2)).registerForCourse(any(User.class), any(User.class), any(CourseSession.class));
 
@@ -208,7 +208,7 @@ public class RegistrationServiceTest {
         when(userDao.getUser(USER_ID)).thenReturn(user);
         when(userDao.getUser(STUDENT_ID_1)).thenReturn(student1);
 
-        when(sessionDao.getSession(SESSION_ID)).thenReturn(null);
+        when(sessionDao.getSessionById(SESSION_ID)).thenReturn(null);
 
         registrationService.register(USER_ID, registrationRequest);
     }
