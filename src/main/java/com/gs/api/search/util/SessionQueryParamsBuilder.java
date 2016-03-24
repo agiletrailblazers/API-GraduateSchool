@@ -1,6 +1,7 @@
 package com.gs.api.search.util;
 
 import com.gs.api.domain.course.CourseSessionDomain;
+import com.gs.api.domain.course.CourseSessionStatus;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -20,8 +21,8 @@ public class SessionQueryParamsBuilder {
     public Map<String,Object> buildSessionQueryParams(String sessionId) {
         List<String> courseSessionStatus = new ArrayList<String>();
         List<String> courseSessionId = new ArrayList<String>();
-        courseSessionStatus.add(CourseSessionDomain.C.name());
-        courseSessionStatus.add(CourseSessionDomain.S.name());
+        courseSessionStatus.add(CourseSessionStatus.C.name());
+        courseSessionStatus.add(CourseSessionStatus.S.name());
         courseSessionId.add(sessionId);
         Map<String,Object> params = new HashMap<String, Object>();
         params.put("courseSessionStatus",courseSessionStatus);
@@ -42,8 +43,8 @@ public class SessionQueryParamsBuilder {
         if (StringUtils.isNotEmpty(status)) {
             courseSessionStatus.add(status.toUpperCase());
         } else {
-            courseSessionStatus.add(CourseSessionDomain.C.name());
-            courseSessionStatus.add(CourseSessionDomain.S.name());
+            courseSessionStatus.add(CourseSessionStatus.C.name());
+            courseSessionStatus.add(CourseSessionStatus.S.name());
         }
         if (StringUtils.isNotEmpty(sessionDomain)) {
             if (sessionDomain.equalsIgnoreCase(CourseSessionDomain.CD.name())) {

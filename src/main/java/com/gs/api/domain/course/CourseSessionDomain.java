@@ -18,8 +18,6 @@ public enum CourseSessionDomain {
     domin000000000000001,
     domin000000000002040,
     domin000000000001420,
-    C,
-    S,
     CD,
     EP
 }
