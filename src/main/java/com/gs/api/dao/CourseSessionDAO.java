@@ -63,8 +63,7 @@ public class CourseSessionDAO {
      * @return Course
      */
     public List<CourseSession> getSessionsByCourseId(String courseId) {
-        logger.debug("Getting course competency from database for course id {}", courseId);
-        logger.debug(sql);
+        logger.debug("Getting course competency from database for course id {} - {}", courseId , sql);
         try {
             final List<CourseSession> sessions = this.jdbcTemplate.query(sql, new Object[]{courseId, courseId},
                     new SessionsRowMapper());

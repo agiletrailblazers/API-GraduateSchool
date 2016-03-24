@@ -157,7 +157,7 @@ public class CourseController extends BaseController {
         logger.debug("Course sessions initiated");
         final List<CourseSession> sessions = courseService.getSessions(status,sessiondomain);
         if (CollectionUtils.isEmpty(sessions)){
-            logger.error("No sessions found");
+            logger.debug("No sessions found");
             throw new NotFoundException("No sessions found for course");
         }
         return sessions;
