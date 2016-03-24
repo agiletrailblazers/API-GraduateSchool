@@ -123,7 +123,7 @@ public class CourseSessionDAO {
             return sessions;
         }
         catch (EmptyResultDataAccessException e) {
-            logger.warn("Sessions not found", e);
+            logger.debug("Sessions not found", e);
             return null;
         }
         catch (Exception e) {
