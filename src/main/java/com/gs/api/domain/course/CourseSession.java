@@ -26,16 +26,6 @@ public class CourseSession {
     private String offeringSessionId;
     private String courseId;
     private String curricumTitle;
-    private String courseDomain;
-
-    public String getCourseDomain() {
-        return courseDomain;
-    }
-
-    public void setCourseDomain(String courseDomain) {
-        this.courseDomain = courseDomain;
-    }
-
 
 
     public String getCurricumTitle() {

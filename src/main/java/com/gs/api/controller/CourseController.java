@@ -154,7 +154,7 @@ public class CourseController extends BaseController {
     public @ResponseBody List<CourseSession> getSessions(
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String sessiondomain) throws Exception {
-        logger.debug("Course sessions initiated : {}");
+        logger.debug("Course sessions initiated");
         final List<CourseSession> sessions = courseService.getSessions(status,sessiondomain);
         if (CollectionUtils.isEmpty(sessions)){
             logger.error("No sessions found");

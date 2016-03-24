@@ -37,14 +37,14 @@ public class CourseSessionDAO {
     @Value("${sql.course.session.query}")
     private String sql;
 
-    @Value("${sql.course.sessions.query}")
-    private String sqlForSession;
-
-    @Value("${sql.course.session.single.query}")
-    private String sqlForSingleSession;
-
-    @Value("${sql.course.session.all.query}")
+    @Value("${sql.sessions.query}")
     private String sqlForSessions;
+
+    @Value("${sql.course.session.id.query}")
+    private String sqlForSessionById;
+
+    @Value("${sql.sessions.sessiondomain.query}")
+    private String sqlForSessionsByDomain;
 
 
     @Autowired
@@ -88,7 +88,7 @@ public class CourseSessionDAO {
      */
     public CourseSession getSessionById(String sessionId)  {
         logger.debug("Getting course session information for sessionId {}", sessionId);
-        String sessionIdQuery = sqlForSession.concat(sqlForSingleSession);
+        String sessionIdQuery = sqlForSessions.concat(sqlForSessionById);
         logger.debug(sessionIdQuery);
         Map<String,Object> params = sessionQueryParamsBuilder.buildSessionQueryParams(sessionId);
         try {
@@ -111,7 +111,10 @@ public class CourseSessionDAO {
      */
     public List<CourseSession> getSessions(String status,String sessionDomain) {
         logger.debug("Getting course sessions information for status {} - {}",status,sessionDomain);
-        String courseSessionsQuery = sqlForSession.concat(sqlForSessions);
+        String courseSessionsQuery = sqlForSessions;
+        if (StringUtils.isNotEmpty(sessionDomain)) {
+            courseSessionsQuery = courseSessionsQuery.concat(sqlForSessionsByDomain);
+        }
         logger.debug(courseSessionsQuery);
         try {
             Map<String,Object> params = sessionQueryParamsBuilder.buildCourseSessionsQueryParams(status, sessionDomain);
@@ -165,7 +168,6 @@ public class CourseSessionDAO {
             location.setState(rs.getString("STATE"));
             location.setPostalCode(rs.getString("ZIP"));
             session.setCurricumTitle(rs.getString("CURRICUM_TITLE"));
-            session.setCourseDomain(rs.getString("COURSE_DOMAIN"));
             session.setLocation(location);
             if (!StringUtils.isEmpty(rs.getString("PERSON_NO"))) {
                 CourseInstructor instructor = new CourseInstructor();

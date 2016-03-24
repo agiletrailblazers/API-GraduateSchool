@@ -60,8 +60,17 @@ public class CourseSessionDAOTest {
     
     private CourseSessionDAO.SessionsRowMapper rowMapper;
 
-    @Value("${sql.course.session.single.query}")
-    private String sqlForSingleSession;
+    @Value("${sql.course.session.query}")
+    private String sql;
+
+    @Value("${sql.sessions.query}")
+    private String sqlForSessions;
+
+    @Value("${sql.course.session.id.query}")
+    private String sqlForSessionById;
+
+    @Value("${sql.sessions.sessiondomain.query}")
+    private String sqlForSessionsByDomain;
 
     @Captor
     private ArgumentCaptor<Object[]> singleSessionQueryParamsCaptor;
@@ -165,7 +174,7 @@ public class CourseSessionDAOTest {
         assertNotNull("Expected a session to be found", session);
         assertTrue("Wrong session", sessionId.equals(session.getClassNumber()));
 
-        verify(namedParameterJdbcTemplate).queryForObject(eq(sqlForSingleSession), singleNamedSessionQueryParamsCaptor.capture(), any(SessionsRowMapper.class));
+        verify(namedParameterJdbcTemplate).queryForObject(eq(sqlForSessionById), singleNamedSessionQueryParamsCaptor.capture(), any(SessionsRowMapper.class));
         HashMap<String, Object> capturedQueryParams = singleNamedSessionQueryParamsCaptor.getValue();
         assertNotNull("Expected parameters", capturedQueryParams);
         assertEquals(expectedQueryParams.size(),capturedQueryParams.size());
@@ -190,7 +199,7 @@ public class CourseSessionDAOTest {
         CourseSession session = sessionDAO.getSessionById(sessionId);
         assertNull("No session should be found", session);
 
-        verify(namedParameterJdbcTemplate).queryForObject(eq(sqlForSingleSession), singleNamedSessionQueryParamsCaptor.capture(), any(SessionsRowMapper.class));
+        verify(namedParameterJdbcTemplate).queryForObject(eq(sqlForSessionById), singleNamedSessionQueryParamsCaptor.capture(), any(SessionsRowMapper.class));
         HashMap<String, Object> capturedQueryParams = singleNamedSessionQueryParamsCaptor.getValue();
         assertNotNull("Expected parameters", capturedQueryParams);
 
@@ -211,7 +220,7 @@ public class CourseSessionDAOTest {
         CourseSession session = sessionDAO.getSessionById(sessionId);
         assertNull("No session should be returned", session);
 
-        verify(namedParameterJdbcTemplate).queryForObject(eq(sqlForSingleSession), singleNamedSessionQueryParamsCaptor.capture(), any(SessionsRowMapper.class));
+        verify(namedParameterJdbcTemplate).queryForObject(eq(sqlForSessionById), singleNamedSessionQueryParamsCaptor.capture(), any(SessionsRowMapper.class));
         HashMap<String,Object> capturedQueryParams = singleNamedSessionQueryParamsCaptor.getValue();
         assertNotNull("Expected parameters", capturedQueryParams);
 
@@ -252,4 +261,19 @@ public class CourseSessionDAOTest {
         }
 
     }
+
+    @Test
+    public void testgetSessionStatusDAO_GetResult() throws Exception {
+        when(namedParameterJdbcTemplate.query(anyString(), any(HashMap.class), any(SessionsRowMapper.class))).thenAnswer(new Answer<List<CourseSession>>() {
+            @Override
+            public List<CourseSession> answer(InvocationOnMock invocation) throws Throwable {
+                return CourseTestHelper.createSessions();
+            }
+        });
+        List<CourseSession> list = sessionDAO.getSessions("C",null);
+        assertNotNull(list);
+        assertEquals(2, list.size());
+
+    }
+
 }

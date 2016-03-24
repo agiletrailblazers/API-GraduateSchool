@@ -54,23 +54,6 @@ public class SessionQueryParamsBuilder {
             } else {
                 courseSessionDomain.add(sessionDomain);
             }
-        } else {
-            courseSessionDomain.add(CourseSessionDomain.domin000000000001081.name());
-            courseSessionDomain.add(CourseSessionDomain.domin000000000001082.name());
-            courseSessionDomain.add(CourseSessionDomain.domin000000000001083.name());
-            courseSessionDomain.add(CourseSessionDomain.domin000000000001084.name());
-            courseSessionDomain.add(CourseSessionDomain.domin000000000001085.name());
-            courseSessionDomain.add(CourseSessionDomain.domin000000000001086.name());
-            courseSessionDomain.add(CourseSessionDomain.domin000000000001087.name());
-            courseSessionDomain.add(CourseSessionDomain.domin000000000001088.name());
-            courseSessionDomain.add(CourseSessionDomain.domin000000000001089.name());
-            courseSessionDomain.add(CourseSessionDomain.domin000000000001090.name());
-            courseSessionDomain.add(CourseSessionDomain.domin000000000001091.name());
-            courseSessionDomain.add(CourseSessionDomain.domin000000000001092.name());
-            courseSessionDomain.add(CourseSessionDomain.domin000000000001095.name());
-            courseSessionDomain.add(CourseSessionDomain.domin000000000000001.name());
-            courseSessionDomain.add(CourseSessionDomain.domin000000000002040.name());
-            courseSessionDomain.add(CourseSessionDomain.domin000000000001420.name());
         }
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("courseSessionStatus", courseSessionStatus);
