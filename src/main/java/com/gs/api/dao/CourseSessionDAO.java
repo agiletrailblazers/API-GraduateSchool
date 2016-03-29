@@ -167,6 +167,7 @@ public class CourseSessionDAO {
             location.setState(rs.getString("STATE"));
             location.setPostalCode(rs.getString("ZIP"));
             session.setCurricumTitle(rs.getString("CURRICUM_TITLE"));
+            session.setCurricumTabDisplayOrder(rs.getInt("CURRICUMTABDISPLAYORDER"));
             session.setLocation(location);
             if (!StringUtils.isEmpty(rs.getString("PERSON_NO"))) {
                 CourseInstructor instructor = new CourseInstructor();
