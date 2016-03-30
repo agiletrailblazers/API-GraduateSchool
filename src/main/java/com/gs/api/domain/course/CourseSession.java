@@ -29,6 +29,8 @@ public class CourseSession {
     private String courseTitle;
     private String curricumTitle;
 
+    private int curricumTabDisplayOrder;
+
     public String getClassNumber() {
         return classNumber;
     }
@@ -189,6 +191,16 @@ public class CourseSession {
     public void setCurricumTitle(String curricumTitle) {
         this.curricumTitle = curricumTitle;
     }
+
+    public int getCurricumTabDisplayOrder() {
+        return curricumTabDisplayOrder;
+    }
+
+    public void setCurricumTabDisplayOrder(int curricumTabDisplayOrder) {
+        this.curricumTabDisplayOrder = curricumTabDisplayOrder;
+    }
+
+
 
 
 
