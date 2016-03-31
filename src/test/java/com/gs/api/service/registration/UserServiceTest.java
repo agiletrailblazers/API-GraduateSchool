@@ -47,8 +47,6 @@ public class UserServiceTest {
     private static final String ADDRESS_STATE = "MA";
     private static final String ADDRESS_ZIP = "55555";
     private static final String PHONE = "555-555-5555";
-    // don't change either of these password values, they match the encryption implementation
-    private static final String PASSWORD_CLEAR = "test1234";
     private static final String PASSWORD_ENCRYPTED = "937E8D5FBB48BD4949536CD65B8D35C426B80D2F830C5C308E2CDEC422AE2244";
     private static final String DOB = "05/05/1955";
     private static final String LAST_FOUR_SSN = "5555";
@@ -76,7 +74,7 @@ public class UserServiceTest {
         user = new User();
         user.setId(USER_ID);
         user.setUsername(EMAIL_ADDRESS);
-        user.setPassword(PASSWORD_CLEAR);
+        user.setPassword(PASSWORD_ENCRYPTED);
         user.setLastFourSSN(LAST_FOUR_SSN);
 
         Person person = new Person();
@@ -130,7 +128,7 @@ public class UserServiceTest {
 
         when(userDao.getUser(EMAIL_ADDRESS, PASSWORD_ENCRYPTED)).thenReturn(user);
 
-        User retrievedUser = userService.getUser(new AuthCredentials(EMAIL_ADDRESS, PASSWORD_CLEAR));
+        User retrievedUser = userService.getUser(new AuthCredentials(EMAIL_ADDRESS, PASSWORD_ENCRYPTED));
 
         verify(userDao).getUser(EMAIL_ADDRESS, PASSWORD_ENCRYPTED);
 
