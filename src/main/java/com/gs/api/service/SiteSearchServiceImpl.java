@@ -18,6 +18,7 @@ import org.springframework.web.client.RestOperations;
 import com.gs.api.domain.Page;
 import com.gs.api.domain.SitePagesSearchResponse;
 import com.gs.api.rest.object.SiteSearchContainer;
+import com.gs.api.rest.object.SiteSearchGroup;
 import com.gs.api.rest.object.SiteSearchDoc;
 import com.gs.api.search.util.HttpRequestBuilder;
 import com.gs.api.search.util.NavRangeBuilder;
@@ -75,13 +76,16 @@ public class SiteSearchServiceImpl implements SiteSearchService {
         }
 
         SiteSearchContainer container = responseEntity.getBody();
-        Collection<SiteSearchDoc> docs  = container.getResponse().getDocs();
-
+        // get docs from withing the grouped response
+        SiteSearchGroup group = container.getGrouped().getGroup();
+        Collection<SiteSearchDoc> docs = container.getGrouped().getGroup().getDoclist().getDocs();
+        // log results
         if (CollectionUtils.isNotEmpty(docs)) {
-            numFound =  container.getResponse().getNumFound();
+            numFound = group.getNgroups();
             pageSize = docs.size();
         }
-
+        logger.info("Found " + numFound + " matches for search " + search + " page size " + pageSize);
+        // loop through responses
         // loop through responses
         SitePagesSearchResponse response = new SitePagesSearchResponse();
         List<Page> pages = new ArrayList<>();

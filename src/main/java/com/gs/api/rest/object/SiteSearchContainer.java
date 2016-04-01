@@ -6,15 +6,16 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SiteSearchContainer {
 
-    @JsonProperty("response")
-    private SiteSearchResponse response;
+    @JsonProperty("grouped")
+    private SiteSearchGrouped grouped;
 
-    public SiteSearchResponse getResponse() {
-        return response;
+    public SiteSearchGrouped getGrouped() {
+        return grouped;
     }
 
-    public void setResponse(SiteSearchResponse response) {
-        this.response = response;
+
+    public void setGrouped(SiteSearchGrouped grouped) {
+        this.grouped = grouped;
     }
 
 
