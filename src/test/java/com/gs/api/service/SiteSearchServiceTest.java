@@ -4,7 +4,10 @@ import com.gs.api.domain.Page;
 import com.gs.api.domain.SitePagesSearchResponse;
 import com.gs.api.rest.object.SiteSearchContainer;
 import com.gs.api.rest.object.SiteSearchDoc;
+import com.gs.api.rest.object.SiteSearchGrouped;
+import com.gs.api.rest.object.SiteSearchGroup;
 import com.gs.api.rest.object.SiteSearchResponse;
+import com.gs.api.rest.object.SiteSearchDocList;
 
 import org.junit.After;
 import org.junit.Before;
@@ -163,8 +166,9 @@ public class SiteSearchServiceTest {
 
     private SiteSearchContainer createSiteContainerWithNullPageTitle(String id, int start, int numFound, int pageSize) {
         final SiteSearchContainer container = new SiteSearchContainer();
-        final SiteSearchResponse response = new SiteSearchResponse();
-        response.setNumFound(numFound);
+        final SiteSearchGrouped grouped = new SiteSearchGrouped();
+        final SiteSearchGroup group = new SiteSearchGroup();
+        final SiteSearchDocList docList = new SiteSearchDocList();
         List<SiteSearchDoc> docs = new ArrayList<SiteSearchDoc>();
         for (int i = 0; i < pageSize; i++) {
             SiteSearchDoc doc = new SiteSearchDoc();
@@ -173,8 +177,14 @@ public class SiteSearchServiceTest {
             doc.setContent("Graduate School Current Students Prospective");
             docs.add(doc);
         }
-        response.setDocs(docs);
-        container.setResponse(response);
+        docList.setDocs(docs);
+        docList.setNumFound(numFound);
+        docList.setStart(start);
+        group.setDoclist(docList);
+        group.setMatches(numFound);
+        group.setNgroups(numFound);
+        grouped.setGroup(group);
+        container.setGrouped(grouped);
         return container;
     }
 
@@ -182,8 +192,9 @@ public class SiteSearchServiceTest {
 
     private SiteSearchContainer createSiteContainer(String id, int start, int numFound, int pageSize) {
         final SiteSearchContainer container = new SiteSearchContainer();
-        final SiteSearchResponse response = new SiteSearchResponse();
-        response.setNumFound(numFound);
+        final SiteSearchGrouped grouped = new SiteSearchGrouped();
+        final SiteSearchGroup group = new SiteSearchGroup();
+        final SiteSearchDocList docList = new SiteSearchDocList();
         List<SiteSearchDoc> docs = new ArrayList<SiteSearchDoc>();
         for (int i = 0; i < pageSize; i++) {
             SiteSearchDoc doc = new SiteSearchDoc();
@@ -192,17 +203,31 @@ public class SiteSearchServiceTest {
             doc.setContent("Graduate School Current Students Prospective");
             docs.add(doc);
         }
-        response.setDocs(docs);
-        container.setResponse(response);
+        docList.setDocs(docs);
+        docList.setNumFound(numFound);
+        docList.setStart(start);
+        group.setDoclist(docList);
+        group.setMatches(numFound);
+        group.setNgroups(numFound);
+        grouped.setGroup(group);
+        container.setGrouped(grouped);
         return container;
     }
 
     private SiteSearchContainer createSiteContainerNothing() {
         final SiteSearchContainer container = new SiteSearchContainer();
-        final SiteSearchResponse response = new SiteSearchResponse();
-        response.setNumFound(0);
-        response.setStart(0);
-        container.setResponse(response);
+        final SiteSearchGrouped grouped = new SiteSearchGrouped();
+        final SiteSearchGroup group = new SiteSearchGroup();
+        final SiteSearchDocList docList = new SiteSearchDocList();
+        List<SiteSearchDoc> docs = new ArrayList<SiteSearchDoc>();
+        docList.setDocs(docs);
+        docList.setNumFound(0);
+        docList.setStart(0);
+        group.setDoclist(docList);
+        group.setMatches(0);
+        group.setNgroups(0);
+        grouped.setGroup(group);
+        container.setGrouped(grouped);
         return container;
     }
 
