@@ -1,0 +1,34 @@
+<html>
+<head>
+    <title>Graduate School USA</title>
+</head>
+<body>
+    #parse("templates/headerHtmlTemplate.vm")
+    <p>This receipt is for a credit card transaction with the Graduate School USA as described below in ORDER INFORMATION. Please note that the Total Amount Charged on this credit card may be less than the Order Total if  the payment included multiple payments (e.g., more than one credit card, check and credit card, etc.) </p>
+    <h3>PAYMENT INFORMATION</h3>
+    <hr />
+    <table>
+        <tr>
+            <th>Total Amount Charged: </th> <td>$100</td>
+        </tr>
+        <tr>
+            <th>Transaction Date: </th> <td>1/2/2016</td>
+        </tr>
+    </table>
+    <br />
+        <h3>ORDER INFORMATION</h3>
+    <hr />
+    <table>
+        <tr>
+            <th>Student Name: </th> <td>Good Student</td>
+        </tr>
+        <tr>
+            <th>Tuition: </th> <td>$100</td>
+        </tr>
+    </table>
+    <p>
+        Thank you! <br />
+        Graduate School USA
+
+    </p>
+</body>

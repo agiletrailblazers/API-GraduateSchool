@@ -13,6 +13,7 @@ import com.gs.api.domain.registration.RegistrationResponse;
 import com.gs.api.domain.registration.User;
 import com.gs.api.exception.PaymentAcceptedException;
 import com.gs.api.exception.PaymentException;
+import com.gs.api.service.email.EmailService;
 import com.gs.api.service.payment.PaymentService;
 
 import org.slf4j.Logger;
@@ -40,6 +41,9 @@ public class RegistrationServiceImpl implements RegistrationService {
 
     @Autowired
     private PaymentService paymentService;
+
+    @Autowired
+    private EmailService emailService;
 
     @Override
     public RegistrationResponse register(String userId, RegistrationRequest registrationRequest) throws PaymentException {
@@ -92,6 +96,13 @@ public class RegistrationServiceImpl implements RegistrationService {
 
         RegistrationResponse registrationResponse = new RegistrationResponse(completedRegistrations, confirmedPayments);
 
+        // email user payment receipt upon successful completion
+        try {
+            emailService.sendPaymentReceiptEmail("ashley.c.hope@gmail.com", registrationResponse);
+        }
+        catch (Exception e) {
+            logger.debug("Sending email failed, but registration and payment completed", e);
+        }
         return registrationResponse;
     }
 
