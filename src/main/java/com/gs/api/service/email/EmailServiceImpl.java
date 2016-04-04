@@ -74,7 +74,13 @@ public class EmailServiceImpl implements EmailService {
                 message.setText(plainText, htmlText);
             }
         };
-        mailSender.send(preparator);
+        logger.debug("Sending payment receipt to {}", to);
+        try {
+            mailSender.send(preparator);
+        }
+        catch (Exception e) {
+            logger.error("Error sending payment receipt", e);
+        }
     }
 
 
