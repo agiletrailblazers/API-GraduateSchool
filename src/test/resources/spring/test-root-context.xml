@@ -32,4 +32,29 @@
 	
 	<beans:bean id="restTemplate" class="org.springframework.web.client.RestTemplate"/>
 
+	<beans:bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+		<beans:property name="host" value="${email.host}"/>
+		<beans:property name="port" value="${email.port}"/>
+		<beans:property name="username" value="${email.username}"/>
+		<beans:property name="password" value="${email.password}"/>
+		<beans:property name="javaMailProperties">
+			<beans:props>
+				<beans:prop key="mail.transport.protocol">${email.transport.protocol}</beans:prop>
+				<beans:prop key="mail.smtp.auth">${email.smtp.auth}</beans:prop>
+				<beans:prop key="mail.smtp.starttls.enable">${email.smtp.starttls.enable}</beans:prop>
+				<beans:prop key="mail.smtp.from">${email.smtp.from}</beans:prop>
+				<beans:prop key="mail.debug">${email.debug}</beans:prop>
+			</beans:props>
+		</beans:property>
+	</beans:bean>
+
+
+	<beans:bean id="velocityEngine" class="org.springframework.ui.velocity.VelocityEngineFactoryBean">
+		<beans:property name="velocityProperties">
+			<beans:value>
+				resource.loader=class
+				class.resource.loader.class=org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+			</beans:value>
+		</beans:property>
+	</beans:bean>
 </beans:beans>

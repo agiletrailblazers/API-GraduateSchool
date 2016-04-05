@@ -45,6 +45,7 @@ public class UtilController extends BaseController {
     public ResponseEntity<HttpStatus> ping() throws Exception {
         logger.trace("Service ping initiated");
         try {
+            //TODO REMOVE THIS ASHLEY
             Registration reg = new Registration();
             reg.setId("abc123");
             reg.setOrderNumber("123");
@@ -52,12 +53,21 @@ public class UtilController extends BaseController {
             reg.setStudentId("persn000000000595680");
             List<Registration> regs = new ArrayList<>();
             regs.add(reg);
-            PaymentConfirmation pay = new PaymentConfirmation(new Payment(100.10, "auth1234", "ref123"), "sale123");
+            reg = new Registration();
+            reg.setId("abc456");
+            reg.setOrderNumber("456");
+            reg.setSessionId("610076");
+            reg.setStudentId("persn000000000535454");
+            regs.add(reg);
+            PaymentConfirmation pay = new PaymentConfirmation(new Payment(100.12, "auth1234", "ref123"), "sale123");
 
             List<PaymentConfirmation> pays = new ArrayList<>();
             pays.add(pay);
+            pay = new PaymentConfirmation(new Payment(123.09, "auth5678", "ref123"), "sale123");
+            pays.add(pay);
             RegistrationResponse regRes = new RegistrationResponse(regs, pays);
-            emailService.sendPaymentReceiptEmail("ashley.c.hope@gmail.com", regRes);
+            String[] recipients = {"ashley.c.hope@gmail.com", "ahope@agiletrailblazers.com", "bademail@test.com"};
+            emailService.sendPaymentReceiptEmail(recipients, regRes);
         }
         catch (Exception e) {
 
