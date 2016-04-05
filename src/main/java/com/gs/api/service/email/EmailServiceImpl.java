@@ -64,81 +64,10 @@ public class EmailServiceImpl implements EmailService {
                 message.setSubject("Graduate School Payment Receipt");
 
                 // create the data model for passing the info into the template
-                Map<String, Object> orderModel= new HashMap<>();
+                Map<String, Object> orderModel= getOrderData(registrationResponse);
 
-                SimpleDateFormat formatter = new SimpleDateFormat("MMM, dd, YYYY");
-                orderModel.put("transactionDate", formatter.format(new Date()));
-                orderModel.put("orderId", "00123");
-
-                // Format each payment for the email
-                NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(new Locale("en", "US"));
-                double totalCharged = 0.0;
-                ArrayList<Map<String, String>> paymentList = new ArrayList<>();
-                for (int p = 0; p < registrationResponse.getPaymentConfirmations().size(); p++) {
-                    Payment currentPayment = registrationResponse.getPaymentConfirmations().get(p).getPayment();
-                    totalCharged += currentPayment.getAmount();
-                    Map<String, String> paymentModel = new HashMap<>();
-                    paymentModel.put("cardType", "Viso");
-                    paymentModel.put("cardHolderName", "Ashley");
-                    paymentModel.put("cardEmail", "test@atb.com");
-                    paymentModel.put("cardNumber", "0000");
-                    paymentModel.put("authCode", currentPayment.getAuthorizationId());
-                    paymentList.add(paymentModel);
-                }
-                orderModel.put("totalCharged", currencyFormatter.format(totalCharged));
-                orderModel.put("payments", paymentList);
-
-                // Format Registration, Class, and Student info for the form
-                ArrayList<Map<String, String>> registrationList = new ArrayList<>();
-                for (int i = 0; i < registrationResponse.getRegistrations().size(); i++) {
-                    Map<String, String> registrationModel = new HashMap<>();
-                    Registration currentRegistration = registrationResponse.getRegistrations().get(i);
-
-
-                    CourseSession courseSession =  sessionDao.getSessionById(currentRegistration.getSessionId());
-                    User student = userDao.getUser(currentRegistration.getStudentId());
-
-                    registrationModel.put("studentName", student.getPerson().getFirstName() + " " + student.getPerson().getLastName());
-                    logger.debug(student.getPerson().getFirstName() + " " + student.getPerson().getLastName());
-                    registrationModel.put("tuition", currencyFormatter.format(courseSession.getTuition()));
-                    registrationModel.put("status", "Confirmed"); // If registration got to this point, its status is confirmed in the DB
-                    registrationModel.put("title", courseSession.getCourseTitle());
-                    registrationModel.put("code", courseSession.getCourseCode());
-                    registrationModel.put("classId", courseSession.getClassNumber());
-
-                    if (courseSession.getLocation() != null && courseSession.getLocation().getCity() != null) {
-                        String location = courseSession.getLocation().getCity();
-                        if (courseSession.getLocation().getState() != null) {
-                            location += ", " + courseSession.getLocation().getState();
-                        }
-                        registrationModel.put("location", location);
-                    }
-
-
-                    if (courseSession.getStartDate() != null ) {
-                        String dates = formatter.format(courseSession.getStartDate());
-                        if (courseSession.getEndDate() != null) {
-                            dates = dates.substring(0, dates.length() - 6); //Remove year from start date
-                            dates += " - " + formatter.format(courseSession.getEndDate());
-                        }
-                        registrationModel.put("dates", dates);
-                    }
-                    if (courseSession.getStartDate() != null || courseSession.getEndTime() != null) {
-                         String times = courseSession.getStartTime() + " - " + courseSession.getEndTime();
-                        registrationModel.put("times", times);
-                    }
-
-                    registrationModel.put("days", courseSession.getDays());
-                    registrationModel.put("email", student.getPerson().getEmailAddress());
-                    registrationList.add(registrationModel);
-                }
-
-                orderModel.put("registrations", registrationList);
-
-                String htmlText = VelocityEngineUtils.mergeTemplateIntoString(
-                        velocityEngine, "templates/paymentReceiptHtmlTemplate.vm","UTF-8", orderModel);
-                String plainText = VelocityEngineUtils.mergeTemplateIntoString(
-                        velocityEngine, "templates/paymentReceiptTextTemplate.vm","UTF-8", orderModel);
+                String htmlText = mergeTemplate(velocityEngine, "templates/paymentReceiptHtmlTemplate.vm","UTF-8", orderModel);
+                String plainText = mergeTemplate(velocityEngine, "templates/paymentReceiptTextTemplate.vm","UTF-8", orderModel);
                 message.setText(plainText, htmlText);
             }
         };
@@ -151,5 +80,82 @@ public class EmailServiceImpl implements EmailService {
         }
     }
 
+    public Map<String, Object> getOrderData(RegistrationResponse registrationResponse){
+        Map<String, Object> orderModel= new HashMap<>();
+        SimpleDateFormat formatter = new SimpleDateFormat("MMM, dd, YYYY");
+        orderModel.put("transactionDate", formatter.format(new Date()));
+        orderModel.put("orderId", "00123");
 
+        // Format each payment for the email
+        NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(new Locale("en", "US"));
+        double totalCharged = 0.0;
+        ArrayList<Map<String, String>> paymentList = new ArrayList<>();
+        for (int p = 0; p < registrationResponse.getPaymentConfirmations().size(); p++) {
+            Payment currentPayment = registrationResponse.getPaymentConfirmations().get(p).getPayment();
+            totalCharged += currentPayment.getAmount();
+            Map<String, String> paymentModel = new HashMap<>();
+            paymentModel.put("cardType", "Viso");
+            paymentModel.put("cardHolderName", "Ashley");
+            paymentModel.put("cardEmail", "test@atb.com");
+            paymentModel.put("cardNumber", "0000");
+            paymentModel.put("authCode", currentPayment.getAuthorizationId());
+            paymentList.add(paymentModel);
+        }
+        orderModel.put("totalCharged", currencyFormatter.format(totalCharged));
+        orderModel.put("payments", paymentList);
+
+        // Format Registration, Class, and Student info for the form
+        ArrayList<Map<String, String>> registrationList = new ArrayList<>();
+        for (int i = 0; i < registrationResponse.getRegistrations().size(); i++) {
+            Map<String, String> registrationModel = new HashMap<>();
+            Registration currentRegistration = registrationResponse.getRegistrations().get(i);
+
+
+            CourseSession courseSession =  sessionDao.getSessionById(currentRegistration.getSessionId());
+            User student = userDao.getUser(currentRegistration.getStudentId());
+
+            registrationModel.put("studentName", student.getPerson().getFirstName() + " " + student.getPerson().getLastName());
+            logger.debug(student.getPerson().getFirstName() + " " + student.getPerson().getLastName());
+            registrationModel.put("tuition", currencyFormatter.format(courseSession.getTuition()));
+            registrationModel.put("status", "Confirmed"); // If registration got to this point, its status is confirmed in the DB
+            registrationModel.put("title", courseSession.getCourseTitle());
+            registrationModel.put("code", courseSession.getCourseCode());
+            registrationModel.put("classId", courseSession.getClassNumber());
+
+            if (courseSession.getLocation() != null && courseSession.getLocation().getCity() != null) {
+                String location = courseSession.getLocation().getCity();
+                if (courseSession.getLocation().getState() != null) {
+                    location += ", " + courseSession.getLocation().getState();
+                }
+                registrationModel.put("location", location);
+            }
+
+
+            if (courseSession.getStartDate() != null ) {
+                String dates = formatter.format(courseSession.getStartDate());
+                if (courseSession.getEndDate() != null) {
+                    dates = dates.substring(0, dates.length() - 6); //Remove year from start date
+                    dates += " - " + formatter.format(courseSession.getEndDate());
+                }
+                registrationModel.put("dates", dates);
+            }
+            if (courseSession.getStartDate() != null || courseSession.getEndTime() != null) {
+                String times = courseSession.getStartTime() + " - " + courseSession.getEndTime();
+                registrationModel.put("times", times);
+            }
+
+            registrationModel.put("days", courseSession.getDays());
+            registrationModel.put("email", student.getPerson().getEmailAddress());
+            registrationList.add(registrationModel);
+        }
+
+        orderModel.put("registrations", registrationList);
+
+        return orderModel;
+    }
+
+    public String mergeTemplate(VelocityEngine velocityEngine, String templatePath, String encoding, Map<String, Object> model) {
+        return VelocityEngineUtils.mergeTemplateIntoString(
+                velocityEngine, templatePath, encoding, model);
+    }
 }
