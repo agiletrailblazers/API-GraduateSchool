@@ -4,13 +4,11 @@
 </head>
 <body>
     #parse("templates/headerHtmlTemplate.vm")
-    <p>Thank you for setting up an account with the Graduate School. We hope that it makes it easy to manage your learning with us.</p>
+    <p>TThank you for setting up a self-service account with the Graduate School USA. With your self-service account, you’ll have the ability to register online, view your upcoming and previously taken classes, and more. We hope that it makes it easy to manage your learning with us.</p>
 
-    <p>You can login to access your account at anytime#* at <a href="$accountPage">$accountPage</a>*#</p>
+    <p>You can access your account at anytime by logging into the <a href="$accountPage">Graduate School USA website</a>. You can update your account information by using the 'My Account' feature.</p>
 
-    <p>You can update your account information by using the 'My Account' feature. The security of your account information is important to us - please review our privacy policy#* <a href="$privacyPolicy">here</a>*#.</p>
-
-    <p>We look forward to serving your learning needs. Please be sure to save this email for future reference.</p>
+    <p>The security of your account information is important to us - please review our <a href="$privacyPolicy">privacy policy</a> for more information. We look forward to serving your learning needs. Please be sure to save this email for future reference.</p>
 
     <p>
         Thank you! <br />
