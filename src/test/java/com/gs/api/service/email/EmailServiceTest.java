@@ -33,9 +33,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import static junit.framework.Assert.assertEquals;
 import static junit.framework.TestCase.assertSame;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
@@ -92,6 +93,8 @@ public class EmailServiceTest {
     private static final String ORDER_NUMBER = "23456";
     private static final double SESSION_TUITION = 400.10;
     private static final String AUTHORIZATION_ID = "auth1234";
+    private static final String NEW_USER_HTML_EMAIL_TEXT="<html>\n<head>\n    <title>Graduate School USA</title>\n</head>\n<body>\n    <h1>Graduate School USA</h1>\n<hr />\n    <p>Thank you for setting up an account with the Graduate School. We hope that it makes it easy to manage your learning with us.</p>\n\n    <p>You can login to access your account at anytime at <a href=\"${email.user.accountPage}\">${email.user.accountPage}</a></p>\n\n    <p>You can update your account information by using the 'My Account' feature. The security of your account information is important to us - please review our privacy policy <a href=\"${email.user.privacyPolicyPage}\">here</a>.</p>\n\n    <p>We look forward to serving your learning needs. Please be sure to save this email for future reference.</p>\n\n    <p>\n        Thank you! <br />\n        Graduate School USA\n    </p>\n</body>";
+    private static final String NEW_USER_PLAIN_EMAIL_TEXT="Graduate School USA\n------------------------------------------------------\nThank you for setting up an account with the Graduate School. We hope that it makes it easy to manage your learning with us.\n \nYou can login to access your account at anytime at ${email.user.accountPage}\n\nYou can update your account information by using the 'My Account' feature. The security of your account\ninformation is important to us - please review our privacy policy at ${email.user.privacyPolicyPage}.\n\nWe look forward to serving your learning needs. Please be sure to save this email for future reference.\n\nThank you!\nGraduate School USA\n";
 
     @Before
     public void setUp() throws Exception {
@@ -192,7 +195,7 @@ public class EmailServiceTest {
 
         when(VelocityEngineUtils.mergeTemplateIntoString(
                 any(VelocityEngine.class), Mockito.anyString(), Mockito.anyString(), Mockito.any(Map.class)))
-                .thenReturn("Html Page").thenReturn("Text Page");
+                .thenReturn(NEW_USER_HTML_EMAIL_TEXT).thenReturn(NEW_USER_PLAIN_EMAIL_TEXT);
 
         emailService.sendNewUserEmail(student);
         verify(mailSender).send(mimeMessagePreparatorCaptor.capture());
@@ -201,9 +204,19 @@ public class EmailServiceTest {
 
         // call the prepare() method so we can verify the logic
         preparator.prepare(mimeMessage);
+
         verify(mimeMessageHelper).setTo(recipientsCaptor.capture());
         verify(mimeMessageHelper).setSubject(subjectCaptor.capture());
         verify(mimeMessageHelper).setText(plainTextCaptor.capture(), htmlTextCaptor.capture());
+
+        String[] recipients = new String[] {student.getPerson().getEmailAddress()};
+        String[] recipientsFromCaptor = recipientsCaptor.getValue();
+        for (int i=0; i < recipients.length; i++){
+            assertTrue("Recipients are not the same", recipients[i].equals(recipientsFromCaptor[i]));
+        }
+        assertTrue("The email subject is wrong", (student.getPerson().getFirstName() + " " + student.getPerson().getLastName() + " - Welcome to the Graduate School!").equals(subjectCaptor.getValue()));
+        assertTrue("The html text email is incorrect", NEW_USER_HTML_EMAIL_TEXT.equals(htmlTextCaptor.getValue()));
+        assertTrue("The plain text email is incorrect", NEW_USER_PLAIN_EMAIL_TEXT.equals(plainTextCaptor.getValue()));
 
         // the static will get called twice, once for each template, verify both
         PowerMockito.verifyStatic(Mockito.times(2));

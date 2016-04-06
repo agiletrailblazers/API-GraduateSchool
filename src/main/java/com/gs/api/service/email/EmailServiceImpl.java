@@ -205,6 +205,12 @@ public class EmailServiceImpl implements EmailService {
         }
     }
 
+    /**
+     * Only used for unit testing to capture input to methods
+     * @param mimeMessage
+     * @return
+     * @throws MessagingException
+     */
     MimeMessageHelper getMimeMessageHelper(MimeMessage mimeMessage) throws MessagingException {
         if (mimeMessageHelper == null) {
             // DO NOT SET THE PRIVATE VARIABLE, it is only used for unit tests
