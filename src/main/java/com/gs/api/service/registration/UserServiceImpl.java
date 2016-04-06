@@ -36,7 +36,12 @@ public class UserServiceImpl implements UserService {
         user.setId(userId);
 
         //sending welcome email to new User
-        emailService.sendNewUserEmail(user);
+        try {
+            emailService.sendNewUserEmail(user);
+        }
+        catch (Exception e) {
+            logger.debug("User created but failed to send new user email");
+        }
     }
 
     @Override

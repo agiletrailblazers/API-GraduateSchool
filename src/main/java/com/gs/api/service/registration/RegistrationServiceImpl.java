@@ -60,13 +60,14 @@ public class RegistrationServiceImpl implements RegistrationService {
             logger.info("Successful payment: User {}, payment reference number {}", userId, payment.getMerchantReferenceId());
         }
 
-        User user = userDao.getUser(userId);
-        if (user == null) {
-            logger.error("No user found for logged in user: {}", userId);
-            throw new PaymentAcceptedException("No user found for logged in user " + userId);
-        }
+        User user;
 
         try {
+            user = userDao.getUser(userId);
+            if (user == null) {
+                logger.error("No user found for logged in user: {}", userId);
+                throw new PaymentAcceptedException("No user found for logged in user " + userId);
+            }
             for (Registration registration : registrationRequest.getRegistrations()) {
                 logger.debug("User {} is registering student {} for class no {}", new String[]{userId,
                         registration.getStudentId(), registration.getSessionId()});

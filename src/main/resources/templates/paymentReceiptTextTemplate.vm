@@ -40,7 +40,7 @@ Class ID:.....$registration.classId
 Location:.....$registration.location
 #end
 #if($registration.dates || $registration.times || $registration.days)
-Date(s):.....#if($registration.dates) $registration.dates #if($registration.times) ,$registration.times #end #if($registration.days) ,$registration.days #end #end
+Date(s):.....#if($registration.dates)$registration.dates#if($registration.times),$registration.times#end#if($registration.days), $registration.days#end#end
 #end
 
 Email:.....$registration.email

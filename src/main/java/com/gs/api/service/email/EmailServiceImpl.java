@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailException;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.mail.javamail.MimeMessagePreparator;
@@ -24,7 +23,12 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Locale;
+import java.util.Map;
+import java.util.HashMap;
+
 @Service
 public class EmailServiceImpl implements EmailService {
 
@@ -57,21 +61,11 @@ public class EmailServiceImpl implements EmailService {
     private MimeMessageHelper mimeMessageHelper;
 
     @Override
-    public void sendSimpleMail(String to, String subject, String body)
-    {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(to);
-        message.setSubject(subject);
-        message.setText(body);
-        mailSender.send(message);
-    }
-
-    @Override
     public void sendPaymentReceiptEmail(String[] recipients, RegistrationResponse registrationResponse) throws Exception {
         MimeMessagePreparator preparator = new MimeMessagePreparator() {
             public void prepare(MimeMessage mimeMessage) throws Exception {
                 // Setup email
-                MimeMessageHelper message = new MimeMessageHelper(mimeMessage, true);
+                MimeMessageHelper message = getMimeMessageHelper(mimeMessage);
                 message.setTo(recipients);
                 message.setSubject("Graduate School Payment Receipt");
 
@@ -87,16 +81,16 @@ public class EmailServiceImpl implements EmailService {
             mailSender.send(preparator);
             logger.debug("Payment receipt successfully sent");
         }
-        catch (Exception e) {
+        catch (MailException e) {
             logger.error("Error sending payment receipt", e);
         }
     }
 
-    public Map<String, Object> getOrderData(RegistrationResponse registrationResponse){
+    public Map<String, Object> getOrderData(RegistrationResponse registrationResponse) throws Exception{
         Map<String, Object> orderModel= new HashMap<>();
         SimpleDateFormat formatter = new SimpleDateFormat("MMM, dd, YYYY");
         orderModel.put("transactionDate", formatter.format(new Date()));
-        orderModel.put("orderId", "00123");
+        orderModel.put("orderId",registrationResponse.getRegistrations().get(0).getOrderNumber());
 
         // Format each payment for the email
         NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(new Locale("en", "US"));
@@ -151,8 +145,12 @@ public class EmailServiceImpl implements EmailService {
                 }
                 registrationModel.put("dates", dates);
             }
-            if (courseSession.getStartDate() != null || courseSession.getEndTime() != null) {
-                String times = courseSession.getStartTime() + " - " + courseSession.getEndTime();
+
+            if (courseSession.getStartTime() != null) {
+                String times = courseSession.getStartTime();
+                if (courseSession.getEndTime() != null) {
+                    times += " - " + courseSession.getEndTime();
+                }
                 registrationModel.put("times", times);
             }
 
@@ -164,11 +162,6 @@ public class EmailServiceImpl implements EmailService {
         orderModel.put("registrations", registrationList);
 
         return orderModel;
-    }
-
-    public String mergeTemplate(VelocityEngine velocityEngine, String templatePath, String encoding, Map<String, Object> model) {
-        return VelocityEngineUtils.mergeTemplateIntoString(
-                velocityEngine, templatePath, encoding, model);
     }
 
     /**
@@ -203,6 +196,15 @@ public class EmailServiceImpl implements EmailService {
         catch (MailException e) {
             logger.error("Error sending new user email", e);
         }
+    }
+
+    /**
+     * Safely create the string which contains the template
+     * @return the string containing the rendered template
+     */
+    public String mergeTemplate(VelocityEngine velocityEngine, String templatePath, String encoding, Map<String, Object> model) {
+        return VelocityEngineUtils.mergeTemplateIntoString(
+                velocityEngine, templatePath, encoding, model);
     }
 
     /**
