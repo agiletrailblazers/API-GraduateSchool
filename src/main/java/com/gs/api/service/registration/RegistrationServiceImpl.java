@@ -66,7 +66,7 @@ public class RegistrationServiceImpl implements RegistrationService {
             user = userDao.getUser(userId);
             if (user == null) {
                 logger.error("No user found for logged in user: {}", userId);
-                throw new PaymentAcceptedException("No user found for logged in user " + userId);
+                throw new Exception("No user found for logged in user " + userId);
             }
             for (Registration registration : registrationRequest.getRegistrations()) {
                 logger.debug("User {} is registering student {} for class no {}", new String[]{userId,
