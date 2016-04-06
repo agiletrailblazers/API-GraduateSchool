@@ -7,29 +7,32 @@ import com.gs.api.domain.payment.Payment;
 import com.gs.api.domain.registration.Registration;
 import com.gs.api.domain.registration.RegistrationResponse;
 import com.gs.api.domain.registration.User;
+
+import org.apache.velocity.app.VelocityEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
-import org.springframework.stereotype.Service;
-
-import org.apache.velocity.app.VelocityEngine;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.mail.javamail.MimeMessagePreparator;
+import org.springframework.stereotype.Service;
 import org.springframework.ui.velocity.VelocityEngineUtils;
 
-import javax.mail.internet.MimeMessage;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Date;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
+
+import javax.mail.internet.MimeMessage;
 @Service
 public class EmailServiceImpl implements EmailService {
 
+    static final String PAYMENT_RECEIPT_HTML_TEMPLATE_VM = "templates/paymentReceiptHtmlTemplate.vm";
+    static final String PAYMENT_RECEIPT_TEXT_TEMPLATE_VM = "templates/paymentReceiptTextTemplate.vm";
     final Logger logger = LoggerFactory.getLogger(EmailServiceImpl.class);
 
     @Autowired
@@ -66,8 +69,8 @@ public class EmailServiceImpl implements EmailService {
                 // create the data model for passing the info into the template
                 Map<String, Object> orderModel= getOrderData(registrationResponse);
 
-                String htmlText = mergeTemplate(velocityEngine, "templates/paymentReceiptHtmlTemplate.vm","UTF-8", orderModel);
-                String plainText = mergeTemplate(velocityEngine, "templates/paymentReceiptTextTemplate.vm","UTF-8", orderModel);
+                String htmlText = mergeTemplate(velocityEngine, PAYMENT_RECEIPT_HTML_TEMPLATE_VM, "UTF-8", orderModel);
+                String plainText = mergeTemplate(velocityEngine, PAYMENT_RECEIPT_TEXT_TEMPLATE_VM, "UTF-8", orderModel);
                 message.setText(plainText, htmlText);
             }
         };

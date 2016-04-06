@@ -10,31 +10,40 @@ import com.gs.api.domain.payment.PaymentConfirmation;
 import com.gs.api.domain.registration.Registration;
 import com.gs.api.domain.registration.RegistrationResponse;
 import com.gs.api.domain.registration.User;
+
 import org.apache.velocity.app.VelocityEngine;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.*;
-
-import static org.mockito.Mockito.*;
-
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.test.context.ContextConfiguration;
-
-import java.util.Map;
-import java.util.Date;
-import java.util.ArrayList;
-import java.util.List;
-
+import org.springframework.mail.javamail.MimeMessagePreparator;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.ui.velocity.VelocityEngineUtils;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
+import javax.mail.internet.MimeMessage;
+
+import static junit.framework.TestCase.assertSame;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.powermock.api.mockito.PowerMockito.mockStatic;
+
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(VelocityEngineUtils.class)
-@ContextConfiguration(locations = { "classpath:spring/test-root-context.xml" })
 public class EmailServiceTest {
 
     private EmailServiceImpl emailService;
@@ -51,6 +60,15 @@ public class EmailServiceTest {
     @Mock
     private CourseSessionDAO sessionDao;
 
+    @Mock
+    private MimeMessage mimeMessage;
+
+    @Captor
+    private ArgumentCaptor<MimeMessagePreparator> mimeMessagePreparatorCaptor;
+
+    @Captor
+    private ArgumentCaptor<String> templatePathCaptor;
+
     @Captor
     private ArgumentCaptor<Map<String, Object>> orderModelCaptor;
 
@@ -65,15 +83,15 @@ public class EmailServiceTest {
 
     @Before
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
 
         emailService = new EmailServiceImpl();
+        mockStatic(VelocityEngineUtils.class);
+
         ReflectionTestUtils.setField(emailService, "mailSender", mailSender);
         ReflectionTestUtils.setField(emailService, "velocityEngine", velocityEngine);
-
         ReflectionTestUtils.setField(emailService, "userDao", userDao);
         ReflectionTestUtils.setField(emailService, "sessionDao", sessionDao);
-        PowerMockito.mockStatic(VelocityEngineUtils.class);
+
         Registration reg = new Registration();
         reg.setId(REGISTRATION_ID);
         reg.setOrderNumber(ORDER_NUMBER);
@@ -113,17 +131,32 @@ public class EmailServiceTest {
 
         when(userDao.getUser(STUDENT_ID)).thenReturn(student);
         when(sessionDao.getSessionById(SESSION_ID)).thenReturn(courseSession);
-        VelocityEngineUtils mockUtils = PowerMockito.mock(VelocityEngineUtils.class);
-        PowerMockito.when(mockUtils.mergeTemplateIntoString(
+        when(VelocityEngineUtils.mergeTemplateIntoString(
                 any(VelocityEngine.class), Mockito.anyString(), Mockito.anyString(), Mockito.any(Map.class)))
                 .thenReturn("Html Page").thenReturn("Text Page");
 
         emailService.sendPaymentReceiptEmail(RECIPIENTS, registrationResponse);
 
-        PowerMockito.verifyStatic();
-        verify(mockUtils.mergeTemplateIntoString(any(VelocityEngine.class), Mockito.anyString(), Mockito.anyString(), Mockito.any(Map.class)));
+        verify(mailSender).send(mimeMessagePreparatorCaptor.capture());
+        MimeMessagePreparator preparator = mimeMessagePreparatorCaptor.getValue();
+        assertNotNull("No mime message preparator provided to send", preparator);
 
-        Map<String, Object> orderModel = orderModelCaptor.getValue();
+        // TODO what else can be verified on the mime message, i.e. subject? recipients?
+
+        // call the prepare() method so we can verify the logic
+        preparator.prepare(mimeMessage);
+
+        // the static will get called twice, once for each template, verify both
+        PowerMockito.verifyStatic(Mockito.times(2));
+        VelocityEngineUtils.mergeTemplateIntoString(any(VelocityEngine.class), templatePathCaptor.capture(), Mockito.anyString(), orderModelCaptor.capture());
+
+        assertEquals("Wrong html template", EmailServiceImpl.PAYMENT_RECEIPT_HTML_TEMPLATE_VM, templatePathCaptor.getAllValues().get(0));
+        assertEquals("Wrong text template", EmailServiceImpl.PAYMENT_RECEIPT_TEXT_TEMPLATE_VM, templatePathCaptor.getAllValues().get(1));
+
+        // verify the same model map is passed to both templates
+        assertSame(orderModelCaptor.getAllValues().get(0), orderModelCaptor.getAllValues().get(1));
+
+        // TODO verify the data in the model map (only need to verify in one of them, since we already verified they are the same)
     }
 
 
