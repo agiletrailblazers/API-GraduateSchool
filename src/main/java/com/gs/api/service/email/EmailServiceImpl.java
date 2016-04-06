@@ -185,8 +185,8 @@ public class EmailServiceImpl implements EmailService {
                 orderModel.put("accountPage", userAccountPage);
                 orderModel.put("privacyPolicy", userPrivacyPolicyPage);
 
-                String htmlText = VelocityEngineUtils.mergeTemplateIntoString(velocityEngine, NEW_USER_HTML_TEMPLATE_VM, UTF_8_ENCODING, orderModel);
-                String plainText = VelocityEngineUtils.mergeTemplateIntoString( velocityEngine, NEW_USER_TEXT_TEMPLATE_VM,UTF_8_ENCODING, orderModel);
+                String htmlText = mergeTemplate(velocityEngine, NEW_USER_HTML_TEMPLATE_VM, UTF_8_ENCODING, orderModel);
+                String plainText = mergeTemplate( velocityEngine, NEW_USER_TEXT_TEMPLATE_VM,UTF_8_ENCODING, orderModel);
                 message.setText(plainText, htmlText);
             }
         };
