@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
+import java.util.List;
 import java.util.HashMap;
 
 @Service
@@ -111,10 +112,11 @@ public class EmailServiceImpl implements EmailService {
         orderModel.put("payments", paymentList);
 
         // Format Registration, Class, and Student info for the form
+        List<Registration> registrations = registrationResponse.getRegistrations();
         ArrayList<Map<String, String>> registrationList = new ArrayList<>();
         for (int i = 0; i < registrationResponse.getRegistrations().size(); i++) {
             Map<String, String> registrationModel = new HashMap<>();
-            Registration currentRegistration = registrationResponse.getRegistrations().get(i);
+            Registration currentRegistration = registrations.get(i);
 
 
             CourseSession courseSession =  sessionDao.getSessionById(currentRegistration.getSessionId());
@@ -186,7 +188,7 @@ public class EmailServiceImpl implements EmailService {
                 orderModel.put("privacyPolicy", userPrivacyPolicyPage);
 
                 String htmlText = mergeTemplate(velocityEngine, NEW_USER_HTML_TEMPLATE_VM, UTF_8_ENCODING, orderModel);
-                String plainText = mergeTemplate( velocityEngine, NEW_USER_TEXT_TEMPLATE_VM,UTF_8_ENCODING, orderModel);
+                String plainText = mergeTemplate(velocityEngine, NEW_USER_TEXT_TEMPLATE_VM, UTF_8_ENCODING, orderModel);
                 message.setText(plainText, htmlText);
             }
         };
