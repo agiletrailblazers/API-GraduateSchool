@@ -1,0 +1,13 @@
+#parse("templates/headerTextTemplate.vm")
+
+Thank you for setting up an account with the Graduate School. We hope that it makes it easy to manage your learning with us.
+ 
+You can login to access your account at anytime at $accountPage
+
+You can update your account information by using the 'My Account' feature. The security of your account
+information is important to us - please review our privacy policy at $privacyPolicy.
+
+We look forward to serving your learning needs. Please be sure to save this email for future reference.
+
+Thank you!
+Graduate School USA
