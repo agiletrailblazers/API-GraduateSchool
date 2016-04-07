@@ -7,6 +7,7 @@ import com.gs.api.domain.payment.Payment;
 import com.gs.api.domain.registration.Registration;
 import com.gs.api.domain.registration.RegistrationResponse;
 import com.gs.api.domain.registration.User;
+
 import org.apache.velocity.app.VelocityEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,24 +20,25 @@ import org.springframework.mail.javamail.MimeMessagePreparator;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.velocity.VelocityEngineUtils;
 
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.List;
-import java.util.HashMap;
+
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
 
 @Service
 public class EmailServiceImpl implements EmailService {
 
     static final String PAYMENT_RECEIPT_HTML_TEMPLATE_VM = "templates/email/paymentReceiptTemplate_html.vm";
     static final String PAYMENT_RECEIPT_TEXT_TEMPLATE_VM = "templates/email/paymentReceiptTemplate_text.vm";
-    public static final String NEW_USER_HTML_TEMPLATE_VM = "templates/newUserHtmlTemplate.vm";
-    public static final String NEW_USER_TEXT_TEMPLATE_VM = "templates/newUserTextTemplate.vm";
+    public static final String NEW_USER_HTML_TEMPLATE_VM = "templates/email/newUserTemplate_html.vm";
+    public static final String NEW_USER_TEXT_TEMPLATE_VM = "templates/email/newUserTemplate_text.vm";
     public static final String UTF_8_ENCODING = "UTF-8";
     final Logger logger = LoggerFactory.getLogger(EmailServiceImpl.class);
 
@@ -148,7 +150,7 @@ public class EmailServiceImpl implements EmailService {
 
     private Map<String, Object> getOrderData(RegistrationResponse registrationResponse) throws Exception{
         Map<String, Object> orderModel= new HashMap<>();
-        SimpleDateFormat formatter = new SimpleDateFormat("MMM, dd, YYYY");
+        SimpleDateFormat formatter = new SimpleDateFormat("MMM. dd, YYYY");
         orderModel.put("transactionDate", formatter.format(new Date()));
         orderModel.put("orderId",registrationResponse.getRegistrations().get(0).getOrderNumber());
 
