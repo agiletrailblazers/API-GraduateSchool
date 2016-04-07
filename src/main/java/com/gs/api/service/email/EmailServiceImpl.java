@@ -7,7 +7,6 @@ import com.gs.api.domain.payment.Payment;
 import com.gs.api.domain.registration.Registration;
 import com.gs.api.domain.registration.RegistrationResponse;
 import com.gs.api.domain.registration.User;
-
 import org.apache.velocity.app.VelocityEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,17 +19,11 @@ import org.springframework.mail.javamail.MimeMessagePreparator;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.velocity.VelocityEngineUtils;
 
-import java.text.NumberFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
+import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 @Service
 public class EmailServiceImpl implements EmailService {
@@ -60,17 +53,25 @@ public class EmailServiceImpl implements EmailService {
     @Value("${email.user.privacyPolicyPage}")
     private String userPrivacyPolicyPage;
 
+    @Value("${email.subject.paymentReceipt}")
+    private String paymentReceiptEmailSubject;
+
+    @Value("${email.subject.newUser}")
+    private String newUserEmailSubject;
+
+
     // ONLY SET FROM UNIT TESTS!
     private MimeMessageHelper mimeMessageHelper;
 
     @Override
     public void sendPaymentReceiptEmail(String[] recipients, RegistrationResponse registrationResponse) throws Exception {
         MimeMessagePreparator preparator = new MimeMessagePreparator() {
+
             public void prepare(MimeMessage mimeMessage) throws Exception {
                 // Setup email
                 MimeMessageHelper message = getMimeMessageHelper(mimeMessage);
                 message.setTo(recipients);
-                message.setSubject("Graduate School Payment Receipt");
+                message.setSubject(paymentReceiptEmailSubject);
 
                 // create the data model for passing the info into the template
                 Map<String, Object> orderModel= getOrderData(registrationResponse);
@@ -98,11 +99,12 @@ public class EmailServiceImpl implements EmailService {
     @Override
     public void sendNewUserEmail(User newUser) throws Exception {
         MimeMessagePreparator preparator = new MimeMessagePreparator() {
+
             public void prepare(MimeMessage mimeMessage) throws Exception {
                 // Setup email
                 MimeMessageHelper message = getMimeMessageHelper(mimeMessage);
                 message.setTo(new String[] {newUser.getPerson().getEmailAddress()});
-                message.setSubject(newUser.getPerson().getFirstName() + " " + newUser.getPerson().getLastName() + " - Welcome to the Graduate School!");
+                message.setSubject(newUser.getPerson().getFirstName() + " " + newUser.getPerson().getLastName() + " " + newUserEmailSubject);
 
                 // create the data model for passing the info into the template
                 Map<String, Object> orderModel= new HashMap<>();

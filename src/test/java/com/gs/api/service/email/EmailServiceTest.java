@@ -30,21 +30,13 @@ import org.springframework.mail.javamail.MimeMessagePreparator;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.ui.velocity.VelocityEngineUtils;
 
-import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.*;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
 @RunWith(PowerMockRunner.class)
@@ -102,6 +94,8 @@ public class EmailServiceTest {
     @Captor
     private ArgumentCaptor<String> plainTextCaptor;
 
+    private NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(new Locale("en", "US"));
+    private SimpleDateFormat dateFormatter = new SimpleDateFormat("MMM. dd, YYYY");
     private RegistrationResponse registrationResponse;
     private CourseSession expectedSession;
     private User expectedStudent;
@@ -125,6 +119,8 @@ public class EmailServiceTest {
         ReflectionTestUtils.setField(emailService, "userDao", userDao);
         ReflectionTestUtils.setField(emailService, "sessionDao", sessionDao);
         ReflectionTestUtils.setField(emailService, "mimeMessageHelper", mimeMessageHelper);
+        ReflectionTestUtils.setField(emailService, "paymentReceiptEmailSubject", "Graduate School Payment Receipt");
+        ReflectionTestUtils.setField(emailService, "newUserEmailSubject", "- Welcome to the Graduate School!");
 
         Registration reg = new Registration();
         reg.setId(REGISTRATION_ID);
@@ -164,9 +160,6 @@ public class EmailServiceTest {
 
     @Test
     public void testSuccessfulPaymentReceiptEmail() throws Exception {
-        NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(new Locale("en", "US"));
-        SimpleDateFormat dateFormatter = new SimpleDateFormat("MMM, dd, YYYY");
-
         when(userDao.getUser(STUDENT_ID)).thenReturn(expectedStudent);
         when(sessionDao.getSessionById(SESSION_ID)).thenReturn(expectedSession);
         when(VelocityEngineUtils.mergeTemplateIntoString(
@@ -326,7 +319,6 @@ public class EmailServiceTest {
 
     @Test
     public void testPaymentReceiptEmailStartDateOnly() throws Exception {
-        SimpleDateFormat dateFormatter = new SimpleDateFormat("MMM, dd, YYYY");
         expectedSession.setEndDate(null);
         when(userDao.getUser(STUDENT_ID)).thenReturn(expectedStudent);
         when(sessionDao.getSessionById(SESSION_ID)).thenReturn(expectedSession);
