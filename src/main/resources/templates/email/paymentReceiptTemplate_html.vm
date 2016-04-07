@@ -1,0 +1,143 @@
+#parse("templates/email/partials/emailTemplateTop_html.vm")
+
+<!-- Email-specific body -->
+<table class="row" style="border-collapse: collapse; border-spacing: 0; display: table; padding: 0; position: relative; text-align: left; vertical-align: top; width: 100%;">
+    <tbody>
+        <tr style="padding: 0; text-align: left; vertical-align: top;">
+            <th class="columns first last" style="Margin: 0 auto; color: #0a0a0a; font-family: Helvetica, Arial, sans-serif; font-size: 16px; font-weight: normal; line-height: 19px; margin: 0 auto; padding: 0; padding-bottom: 16px; padding-left: 16px; padding-right: 16px; text-align: left;">
+                <table style="border-collapse: collapse; border-spacing: 0; padding: 0; text-align: left; vertical-align: top; width: 100%;">
+                    <tbody>
+                        <tr style="padding: 0; text-align: left; vertical-align: top;">
+                            <th style="Margin: 0; color: #0a0a0a; font-family: Helvetica, Arial, sans-serif; font-size: 16px; font-weight: normal; line-height: 19px; margin: 0; padding: 0; text-align: left;">
+                                This receipt is for a credit card transaction with the Graduate School USA as described below in ORDER INFORMATION. Please note that the Total Amount Charged on this credit card may be less than the Order Total if the payment included multiple payments (e.g., more than one credit card, check and credit card, etc.)
+                            </th>
+                        </tr>
+                    </tbody>
+                </table>
+            </th>
+            <th class="expander" style="Margin: 0; color: #0a0a0a; font-family: Helvetica, Arial, sans-serif; font-size: 16px; font-weight: normal; line-height: 19px; margin: 0; padding: 0 !important; text-align: left; visibility: hidden; width: 0;"></th>
+        </tr>
+    </tbody>
+</table>
+
+<table class="row" style="border-collapse: collapse; border-spacing: 0; display: table; padding: 0; position: relative; text-align: left; vertical-align: top; width: 100%;">
+    <tbody>
+        <tr style="padding: 0; text-align: left; vertical-align: top;">
+            <th class="columns first last" style="Margin: 0 auto; color: #0a0a0a; font-family: Helvetica, Arial, sans-serif; font-size: 16px; font-weight: bold; line-height: 19px; margin: 0 auto; padding: 0; padding-bottom: 16px; padding-left: 16px; padding-right: 16px; text-align: left;">
+                Payment Information
+            </th>
+            <th class="expander" style="Margin: 0; color: #0a0a0a; font-family: Helvetica, Arial, sans-serif; font-size: 16px; font-weight: normal; line-height: 19px; margin: 0; padding: 0 !important; text-align: left; visibility: hidden; width: 0;"></th>
+        </tr>
+        <tr style="padding: 0; text-align: left; vertical-align: top;">
+            <th class="columns first last" style="Margin: 0 auto; color: #0a0a0a; font-family: Helvetica, Arial, sans-serif; font-size: 16px; font-weight: normal; line-height: 19px; margin: 0 auto; padding: 0; padding-bottom: 16px; padding-left: 16px; padding-right: 16px; text-align: left;">
+                <table>
+                    <tbody>
+                        <tr>
+                            <td>Total Amount Charged:</td> <td>$totalCharged</td>
+                        </tr>
+                        <tr>
+                            <td>Transaction Date:</td> <td>$transactionDate</td>
+                        </tr>
+                        <tr>
+                            <td>Order Number: </td> <td>$orderId</td>
+                        </tr>
+                        #set($count = 1)
+                        #foreach($payment in $payments)
+                            #if($payments.size() > 1)
+                                <tr>
+                                    <td colspan="2"> Payment $count </td>
+                                </tr>
+                            #end
+                            <tr>
+                                <td>Credit Card Type:</td> <td>$payment.cardType</td>
+                            </tr>
+                            <tr>
+                                <td>Cardholder's Name:</td> <td>$payment.cardHolderName</td>
+                            </tr>
+                            <tr>
+                                <td>Cardholder's Email:</td> <td>$payment.cardEmail</td>
+                            </tr>
+                            <tr>
+                                <td>Card Number:</td> <td>$payment.cardNumber</td>
+                            </tr>
+                            <tr>
+                                <td>Authorization Code:</td> <td>$payment.authCode</td>
+                            </tr>
+                            #set( $count = $count + 1 )
+                        #end
+                    </tbody>
+                </table>
+            </th>
+            <th class="expander" style="Margin: 0; color: #0a0a0a; font-family: Helvetica, Arial, sans-serif; font-size: 16px; font-weight: normal; line-height: 19px; margin: 0; padding: 0 !important; text-align: left; visibility: hidden; width: 0;"></th>
+        </tr>
+    </tbody>
+</table>
+
+<table class="row" style="border-collapse: collapse; border-spacing: 0; display: table; padding: 0; position: relative; text-align: left; vertical-align: top; width: 100%;">
+    <tbody>
+        <tr style="padding: 0; text-align: left; vertical-align: top;">
+            <th class="columns first last" style="Margin: 0 auto; color: #0a0a0a; font-family: Helvetica, Arial, sans-serif; font-size: 16px; font-weight: bold; line-height: 19px; margin: 0 auto; padding: 0; padding-bottom: 16px; padding-left: 16px; padding-right: 16px; text-align: left;">
+                Order Information
+            </th>
+            <th class="expander" style="Margin: 0; color: #0a0a0a; font-family: Helvetica, Arial, sans-serif; font-size: 16px; font-weight: normal; line-height: 19px; margin: 0; padding: 0 !important; text-align: left; visibility: hidden; width: 0;"></th>
+        </tr>
+        <tr style="padding: 0; text-align: left; vertical-align: top;">
+            <th class="columns first last" style="Margin: 0 auto; color: #0a0a0a; font-family: Helvetica, Arial, sans-serif; font-size: 16px; font-weight: normal; line-height: 19px; margin: 0 auto; padding: 0; padding-bottom: 16px; padding-left: 16px; padding-right: 16px; text-align: left;">
+                <table>
+                    <tbody>
+                        #set($count = 1)
+                        #foreach($registration  in $registrations)
+                            #if($registrations.size() > 1)
+                                <tr>
+                                    <td colspan="2"> Registration $count </td>
+                                </tr>
+                            #end
+                            <tr>
+                                <td>Student Name:</td> <td>$registration.studentName</td>
+                            </tr>
+                            <tr>
+                                <td>Tuition:</td> <td>$registration.tuition</td>
+                            </tr>
+                            <tr>
+                                <td>Registration Status:</td> <td>$registration.status</td>
+                            </tr>
+                            <tr>
+                                <td>Course Title:</td> <td>$registration.title</td>
+                            </tr>
+                            <tr>
+                                <td>Course Code:</td> <td>$registration.code</td>
+                            </tr>
+                            <tr>
+                                <td>Class ID:</td> <td>$registration.classId</td>
+                            </tr>
+                            #if($registration.location)
+                                <tr>
+                                    <td>Location:</td> <td>$registration.location</td>
+                                </tr>
+                            #end
+                            #if($registration.dates || $registration.times || $registration.days)
+                                <tr>
+                                    <td>Date(s):</td>
+                                    <td>
+                                        #if($registration.dates)
+                                            $registration.dates <br/>
+                                        #end
+                                        #if($registration.times)$registration.times#end#if($registration.days), $registration.days#end
+                                    </td>
+                                </tr>
+                            #end
+                            <tr>
+                                <td>Email:</td> <td>$registration.email</td>
+                            </tr>
+                            #set( $count = $count + 1 )
+                        #end
+                    </tbody>
+                </table>
+            </th>
+            <th class="expander" style="Margin: 0; color: #0a0a0a; font-family: Helvetica, Arial, sans-serif; font-size: 16px; font-weight: normal; line-height: 19px; margin: 0; padding: 0 !important; text-align: left; visibility: hidden; width: 0;"></th>
+        </tr>
+    </tbody>
+</table>
+<!-- END Email-specific body -->
+
+#parse("templates/email/partials/emailTemplateBottom_html.vm")

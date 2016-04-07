@@ -33,8 +33,8 @@ import java.util.HashMap;
 @Service
 public class EmailServiceImpl implements EmailService {
 
-    static final String PAYMENT_RECEIPT_HTML_TEMPLATE_VM = "templates/paymentReceiptHtmlTemplate.vm";
-    static final String PAYMENT_RECEIPT_TEXT_TEMPLATE_VM = "templates/paymentReceiptTextTemplate.vm";
+    static final String PAYMENT_RECEIPT_HTML_TEMPLATE_VM = "templates/email/paymentReceiptTemplate_html.vm";
+    static final String PAYMENT_RECEIPT_TEXT_TEMPLATE_VM = "templates/email/paymentReceiptTemplate_text.vm";
     public static final String NEW_USER_HTML_TEMPLATE_VM = "templates/newUserHtmlTemplate.vm";
     public static final String NEW_USER_TEXT_TEMPLATE_VM = "templates/newUserTextTemplate.vm";
     public static final String UTF_8_ENCODING = "UTF-8";
@@ -87,7 +87,66 @@ public class EmailServiceImpl implements EmailService {
         }
     }
 
-    public Map<String, Object> getOrderData(RegistrationResponse registrationResponse) throws Exception{
+    /**
+     * Send new user email to new user
+     *
+     * @param newUser
+     * @throws Exception
+     */
+    @Override
+    public void sendNewUserEmail(User newUser) throws Exception {
+        MimeMessagePreparator preparator = new MimeMessagePreparator() {
+            public void prepare(MimeMessage mimeMessage) throws Exception {
+                // Setup email
+                MimeMessageHelper message = getMimeMessageHelper(mimeMessage);
+                message.setTo(new String[] {newUser.getPerson().getEmailAddress()});
+                message.setSubject(newUser.getPerson().getFirstName() + " " + newUser.getPerson().getLastName() + " - Welcome to the Graduate School!");
+
+                // create the data model for passing the info into the template
+                Map<String, Object> orderModel= new HashMap<>();
+
+                orderModel.put("accountPage", userAccountPage);
+                orderModel.put("privacyPolicy", userPrivacyPolicyPage);
+
+                String htmlText = mergeTemplate(velocityEngine, NEW_USER_HTML_TEMPLATE_VM, UTF_8_ENCODING, orderModel);
+                String plainText = mergeTemplate(velocityEngine, NEW_USER_TEXT_TEMPLATE_VM, UTF_8_ENCODING, orderModel);
+                message.setText(plainText, htmlText);
+            }
+        };
+        try {
+            mailSender.send(preparator);
+        }
+        catch (MailException e) {
+            logger.error("Error sending new user email", e);
+        }
+    }
+
+    /**
+     * Safely create the string which contains the template
+     * @return the string containing the rendered template
+     */
+    public String mergeTemplate(VelocityEngine velocityEngine, String templatePath, String encoding, Map<String, Object> model) {
+        return VelocityEngineUtils.mergeTemplateIntoString(
+                velocityEngine, templatePath, encoding, model);
+    }
+
+    /**
+     * Only used for unit testing to capture input to methods
+     * @param mimeMessage
+     * @return
+     * @throws MessagingException
+     */
+    MimeMessageHelper getMimeMessageHelper(MimeMessage mimeMessage) throws MessagingException {
+        if (mimeMessageHelper == null) {
+            // DO NOT SET THE PRIVATE VARIABLE, it is only used for unit tests
+            return new MimeMessageHelper(mimeMessage, true);
+        }
+        else {
+            return mimeMessageHelper;
+        }
+    }
+
+    private Map<String, Object> getOrderData(RegistrationResponse registrationResponse) throws Exception{
         Map<String, Object> orderModel= new HashMap<>();
         SimpleDateFormat formatter = new SimpleDateFormat("MMM, dd, YYYY");
         orderModel.put("transactionDate", formatter.format(new Date()));
@@ -164,64 +223,5 @@ public class EmailServiceImpl implements EmailService {
         orderModel.put("registrations", registrationList);
 
         return orderModel;
-    }
-
-    /**
-     * Send new user email to new user
-     *
-     * @param newUser
-     * @throws Exception
-     */
-    @Override
-    public void sendNewUserEmail(User newUser) throws Exception {
-        MimeMessagePreparator preparator = new MimeMessagePreparator() {
-            public void prepare(MimeMessage mimeMessage) throws Exception {
-                // Setup email
-                MimeMessageHelper message = getMimeMessageHelper(mimeMessage);
-                message.setTo(new String[] {newUser.getPerson().getEmailAddress()});
-                message.setSubject(newUser.getPerson().getFirstName() + " " + newUser.getPerson().getLastName() + " - Welcome to the Graduate School!");
-
-                // create the data model for passing the info into the template
-                Map<String, Object> orderModel= new HashMap<>();
-
-                orderModel.put("accountPage", userAccountPage);
-                orderModel.put("privacyPolicy", userPrivacyPolicyPage);
-
-                String htmlText = mergeTemplate(velocityEngine, NEW_USER_HTML_TEMPLATE_VM, UTF_8_ENCODING, orderModel);
-                String plainText = mergeTemplate(velocityEngine, NEW_USER_TEXT_TEMPLATE_VM, UTF_8_ENCODING, orderModel);
-                message.setText(plainText, htmlText);
-            }
-        };
-        try {
-            mailSender.send(preparator);
-        }
-        catch (MailException e) {
-            logger.error("Error sending new user email", e);
-        }
-    }
-
-    /**
-     * Safely create the string which contains the template
-     * @return the string containing the rendered template
-     */
-    public String mergeTemplate(VelocityEngine velocityEngine, String templatePath, String encoding, Map<String, Object> model) {
-        return VelocityEngineUtils.mergeTemplateIntoString(
-                velocityEngine, templatePath, encoding, model);
-    }
-
-    /**
-     * Only used for unit testing to capture input to methods
-     * @param mimeMessage
-     * @return
-     * @throws MessagingException
-     */
-    MimeMessageHelper getMimeMessageHelper(MimeMessage mimeMessage) throws MessagingException {
-        if (mimeMessageHelper == null) {
-            // DO NOT SET THE PRIVATE VARIABLE, it is only used for unit tests
-            return new MimeMessageHelper(mimeMessage, true);
-        }
-        else {
-            return mimeMessageHelper;
-        }
     }
 }
