@@ -13,6 +13,7 @@ import com.gs.api.domain.registration.RegistrationResponse;
 import com.gs.api.domain.registration.User;
 import com.gs.api.exception.PaymentAcceptedException;
 import com.gs.api.exception.PaymentException;
+import com.gs.api.service.email.EmailService;
 import com.gs.api.service.payment.PaymentService;
 
 import org.slf4j.Logger;
@@ -41,6 +42,9 @@ public class RegistrationServiceImpl implements RegistrationService {
     @Autowired
     private PaymentService paymentService;
 
+    @Autowired
+    private EmailService emailService;
+
     @Override
     public RegistrationResponse register(String userId, RegistrationRequest registrationRequest) throws PaymentException {
 
@@ -56,18 +60,19 @@ public class RegistrationServiceImpl implements RegistrationService {
             logger.info("Successful payment: User {}, payment reference number {}", userId, payment.getMerchantReferenceId());
         }
 
+        User user;
+
         try {
+            user = userDao.getUser(userId);
+            if (user == null) {
+                logger.error("No user found for logged in user: {}", userId);
+                throw new Exception("No user found for logged in user " + userId);
+            }
             for (Registration registration : registrationRequest.getRegistrations()) {
                 logger.debug("User {} is registering student {} for class no {}", new String[]{userId,
                         registration.getStudentId(), registration.getSessionId()});
 
-                //Get actual user, student, session, and courseSession from specified IDs
-                User user = userDao.getUser(userId);
-                if (user == null) {
-                    logger.error("No user found for logged in user: {}", userId);
-                    throw new Exception("No user found for logged in user " + userId);
-                }
-
+                //Get student, session, and courseSession from specified IDs
                 User studentUser = userDao.getUser(registration.getStudentId());
                 if (studentUser == null) {
                     logger.error("No user found for student {}", registration.getStudentId());
@@ -92,6 +97,14 @@ public class RegistrationServiceImpl implements RegistrationService {
 
         RegistrationResponse registrationResponse = new RegistrationResponse(completedRegistrations, confirmedPayments);
 
+        // email user payment receipt upon successful completion
+        try {
+            String[] recipients = {user.getPerson().getEmailAddress()};
+            emailService.sendPaymentReceiptEmail(recipients, registrationResponse);
+        }
+        catch (Exception e) {
+            logger.debug("Sending email failed, but registration and payment completed", e);
+        }
         return registrationResponse;
     }
 

@@ -13,6 +13,7 @@ import com.gs.api.domain.registration.RegistrationResponse;
 import com.gs.api.domain.registration.User;
 import com.gs.api.exception.PaymentAcceptedException;
 import com.gs.api.exception.PaymentException;
+import com.gs.api.service.email.EmailService;
 import com.gs.api.service.payment.PaymentService;
 
 import org.junit.Before;
@@ -42,6 +43,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doThrow;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "classpath:spring/test-root-context.xml" })
@@ -66,6 +68,9 @@ public class RegistrationServiceTest {
 
     @Mock
     private PaymentService paymentService;
+
+    @Mock
+    private EmailService emailService;
 
     @Mock
     private UserDAO userDao;
@@ -136,7 +141,7 @@ public class RegistrationServiceTest {
 
         RegistrationResponse createdRegistrationResponse = registrationService.register(USER_ID, registrationRequest);
 
-        verify(userDao, times(4)).getUser(any(String.class));
+        verify(userDao, times(3)).getUser(any(String.class));
         verify(sessionDao, times(2)).getSessionById(any(String.class));
         verify(paymentService).processPayment(payment);
         verify(registrationDao, times(2)).registerForCourse(any(User.class), any(User.class), any(CourseSession.class));
@@ -211,6 +216,35 @@ public class RegistrationServiceTest {
         when(sessionDao.getSessionById(SESSION_ID)).thenReturn(null);
 
         registrationService.register(USER_ID, registrationRequest);
+    }
+
+    @Test
+    public void testRegisterSucceedsEmailFails() throws Exception {
+        Exception expectedException = new Exception("Mail fail");
+        User user = new User(USER_ID, "user1", "", "1234", new Person(), "", "", "", "", userTimestamp);
+        User student1 = new User(STUDENT_ID_1, "student1", "", "1234", new Person(), "", "", "", "", userTimestamp);
+        CourseSession session = new CourseSession();
+        session.setClassNumber(SESSION_ID);
+
+        Payment payment = new Payment(100.00, "authId12345", "merchId12345");
+        registrationRequest.getPayments().add(payment);
+        PaymentConfirmation paymentConfirmation = new PaymentConfirmation(payment, "saleId12345");
+
+        when(userDao.getUser(USER_ID)).thenReturn(user);
+        when(userDao.getUser(STUDENT_ID_1)).thenReturn(student1);
+        when(sessionDao.getSessionById(SESSION_ID)).thenReturn(session);
+        when(paymentService.processPayment(payment)).thenReturn(paymentConfirmation);
+
+        Registration createdRegistration1 = new Registration();
+        createdRegistration1.setId("12345");
+        Registration createdRegistration2 = new Registration();
+        createdRegistration2.setId("54321");
+
+        when(registrationDao.registerForCourse(user, student1, session)).thenReturn(createdRegistration1);
+
+        doThrow(expectedException).when(emailService).sendPaymentReceiptEmail(any(String[].class), any(RegistrationResponse.class));
+
+        RegistrationResponse createdRegistrationResponse = registrationService.register(USER_ID, registrationRequest);
     }
 
     @Test

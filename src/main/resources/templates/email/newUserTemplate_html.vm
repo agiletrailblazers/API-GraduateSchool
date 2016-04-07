@@ -1,0 +1,62 @@
+#parse("templates/email/partials/emailTemplateTop_html.vm")
+
+<!-- Email-specific body -->
+<table class="row" style="border-collapse: collapse; border-spacing: 0; display: table; padding: 0; position: relative; text-align: left; vertical-align: top; width: 100%;">
+    <tbody>
+    <tr style="padding: 0; text-align: left; vertical-align: top;">
+        <th class="columns first last" style="Margin: 0 auto; color: #0a0a0a; font-family: Helvetica, Arial, sans-serif; font-size: 16px; font-weight: normal; line-height: 19px; margin: 0 auto; padding: 0; padding-bottom: 16px; padding-left: 16px; padding-right: 16px; text-align: left;">
+            <table style="border-collapse: collapse; border-spacing: 0; padding: 0; text-align: left; vertical-align: top; width: 100%;">
+                <tbody>
+                <tr style="padding: 0; text-align: left; vertical-align: top;">
+                    <th style="Margin: 0; color: #0a0a0a; font-family: Helvetica, Arial, sans-serif; font-size: 16px; font-weight: normal; line-height: 19px; margin: 0; padding: 0; text-align: left;">
+                        Thank you for setting up a self-service account with the Graduate School USA. With your self-service account, you'll have the ability to register online, view your upcoming and previously taken classes, and more. We hope that it makes it easy to manage your learning with us.
+                    </th>
+                </tr>
+                </tbody>
+            </table>
+        </th>
+        <th class="expander" style="Margin: 0; color: #0a0a0a; font-family: Helvetica, Arial, sans-serif; font-size: 16px; font-weight: normal; line-height: 19px; margin: 0; padding: 0 !important; text-align: left; visibility: hidden; width: 0;"></th>
+    </tr>
+    </tbody>
+</table>
+
+<table class="row" style="border-collapse: collapse; border-spacing: 0; display: table; padding: 0; position: relative; text-align: left; vertical-align: top; width: 100%;">
+    <tbody>
+    <tr style="padding: 0; text-align: left; vertical-align: top;">
+        <th class="columns first last" style="Margin: 0 auto; color: #0a0a0a; font-family: Helvetica, Arial, sans-serif; font-size: 16px; font-weight: normal; line-height: 19px; margin: 0 auto; padding: 0; padding-bottom: 16px; padding-left: 16px; padding-right: 16px; text-align: left;">
+            <table style="border-collapse: collapse; border-spacing: 0; padding: 0; text-align: left; vertical-align: top; width: 100%;">
+                <tbody>
+                <tr style="padding: 0; text-align: left; vertical-align: top;">
+                    <th style="Margin: 0; color: #0a0a0a; font-family: Helvetica, Arial, sans-serif; font-size: 16px; font-weight: normal; line-height: 19px; margin: 0; padding: 0; text-align: left;">
+                        You can access your account at anytime by logging into the <a href="$accountPage">Graduate School USA website</a>. You can update your account information by using the 'My Account' feature.
+                    </th>
+                </tr>
+                </tbody>
+            </table>
+        </th>
+        <th class="expander" style="Margin: 0; color: #0a0a0a; font-family: Helvetica, Arial, sans-serif; font-size: 16px; font-weight: normal; line-height: 19px; margin: 0; padding: 0 !important; text-align: left; visibility: hidden; width: 0;"></th>
+    </tr>
+    </tbody>
+</table>
+
+<table class="row" style="border-collapse: collapse; border-spacing: 0; display: table; padding: 0; position: relative; text-align: left; vertical-align: top; width: 100%;">
+    <tbody>
+    <tr style="padding: 0; text-align: left; vertical-align: top;">
+        <th class="columns first last" style="Margin: 0 auto; color: #0a0a0a; font-family: Helvetica, Arial, sans-serif; font-size: 16px; font-weight: normal; line-height: 19px; margin: 0 auto; padding: 0; padding-bottom: 16px; padding-left: 16px; padding-right: 16px; text-align: left;">
+            <table style="border-collapse: collapse; border-spacing: 0; padding: 0; text-align: left; vertical-align: top; width: 100%;">
+                <tbody>
+                <tr style="padding: 0; text-align: left; vertical-align: top;">
+                    <th style="Margin: 0; color: #0a0a0a; font-family: Helvetica, Arial, sans-serif; font-size: 16px; font-weight: normal; line-height: 19px; margin: 0; padding: 0; text-align: left;">
+                        The security of your account information is important to us - please review our <a href="$privacyPolicy">privacy policy</a> for more information. We look forward to serving your learning needs. Please be sure to save this email for future reference.
+                    </th>
+                </tr>
+                </tbody>
+            </table>
+        </th>
+        <th class="expander" style="Margin: 0; color: #0a0a0a; font-family: Helvetica, Arial, sans-serif; font-size: 16px; font-weight: normal; line-height: 19px; margin: 0; padding: 0 !important; text-align: left; visibility: hidden; width: 0;"></th>
+    </tr>
+    </tbody>
+</table>
+<!-- END Email-specific body -->
+
+#parse("templates/email/partials/emailTemplateBottom_html.vm")

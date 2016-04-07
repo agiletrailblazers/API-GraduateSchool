@@ -8,6 +8,7 @@ import com.gs.api.domain.registration.Timezone;
 import com.gs.api.domain.registration.User;
 import com.gs.api.exception.NotFoundException;
 
+import com.gs.api.service.email.EmailService;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -29,6 +30,8 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -55,6 +58,9 @@ public class UserServiceTest {
 
     @Mock
     private UserDAO userDao;
+
+    @Mock
+    private EmailService emailService;
 
     @InjectMocks
     @Autowired
@@ -101,6 +107,20 @@ public class UserServiceTest {
 
         when(userDao.insertNewUser(user)).thenReturn(USER_ID);
 
+        userService.createUser(user);
+
+        verify(userDao).insertNewUser(user);
+
+        assertEquals("ID not set on user", USER_ID, user.getId());
+        assertEquals("Encrypted password not set on user", PASSWORD_ENCRYPTED, user.getPassword());
+    }
+
+    @Test
+    public void testCreateUserEmailFails() throws Exception {
+
+        Exception expectedException = new Exception("Mail Fail");
+        when(userDao.insertNewUser(user)).thenReturn(USER_ID);
+        doThrow(expectedException).when(emailService).sendNewUserEmail(user);
         userService.createUser(user);
 
         verify(userDao).insertNewUser(user);

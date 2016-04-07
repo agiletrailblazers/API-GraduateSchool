@@ -6,6 +6,7 @@ import com.gs.api.domain.registration.Timezone;
 import com.gs.api.domain.registration.User;
 import com.gs.api.exception.NotFoundException;
 
+import com.gs.api.service.email.EmailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,9 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private UserDAO userDao;
 
+    @Autowired
+    private EmailService emailService;
+
     @Override
     public void createUser(User user) throws Exception {
 
@@ -30,6 +34,14 @@ public class UserServiceImpl implements UserService {
 
         // update the user with the generated ID
         user.setId(userId);
+
+        //sending welcome email to new User
+        try {
+            emailService.sendNewUserEmail(user);
+        }
+        catch (Exception e) {
+            logger.debug("User created but failed to send new user email");
+        }
     }
 
     @Override
