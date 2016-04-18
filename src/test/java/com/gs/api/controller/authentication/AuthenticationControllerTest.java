@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gs.api.domain.authentication.AuthCredentials;
 import com.gs.api.domain.authentication.AuthToken;
 import com.gs.api.domain.authentication.AuthUser;
+import com.gs.api.domain.authentication.RenewalToken;
 import com.gs.api.domain.registration.User;
 import com.gs.api.exception.AuthenticationException;
 import com.gs.api.service.authentication.AuthenticationService;
@@ -87,7 +88,7 @@ public class AuthenticationControllerTest {
         AuthCredentials authCredentials = new AuthCredentials(USERNAME, PASSWORD);
         final User user = new User();
         user.setId("user12345");
-        AuthUser authUser = new AuthUser(new AuthToken(TEST_TOKEN), user);
+        AuthUser authUser = new AuthUser(new AuthToken(TEST_TOKEN), new RenewalToken(TEST_TOKEN), user);
         String jsonModel = new ObjectMapper().writeValueAsString(authCredentials);
 
         when(authenticationService.authenticateUser(any(AuthCredentials.class))).thenReturn(authUser);

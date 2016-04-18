@@ -1,13 +1,9 @@
 package com.gs.api.service.authentication;
 
-import com.gs.api.domain.authentication.AuthCredentials;
-import com.gs.api.domain.authentication.AuthToken;
-import com.gs.api.domain.authentication.AuthUser;
-import com.gs.api.domain.authentication.Role;
+import com.gs.api.domain.authentication.*;
 import com.gs.api.domain.registration.User;
 import com.gs.api.exception.AuthenticationException;
 import com.gs.api.service.registration.UserService;
-
 import org.apache.commons.lang3.StringUtils;
 import org.jasypt.encryption.pbe.PBEStringCleanablePasswordEncryptor;
 import org.slf4j.Logger;
@@ -16,10 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.UUID;
-
-import javax.servlet.http.HttpServletRequest;
 
 @Service
 public class AuthenticationServiceImpl implements AuthenticationService {
@@ -85,6 +80,19 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return new AuthToken(encryptor.encrypt(token));
     }
 
+    /**
+     * Create a new renewal token
+     *
+     * @return
+     */
+    public RenewalToken generateRenewalToken(){
+        final Date datetime = new Date();
+        final String token = UUID.randomUUID().toString().toUpperCase() +
+                TOKEN_FIELD_DELIMITER + datetime.getTime();
+
+        return new RenewalToken(encryptor.encrypt(token));
+    }
+
     @Override
     public void validateGuestAccess(HttpServletRequest request) throws AuthenticationException {
 
@@ -144,7 +152,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         // user is valid, create an authenticated token
         AuthToken authToken = generateToken(user.getId(), Role.AUTHENTICATED);
 
-        return new AuthUser(authToken, user);
+        //Create a new renewal token for re-authorization
+        RenewalToken renewalToken = generateRenewalToken();
+
+        return new AuthUser(authToken, renewalToken, user);
     }
 
     @Override

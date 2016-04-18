@@ -1,13 +1,9 @@
 package com.gs.api.service.authentication;
 
-import com.gs.api.domain.authentication.AuthCredentials;
-import com.gs.api.domain.authentication.AuthToken;
-import com.gs.api.domain.authentication.AuthUser;
-import com.gs.api.domain.authentication.Role;
+import com.gs.api.domain.authentication.*;
 import com.gs.api.domain.registration.User;
 import com.gs.api.exception.AuthenticationException;
 import com.gs.api.service.registration.UserService;
-
 import org.apache.commons.lang.StringUtils;
 import org.hamcrest.Matchers;
 import org.jasypt.encryption.pbe.PBEStringCleanablePasswordEncryptor;
@@ -16,11 +12,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.ContextConfiguration;
@@ -30,17 +22,13 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.util.Date;
-
 import javax.servlet.http.HttpServletRequest;
+import java.util.Date;
+import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
@@ -141,6 +129,27 @@ public class AuthenticationServiceTest {
         assertEquals("Wrong role", Role.AUTHENTICATED.name(), keyPieces[2]);
         // make sure user id is empty
         assertEquals("user id should be in key", USER_ID, keyPieces[3]);
+        // make sure returning the encrypting key
+        assertEquals("Wrong token generated", ENCRYPTED_TOKEN_STRING, token.getToken());
+    }
+
+    @Test
+    public void testGenerateRenewalToken_Success() throws Exception {
+
+        when(encryptor.encrypt(any(String.class))).thenReturn(ENCRYPTED_TOKEN_STRING);
+
+        RenewalToken token = authenticationService.generateRenewalToken();
+
+        verify(encryptor).encrypt(encryptStringCaptor.capture());
+
+        // inspect the key
+        String key = encryptStringCaptor.getValue();
+        String[] keyPieces = StringUtils.splitPreserveAllTokens(key, '|');
+        assertEquals("Key missing data", 2, keyPieces.length);
+        // make sure the UUID is not null
+        assertTrue("No UUID in key", StringUtils.isNotEmpty(keyPieces[0]));
+        // make sure we have a timestamp
+        assertTrue("No timestamp in key", StringUtils.isNotEmpty(keyPieces[1]));
         // make sure returning the encrypting key
         assertEquals("Wrong token generated", ENCRYPTED_TOKEN_STRING, token.getToken());
     }
@@ -362,10 +371,11 @@ public class AuthenticationServiceTest {
         AuthUser authUser = authenticationService.authenticateUser(authCredentials);
 
         verify(userService).getUser(authCredentials);
-        verify(encryptor).encrypt(encryptStringCaptor.capture());
+        verify(encryptor, times(2)).encrypt(encryptStringCaptor.capture());
 
         // inspect the unencrypted token string
-        String key = encryptStringCaptor.getValue();
+        List<String> keys = encryptStringCaptor.getAllValues();
+        String key = keys.get(0);
         String[] keyPieces = StringUtils.splitPreserveAllTokens(key, '|');
         assertEquals("Key missing data", 4, keyPieces.length);
         // make sure the UUID is not null
@@ -378,6 +388,15 @@ public class AuthenticationServiceTest {
         assertEquals("user id should be in key", USER_ID, keyPieces[3]);
         // make sure returning the encrypting key
         assertEquals("Wrong token generated", ENCRYPTED_TOKEN_STRING, authUser.getAuthToken().getToken());
+
+        key = keys.get(1);
+        keyPieces = StringUtils.splitPreserveAllTokens(key, '|');
+        //Verify the renewal token
+        assertEquals("Renewal key missing data", 2, keyPieces.length);
+        // make sure the UUID is not null
+        assertTrue("No UUID in renewal key", StringUtils.isNotEmpty(keyPieces[0]));
+        // make sure we have a timestamp
+        assertTrue("No timestamp in renewal key", StringUtils.isNotEmpty(keyPieces[1]));
 
         // very correct user returned
         assertSame("wrong user", validUser, authUser.getUser());

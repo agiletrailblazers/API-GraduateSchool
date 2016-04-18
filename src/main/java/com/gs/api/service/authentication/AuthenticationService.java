@@ -3,6 +3,7 @@ package com.gs.api.service.authentication;
 import com.gs.api.domain.authentication.AuthCredentials;
 import com.gs.api.domain.authentication.AuthToken;
 import com.gs.api.domain.authentication.AuthUser;
+import com.gs.api.domain.authentication.RenewalToken;
 import com.gs.api.exception.AuthenticationException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -15,6 +16,12 @@ public interface AuthenticationService {
      * @throws AuthenticationException error creating the token
      */
     AuthToken generateToken() throws AuthenticationException;
+
+    /**
+     * Generate the renewal token used to reauthorize a user
+     * @return
+     */
+    RenewalToken generateRenewalToken();
 
     /**
      * Validate guest access.
