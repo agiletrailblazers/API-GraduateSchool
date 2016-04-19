@@ -96,7 +96,7 @@ public class EmailServiceImpl implements EmailService {
         };
         try {
             mailSender.send(preparator);
-            logger.debug("Payment receipt successfully sent");
+            logger.debug("Payment receipt successfully sent for order " + registrationResponse.getRegistrations().get(0).getOrderNumber());
         }
         catch (MailException e) {
             logger.error("Error sending payment receipt", e);
@@ -133,7 +133,7 @@ public class EmailServiceImpl implements EmailService {
         };
         try {
             mailSender.send(preparator);
-            logger.debug("New User email successfully sent");
+            logger.debug("New User email successfully sent for user " + newUser.getId());
         }
         catch (MailException e) {
             logger.error("Error sending new user email", e);
