@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonInclude(Include.ALWAYS)
-public class ReAuthCredentials extends AuthCredentials{
+public class ReAuthCredentials {
 
     @JsonProperty("authToken")
     private AuthToken authToken;
@@ -14,14 +14,11 @@ public class ReAuthCredentials extends AuthCredentials{
     private RenewalToken renewalToken;
 
     /**
-     * Construct the auth credentials.
-     * @param username the username.
-     * @param password the clear-text password.
+     * Contructor for ReAuthCredentials
+     * @param authToken
+     * @param renewalToken
      */
-    public ReAuthCredentials(@JsonProperty("username") String username, @JsonProperty("password") String password,
-                             @JsonProperty("authToken") AuthToken authToken, @JsonProperty("renewalToken") RenewalToken renewalToken) {
-        this.username = username;
-        this.password = password;
+    public ReAuthCredentials(@JsonProperty("authToken") AuthToken authToken, @JsonProperty("renewalToken") RenewalToken renewalToken) {
         this.authToken = authToken;
         this.renewalToken = renewalToken;
     }

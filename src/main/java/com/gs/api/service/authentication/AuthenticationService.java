@@ -32,7 +32,7 @@ public interface AuthenticationService {
      * @param request the http request
      * @throws AuthenticationException error validating the token or the token is not valid.
      */
-    void validateAuthenticatedAccess(HttpServletRequest request) throws AuthenticationException;
+    void validateAuthenticatedAccessFromHTTPServletRequest(HttpServletRequest request) throws AuthenticationException;
 
     /**
      * Authenticate a user.
@@ -56,6 +56,6 @@ public interface AuthenticationService {
      * @return
      * @throws AuthenticationException
      */
-    AuthUser reAuthenticateUser(ReAuthCredentials reAuthCredentials) throws AuthenticationException;
+    AuthToken reAuthenticateUser(ReAuthCredentials reAuthCredentials) throws AuthenticationException;
 
 }

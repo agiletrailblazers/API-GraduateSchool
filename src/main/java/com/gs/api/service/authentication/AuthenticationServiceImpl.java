@@ -96,13 +96,47 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public void validateGuestAccess(HttpServletRequest request) throws AuthenticationException {
 
-        performBasicValidation(request);
+        performBasicValidationFromHTTPServletRequest(request);
     }
 
     @Override
-    public void validateAuthenticatedAccess(HttpServletRequest request) throws AuthenticationException {
+    public void validateAuthenticatedAccessFromHTTPServletRequest(HttpServletRequest request) throws AuthenticationException {
 
-        String[] tokenFields = performBasicValidation(request);
+        String[] tokenFields = performBasicValidationFromHTTPServletRequest(request);
+
+        Role role = Role.valueOf(tokenFields[TOKEN_FIELD_ROLE_INDEX]);
+
+        // verify that authenticated token has not expired
+        if (role == Role.AUTHENTICATED) {
+
+            // check if token is expired
+            long currentTime = new Date().getTime();
+            long tokenTime = Long.parseLong(tokenFields[TOKEN_FIELD_TIMESTAMP_INDEX]);
+            // convert expire time from seconds to milliseconds
+            long authTokenExpire = authTokenExpireMinutes * 60 * 1000;
+
+            if ((tokenTime + authTokenExpire) < currentTime) {
+                // token is expired
+                throw new AuthenticationException(TOKEN_EXPIRED_MSG);
+            }
+
+            // set the user id in attribute for use in API code
+            if (StringUtils.isNotBlank(tokenFields[TOKEN_FIELD_USER_INDEX])) {
+                request.setAttribute(authUserAttribute, tokenFields[TOKEN_FIELD_USER_INDEX]);
+            }
+            else {
+                // authenticated tokens must have a user id
+                throw new AuthenticationException(TOKEN_USER_IS_NOT_VALID_MSG);
+            }
+        }
+        else {
+            throw new AuthenticationException(TOKEN_IS_NOT_AUTHENTICATED_MSG);
+        }
+    }
+
+    private void validateAuthenticatedAccessFromAuthTokenString(HttpServletRequest request) throws AuthenticationException {
+
+        String[] tokenFields = performBasicValidationFromHTTPServletRequest(request);
 
         Role role = Role.valueOf(tokenFields[TOKEN_FIELD_ROLE_INDEX]);
 
@@ -165,10 +199,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
     }
 
-    private String[] performBasicValidation(HttpServletRequest request) throws AuthenticationException {
+    private String[] performBasicValidationFromHTTPServletRequest(HttpServletRequest request) throws AuthenticationException {
 
         // get token and check if empty
         final String authToken = request.getHeader(authTokenHeader);
+
+        return performBasicValidationFromAuthTokenString(authToken);
+    }
+
+    private String[] performBasicValidationFromAuthTokenString(String authToken) throws AuthenticationException {
         if (StringUtils.isEmpty(authToken)) {
             throw new AuthenticationException(MISSING_REQUIRED_AUTHENTICATION_TOKEN_MSG);
         }
@@ -215,7 +254,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public AuthUser reAuthenticateUser(ReAuthCredentials reAuthCredentials) throws AuthenticationException {
+    public AuthToken reAuthenticateUser(ReAuthCredentials reAuthCredentials) throws AuthenticationException {
 
         //TODO If authtoken is real
         if (true){
@@ -229,8 +268,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             if (true){
 
                 //TODO If renewal UUID in renewal token and authtoken match
-                if (true){
-                    //TODO Generate new authUser with
+                if (true) {
+                    //TODO Generate new AuthToken with same renewal token
+                }
+
+                else {
+                    //TODO Return a 401
+                    throw new AuthenticationException("error");
                 }
 
             }
@@ -243,6 +287,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             throw new AuthenticationException("error");
         }
 
-        return authenticateUser(reAuthCredentials);
+        return reAuthCredentials.getAuthToken();
     };
 }

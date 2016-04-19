@@ -182,7 +182,7 @@ public class AuthenticationServiceTest {
         when(request.getHeader(authTokenHeader)).thenReturn(encryptedToken);
         when(encryptor.decrypt(encryptedToken)).thenReturn(validToken);
 
-        authenticationService.validateAuthenticatedAccess(request);
+        authenticationService.validateAuthenticatedAccessFromHTTPServletRequest(request);
 
         verify(request).getHeader(authTokenHeader);
         verify(encryptor).decrypt(encryptedToken);
@@ -300,7 +300,7 @@ public class AuthenticationServiceTest {
         thrown.expect(AuthenticationException.class);
         thrown.expectMessage(AuthenticationServiceImpl.TOKEN_USER_IS_NOT_VALID_MSG);
 
-        authenticationService.validateAuthenticatedAccess(request);
+        authenticationService.validateAuthenticatedAccessFromHTTPServletRequest(request);
     }
 
     @Test
@@ -320,7 +320,7 @@ public class AuthenticationServiceTest {
         thrown.expect(AuthenticationException.class);
         thrown.expectMessage(AuthenticationServiceImpl.TOKEN_EXPIRED_MSG);
 
-        authenticationService.validateAuthenticatedAccess(request);
+        authenticationService.validateAuthenticatedAccessFromHTTPServletRequest(request);
     }
 
     @Test
@@ -355,7 +355,7 @@ public class AuthenticationServiceTest {
         thrown.expect(AuthenticationException.class);
         thrown.expectMessage(AuthenticationServiceImpl.TOKEN_IS_NOT_AUTHENTICATED_MSG);
 
-        authenticationService.validateAuthenticatedAccess(request);
+        authenticationService.validateAuthenticatedAccessFromHTTPServletRequest(request);
     }
 
     @Test

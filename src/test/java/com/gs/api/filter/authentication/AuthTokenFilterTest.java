@@ -120,7 +120,7 @@ public class AuthTokenFilterTest {
         filter.doFilter(request, response, filterChain);
 
         verify(request).getRequestURI();
-        verify(authenticationService).validateAuthenticatedAccess(request);
+        verify(authenticationService).validateAuthenticatedAccessFromHTTPServletRequest(request);
         verify(filterChain).doFilter(request, response);
 
         filter.destroy();
@@ -151,12 +151,12 @@ public class AuthTokenFilterTest {
         when(request.getRequestURI()).thenReturn(PATH_REQUIRES_AUTHENTICATED_ACCESS);
 
         AuthenticationException cause = new AuthenticationException("I caused invalid token");
-        doThrow(cause).when(authenticationService).validateAuthenticatedAccess(request);
+        doThrow(cause).when(authenticationService).validateAuthenticatedAccessFromHTTPServletRequest(request);
 
         filter.doFilter(request, response, filterChain);
 
         verify(request).getRequestURI();
-        verify(authenticationService).validateAuthenticatedAccess(request);
+        verify(authenticationService).validateAuthenticatedAccessFromHTTPServletRequest(request);
         verify(response).setHeader("Content-Type", "application/json");
         verify(response).setStatus(401);
         verifyZeroInteractions(filterChain);

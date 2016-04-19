@@ -59,7 +59,7 @@ public class AuthTokenFilter implements Filter {
                 else {
                     // any URI not specifically listed on the guest token required list must have an authenticated token
                     logger.debug("URI {} requires an authenticated token", requestedURI);
-                    authenticationService.validateAuthenticatedAccess(httpRequest);
+                    authenticationService.validateAuthenticatedAccessFromHTTPServletRequest(httpRequest);
                 }
             }
 
