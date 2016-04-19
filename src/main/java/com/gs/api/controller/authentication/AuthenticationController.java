@@ -44,9 +44,9 @@ public class AuthenticationController extends BaseController {
     }
 
     @RequestMapping(value = "/reauthentication", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public AuthUser reAuthenticateUser(@RequestBody ReAuthCredentials reAuthCredentials) throws Exception{
+    public AuthToken reAuthenticateUser(@RequestBody ReAuthCredentials reAuthCredentials) throws Exception{
         logger.debug("ReAuthenticating user {}", reAuthCredentials.getUsername());
 
-        return authenticationService.reAuthenticateUser(reAuthCredentials);
+        return authenticationService.reAuthenticateUser(reAuthCredentials).getAuthToken();
     }
 }

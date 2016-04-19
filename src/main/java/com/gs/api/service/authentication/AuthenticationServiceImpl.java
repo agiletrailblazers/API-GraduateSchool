@@ -217,9 +217,27 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public AuthUser reAuthenticateUser(ReAuthCredentials reAuthCredentials) throws AuthenticationException {
 
-        //TODO Validate the authtoken is real
+        //TODO If authtoken is real
         if (true){
 
+            //TODO If authtoken is not expired and will not expire within the next 30 seconds
+            if(true){
+                //TODO Send 200
+            }
+
+            //TODO If renewal token is less than 24hrs old
+            if (true){
+
+                //TODO If renewal UUID in renewal token and authtoken match
+                if (true){
+                    //TODO Generate new authUser with
+                }
+
+            }
+            else {
+                //TODO Return a 401
+                throw new AuthenticationException("error");
+            }
         } else {
             //TODO Return a 401
             throw new AuthenticationException("error");
