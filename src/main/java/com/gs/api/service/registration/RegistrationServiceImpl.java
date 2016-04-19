@@ -105,6 +105,8 @@ public class RegistrationServiceImpl implements RegistrationService {
         catch (Exception e) {
             logger.debug("Sending email failed, but registration and payment completed", e);
         }
+
+        logger.debug("Payment Receipt email asynchronously sending, returning to normal flow");
         return registrationResponse;
     }
 

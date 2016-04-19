@@ -42,6 +42,7 @@ public class UserServiceImpl implements UserService {
         catch (Exception e) {
             logger.debug("User created but failed to send new user email");
         }
+        logger.debug("User creation email asynchronously sending, returning to normal flow");
     }
 
     @Override

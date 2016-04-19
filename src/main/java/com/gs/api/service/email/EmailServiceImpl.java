@@ -16,6 +16,7 @@ import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.mail.javamail.MimeMessagePreparator;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.velocity.VelocityEngineUtils;
 
@@ -23,7 +24,12 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Locale;
+import java.util.List;
+import java.util.Date;
 
 @Service
 public class EmailServiceImpl implements EmailService {
@@ -63,7 +69,14 @@ public class EmailServiceImpl implements EmailService {
     // ONLY SET FROM UNIT TESTS!
     private MimeMessageHelper mimeMessageHelper;
 
+    /**
+     * Send email after registration complete
+     * @param recipients people to send the email to
+     * @param registrationResponse completed registrations and payments
+     * @throws Exception
+     */
     @Override
+    @Async
     public void sendPaymentReceiptEmail(String[] recipients, RegistrationResponse registrationResponse) throws Exception {
         MimeMessagePreparator preparator = new MimeMessagePreparator() {
 
@@ -93,10 +106,11 @@ public class EmailServiceImpl implements EmailService {
     /**
      * Send new user email to new user
      *
-     * @param newUser
+     * @param newUser is the newly created user
      * @throws Exception
      */
     @Override
+    @Async
     public void sendNewUserEmail(User newUser) throws Exception {
         MimeMessagePreparator preparator = new MimeMessagePreparator() {
 
@@ -119,6 +133,7 @@ public class EmailServiceImpl implements EmailService {
         };
         try {
             mailSender.send(preparator);
+            logger.debug("New User email successfully sent");
         }
         catch (MailException e) {
             logger.error("Error sending new user email", e);
