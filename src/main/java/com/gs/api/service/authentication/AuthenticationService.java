@@ -1,9 +1,6 @@
 package com.gs.api.service.authentication;
 
-import com.gs.api.domain.authentication.AuthCredentials;
-import com.gs.api.domain.authentication.AuthToken;
-import com.gs.api.domain.authentication.AuthUser;
-import com.gs.api.domain.authentication.RenewalToken;
+import com.gs.api.domain.authentication.*;
 import com.gs.api.exception.AuthenticationException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -52,5 +49,13 @@ public interface AuthenticationService {
      * @throws AuthenticationException if the supplied user id does not match the user id that was authenticated.
      */
     void verifyUser(HttpServletRequest request, String userId) throws AuthenticationException;
+
+    /**
+     * ReAuthenticate a user with renewal token
+     * @param reAuthCredentials
+     * @return
+     * @throws AuthenticationException
+     */
+    AuthUser reAuthenticateUser(ReAuthCredentials reAuthCredentials) throws AuthenticationException;
 
 }

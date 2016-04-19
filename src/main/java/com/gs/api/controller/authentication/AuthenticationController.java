@@ -4,6 +4,7 @@ import com.gs.api.controller.BaseController;
 import com.gs.api.domain.authentication.AuthCredentials;
 import com.gs.api.domain.authentication.AuthToken;
 import com.gs.api.domain.authentication.AuthUser;
+import com.gs.api.domain.authentication.ReAuthCredentials;
 import com.gs.api.service.authentication.AuthenticationService;
 
 import org.slf4j.Logger;
@@ -40,5 +41,12 @@ public class AuthenticationController extends BaseController {
         logger.debug("Authenticating user {}", authCredentials.getUsername());
 
         return authenticationService.authenticateUser(authCredentials);
+    }
+
+    @RequestMapping(value = "/reauthentication", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    public AuthUser reAuthenticateUser(@RequestBody ReAuthCredentials reAuthCredentials) throws Exception{
+        logger.debug("ReAuthenticating user {}", reAuthCredentials.getUsername());
+
+        return authenticationService.reAuthenticateUser(reAuthCredentials);
     }
 }

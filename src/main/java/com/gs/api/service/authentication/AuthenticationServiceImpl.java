@@ -213,4 +213,18 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         return tokenFields;
     }
+
+    @Override
+    public AuthUser reAuthenticateUser(ReAuthCredentials reAuthCredentials) throws AuthenticationException {
+
+        //TODO Validate the authtoken is real
+        if (true){
+
+        } else {
+            //TODO Return a 401
+            throw new AuthenticationException("error");
+        }
+
+        return authenticateUser(reAuthCredentials);
+    };
 }
