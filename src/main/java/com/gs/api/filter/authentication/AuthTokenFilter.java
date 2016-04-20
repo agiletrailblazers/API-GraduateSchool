@@ -2,7 +2,6 @@ package com.gs.api.filter.authentication;
 
 import com.gs.api.exception.AuthenticationException;
 import com.gs.api.service.authentication.AuthenticationService;
-
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,16 +9,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 @Component("authTokenFilter")
 public class AuthTokenFilter implements Filter {
@@ -59,7 +52,7 @@ public class AuthTokenFilter implements Filter {
                 else {
                     // any URI not specifically listed on the guest token required list must have an authenticated token
                     logger.debug("URI {} requires an authenticated token", requestedURI);
-                    authenticationService.validateAuthenticatedAccessFromHTTPServletRequest(httpRequest);
+                    authenticationService.validateAuthenticatedAccess(httpRequest);
                 }
             }
 

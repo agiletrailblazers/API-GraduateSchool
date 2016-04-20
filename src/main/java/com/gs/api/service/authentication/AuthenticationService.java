@@ -32,7 +32,7 @@ public interface AuthenticationService {
      * @param request the http request
      * @throws AuthenticationException error validating the token or the token is not valid.
      */
-    void validateAuthenticatedAccessFromHTTPServletRequest(HttpServletRequest request) throws AuthenticationException;
+    void validateAuthenticatedAccess(HttpServletRequest request) throws AuthenticationException;
 
     /**
      * Authenticate a user.

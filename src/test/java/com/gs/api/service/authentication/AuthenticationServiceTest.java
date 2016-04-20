@@ -25,6 +25,7 @@ import org.springframework.web.context.WebApplicationContext;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
@@ -39,6 +40,9 @@ public class AuthenticationServiceTest {
     private static final String USER_ID = "123";
     private static final String USERNAME = "joe@tester.com";
     private static final String PASSWORD = "test1234";
+    private static final String RENEWAL_UUID = UUID.randomUUID().toString().toUpperCase();
+
+    //private String ENCRYPTED_RENEWAL_TOKEN = ec.encrypt(RENEWAL_UUID + "|" + Long.toString(new Date().getTime()));
 
     @Value("${auth.token.header}")
     private String authTokenHeader;
@@ -48,6 +52,9 @@ public class AuthenticationServiceTest {
 
     @Value("${auth.token.expire.minutes}")
     private int authTokenExpireMinutes;
+
+    @Value("${auth.token.renewal.expire.minutes}")
+    private int renewalTokenExpireMinutes;
 
     @Autowired
     private WebApplicationContext applicationContext;
@@ -81,6 +88,7 @@ public class AuthenticationServiceTest {
         ReflectionTestUtils.setField(authenticationService, "authTokenHeader", authTokenHeader);
         ReflectionTestUtils.setField(authenticationService, "authUserAttribute", authUserAttribute);
         ReflectionTestUtils.setField(authenticationService, "authTokenExpireMinutes", authTokenExpireMinutes);
+        ReflectionTestUtils.setField(authenticationService, "renewalTokenExpireMinutes", renewalTokenExpireMinutes);
     }
 
     @Test
@@ -95,7 +103,7 @@ public class AuthenticationServiceTest {
         // inspect the key
         String key = encryptStringCaptor.getValue();
         String[] keyPieces = StringUtils.splitPreserveAllTokens(key, '|');
-        assertEquals("Key missing data", 4, keyPieces.length);
+        assertEquals("Key missing data", 5, keyPieces.length);
         // make sure the UUID is not null
         assertTrue("No UUID in key", StringUtils.isNotEmpty(keyPieces[0]));
         // make sure we have a timestamp
@@ -104,6 +112,8 @@ public class AuthenticationServiceTest {
         assertEquals("Wrong role", Role.GUEST.name(), keyPieces[2]);
         // make sure user id is empty
         assertTrue("user id should not be in key", StringUtils.isEmpty(keyPieces[3]));
+        // make sure renewal uuid is empty
+        assertTrue("renewal key should not be in key", StringUtils.isEmpty(keyPieces[4]));
         // make sure returning the encrypting key
         assertEquals("Wrong token generated", ENCRYPTED_TOKEN_STRING, token.getToken());
      }
@@ -113,14 +123,14 @@ public class AuthenticationServiceTest {
 
         when(encryptor.encrypt(any(String.class))).thenReturn(ENCRYPTED_TOKEN_STRING);
 
-        AuthToken token = authenticationService.generateToken(USER_ID, Role.AUTHENTICATED);
+        AuthToken token = authenticationService.generateToken(USER_ID, Role.AUTHENTICATED, RENEWAL_UUID);
 
         verify(encryptor).encrypt(encryptStringCaptor.capture());
 
         // inspect the key
         String key = encryptStringCaptor.getValue();
         String[] keyPieces = StringUtils.splitPreserveAllTokens(key, '|');
-        assertEquals("Key missing data", 4, keyPieces.length);
+        assertEquals("Key missing data", 5, keyPieces.length);
         // make sure the UUID is not null
         assertTrue("No UUID in key", StringUtils.isNotEmpty(keyPieces[0]));
         // make sure we have a timestamp
@@ -129,6 +139,8 @@ public class AuthenticationServiceTest {
         assertEquals("Wrong role", Role.AUTHENTICATED.name(), keyPieces[2]);
         // make sure user id is empty
         assertEquals("user id should be in key", USER_ID, keyPieces[3]);
+        // make sure user id is empty
+        assertEquals("renewal timestamp should be in key", RENEWAL_UUID, keyPieces[4]);
         // make sure returning the encrypting key
         assertEquals("Wrong token generated", ENCRYPTED_TOKEN_STRING, token.getToken());
     }
@@ -159,7 +171,7 @@ public class AuthenticationServiceTest {
 
         String encryptedToken = "abcde1234554321edcba";
         String validToken = "de703f00-8c20-4c74-a254-277e2020244b|"
-                + new Date().getTime() + "|" + Role.GUEST + "|";
+                + new Date().getTime() + "|" + Role.GUEST + "||";
 
         when(request.getHeader(authTokenHeader)).thenReturn(encryptedToken);
         when(encryptor.decrypt(encryptedToken)).thenReturn(validToken);
@@ -177,12 +189,12 @@ public class AuthenticationServiceTest {
         String user = "testuser";
         String encryptedToken = "abcde1234554321edcba";
         String validToken = "de703f00-8c20-4c74-a254-277e2020244b|"
-                + new Date().getTime() + "|" + Role.AUTHENTICATED + "|" + user;
+                + new Date().getTime() + "|" + Role.AUTHENTICATED + "|" + user + "|" + RENEWAL_UUID;
 
         when(request.getHeader(authTokenHeader)).thenReturn(encryptedToken);
         when(encryptor.decrypt(encryptedToken)).thenReturn(validToken);
 
-        authenticationService.validateAuthenticatedAccessFromHTTPServletRequest(request);
+        authenticationService.validateAuthenticatedAccess(request);
 
         verify(request).getHeader(authTokenHeader);
         verify(encryptor).decrypt(encryptedToken);
@@ -275,7 +287,7 @@ public class AuthenticationServiceTest {
         // make our token old, 2x the expired time limit
         long expiredTime = currentTime - (2 * (authTokenExpireMinutes * 1000 * 1000));
         String validToken = "de703f00-8c20-4c74-a254-277e2020244b|"
-                + new Date(expiredTime).getTime() + "|" + Role.GUEST + "|";
+                + new Date(expiredTime).getTime() + "|" + Role.GUEST + "||";
 
         when(request.getHeader(authTokenHeader)).thenReturn(encryptedToken);
         when(encryptor.decrypt(encryptedToken)).thenReturn(validToken);
@@ -291,7 +303,7 @@ public class AuthenticationServiceTest {
     public void testValidateAuthenticatedAccess_AuthenticatedTokenMissingUser() throws Exception {
         String encryptedToken = "abcde1234554321edcba";
         String validToken = "de703f00-8c20-4c74-a254-277e2020244b|"
-                + new Date().getTime() + "|" + Role.AUTHENTICATED + "|";
+                + new Date().getTime() + "|" + Role.AUTHENTICATED + "||" + RENEWAL_UUID;
 
         when(request.getHeader(authTokenHeader)).thenReturn(encryptedToken);
         when(encryptor.decrypt(encryptedToken)).thenReturn(validToken);
@@ -300,7 +312,7 @@ public class AuthenticationServiceTest {
         thrown.expect(AuthenticationException.class);
         thrown.expectMessage(AuthenticationServiceImpl.TOKEN_USER_IS_NOT_VALID_MSG);
 
-        authenticationService.validateAuthenticatedAccessFromHTTPServletRequest(request);
+        authenticationService.validateAuthenticatedAccess(request);
     }
 
     @Test
@@ -311,16 +323,18 @@ public class AuthenticationServiceTest {
         // make our token old, 10 seconds past the expired time limit
         long expiredTime = currentTime - ((authTokenExpireMinutes * 60 * 1000) + 10000);
         String validToken = "de703f00-8c20-4c74-a254-277e2020244b|"
-                + new Date(expiredTime).getTime() + "|" + Role.AUTHENTICATED + "|" + user;
+                + new Date(expiredTime).getTime() + "|" + Role.AUTHENTICATED + "|" + user + "|" + RENEWAL_UUID;
+
+        String validRenewalToken = RENEWAL_UUID + "|" + currentTime;
 
         when(request.getHeader(authTokenHeader)).thenReturn(encryptedToken);
-        when(encryptor.decrypt(encryptedToken)).thenReturn(validToken);
+        when(encryptor.decrypt(encryptedToken)).thenReturn(validToken).thenReturn(validRenewalToken);
 
         // setup expected exception
         thrown.expect(AuthenticationException.class);
         thrown.expectMessage(AuthenticationServiceImpl.TOKEN_EXPIRED_MSG);
 
-        authenticationService.validateAuthenticatedAccessFromHTTPServletRequest(request);
+        authenticationService.validateAuthenticatedAccess(request);
     }
 
     @Test
@@ -329,10 +343,11 @@ public class AuthenticationServiceTest {
         String user = "testuser";
         String encryptedToken = "abcde1234554321edcba";
         String validToken = "de703f00-8c20-4c74-a254-277e2020244b|"
-                + new Date().getTime() + "|" + Role.AUTHENTICATED + "|" + user;
+                + new Date().getTime() + "|" + Role.AUTHENTICATED + "|" + user + "|" + RENEWAL_UUID;
+        String validRenewalToken = new Date().getTime() + "|" + RENEWAL_UUID;
 
         when(request.getHeader(authTokenHeader)).thenReturn(encryptedToken);
-        when(encryptor.decrypt(encryptedToken)).thenReturn(validToken);
+        when(encryptor.decrypt(encryptedToken)).thenReturn(validToken).thenReturn(validRenewalToken);
 
         authenticationService.validateGuestAccess(request);
 
@@ -346,7 +361,7 @@ public class AuthenticationServiceTest {
 
         String encryptedToken = "abcde1234554321edcba";
         String validToken = "de703f00-8c20-4c74-a254-277e2020244b|"
-                + new Date().getTime() + "|" + Role.GUEST + "|";
+                + new Date().getTime() + "|" + Role.GUEST + "||";
 
         when(request.getHeader(authTokenHeader)).thenReturn(encryptedToken);
         when(encryptor.decrypt(encryptedToken)).thenReturn(validToken);
@@ -355,18 +370,24 @@ public class AuthenticationServiceTest {
         thrown.expect(AuthenticationException.class);
         thrown.expectMessage(AuthenticationServiceImpl.TOKEN_IS_NOT_AUTHENTICATED_MSG);
 
-        authenticationService.validateAuthenticatedAccessFromHTTPServletRequest(request);
+        authenticationService.validateAuthenticatedAccess(request);
     }
 
     @Test
     public void testAuthenticateUser_Success() throws Exception {
-
         AuthCredentials authCredentials = new AuthCredentials(USERNAME, PASSWORD);
         User validUser = new User();
         validUser.setId(USER_ID);
 
+        String currentTime = Long.toString(new Date().getTime());
+        String renewalToken = RENEWAL_UUID + "|" + currentTime;
+        String authToken = "de703f00-8c20-4c74-a254-277e2020244b|"
+                + currentTime + "|" + Role.AUTHENTICATED + "|" + USER_ID + "|" + RENEWAL_UUID;
+        String validRenewalToken = new Date().getTime() + "|" + RENEWAL_UUID;
+
         when(userService.getUser(authCredentials)).thenReturn(validUser);
         when(encryptor.encrypt(any(String.class))).thenReturn(ENCRYPTED_TOKEN_STRING);
+        when(encryptor.decrypt(any(String.class))).thenReturn(renewalToken).thenReturn(authToken);
 
         AuthUser authUser = authenticationService.authenticateUser(authCredentials);
 
@@ -375,28 +396,31 @@ public class AuthenticationServiceTest {
 
         // inspect the unencrypted token string
         List<String> keys = encryptStringCaptor.getAllValues();
+
         String key = keys.get(0);
         String[] keyPieces = StringUtils.splitPreserveAllTokens(key, '|');
-        assertEquals("Key missing data", 4, keyPieces.length);
-        // make sure the UUID is not null
-        assertTrue("No UUID in key", StringUtils.isNotEmpty(keyPieces[0]));
-        // make sure we have a timestamp
-        assertTrue("No timestamp in key", StringUtils.isNotEmpty(keyPieces[1]));
-        // make sure it is a guest role
-        assertEquals("Wrong role", Role.AUTHENTICATED.name(), keyPieces[2]);
-        // make sure user id is empty
-        assertEquals("user id should be in key", USER_ID, keyPieces[3]);
-        // make sure returning the encrypting key
-        assertEquals("Wrong token generated", ENCRYPTED_TOKEN_STRING, authUser.getAuthToken().getToken());
-
-        key = keys.get(1);
-        keyPieces = StringUtils.splitPreserveAllTokens(key, '|');
         //Verify the renewal token
         assertEquals("Renewal key missing data", 2, keyPieces.length);
         // make sure the UUID is not null
         assertTrue("No UUID in renewal key", StringUtils.isNotEmpty(keyPieces[0]));
         // make sure we have a timestamp
         assertTrue("No timestamp in renewal key", StringUtils.isNotEmpty(keyPieces[1]));
+
+        key = keys.get(1);
+        keyPieces = StringUtils.splitPreserveAllTokens(key, '|');
+        assertEquals("Key missing data", 5, keyPieces.length);
+        // make sure the UUID is not null
+        assertTrue("No UUID in key", StringUtils.isNotEmpty(keyPieces[0]));
+        // make sure we have a timestamp
+        assertTrue("No timestamp in key", StringUtils.isNotEmpty(keyPieces[1]));
+        // make sure it is a guest role
+        assertEquals("Wrong role", Role.AUTHENTICATED.name(), keyPieces[2]);
+        // make sure user id is not empty
+        assertEquals("user id should be in key", USER_ID, keyPieces[3]);
+        // make sure user id is empty
+        assertEquals("renewal UUID should be in key", RENEWAL_UUID, keyPieces[4]);
+        // make sure returning the encrypting key
+        assertEquals("Wrong token generated", ENCRYPTED_TOKEN_STRING, authUser.getAuthToken().getToken());
 
         // very correct user returned
         assertSame("wrong user", validUser, authUser.getUser());
@@ -454,6 +478,56 @@ public class AuthenticationServiceTest {
         authenticationService.verifyUser(request, USER_ID);
 
         verify(request).getAttribute(authUserAttribute);
+    }
+
+    @Test
+    public void testReAuthenticateUser_Success() throws Exception {
+//        String currentTime = Long.toString(new Date().getTime());
+//        String authToken = "de703f00-8c20-4c74-a254-277e2020244b|"
+//                + currentTime + "|" + Role.AUTHENTICATED + "|" + USER_ID + "|" + RENEWAL_UUID;
+//        String renewalToken = RENEWAL_UUID + "|" + currentTime;
+//        String encryptedAuthToken = encryptor.encrypt(authToken);
+//        String encryptedRenewalToken = encryptor.encrypt(renewalToken);
+
+//        when(userService.getUser(authCredentials)).thenReturn(validUser);
+//        when(encryptor.encrypt(any(String.class))).thenReturn(ENCRYPTED_TOKEN_STRING);
+//        when(encryptor.decrypt(any(String.class))).thenReturn(renewalToken).thenReturn(authToken);
+//
+//        AuthUser authUser = authenticationService.authenticateUser(authCredentials);
+//
+//        verify(userService).getUser(authCredentials);
+//        verify(encryptor, times(2)).encrypt(encryptStringCaptor.capture());
+//
+//        // inspect the unencrypted token string
+//        List<String> keys = encryptStringCaptor.getAllValues();
+//
+//        String key = keys.get(0);
+//        String[] keyPieces = StringUtils.splitPreserveAllTokens(key, '|');
+//        //Verify the renewal token
+//        assertEquals("Renewal key missing data", 2, keyPieces.length);
+//        // make sure the UUID is not null
+//        assertTrue("No UUID in renewal key", StringUtils.isNotEmpty(keyPieces[0]));
+//        // make sure we have a timestamp
+//        assertTrue("No timestamp in renewal key", StringUtils.isNotEmpty(keyPieces[1]));
+//
+//        key = keys.get(1);
+//        keyPieces = StringUtils.splitPreserveAllTokens(key, '|');
+//        assertEquals("Key missing data", 5, keyPieces.length);
+//        // make sure the UUID is not null
+//        assertTrue("No UUID in key", StringUtils.isNotEmpty(keyPieces[0]));
+//        // make sure we have a timestamp
+//        assertTrue("No timestamp in key", StringUtils.isNotEmpty(keyPieces[1]));
+//        // make sure it is a guest role
+//        assertEquals("Wrong role", Role.AUTHENTICATED.name(), keyPieces[2]);
+//        // make sure user id is not empty
+//        assertEquals("user id should be in key", USER_ID, keyPieces[3]);
+//        // make sure user id is empty
+//        assertEquals("renewal UUID should be in key", RENEWAL_UUID, keyPieces[4]);
+//        // make sure returning the encrypting key
+//        assertEquals("Wrong token generated", ENCRYPTED_TOKEN_STRING, authUser.getAuthToken().getToken());
+//
+//        // very correct user returned
+//        assertSame("wrong user", validUser, authUser.getUser());
     }
 
 }

@@ -13,8 +13,6 @@ public class AuthCredentials {
     @JsonProperty("password")
     protected String password;
 
-    protected AuthCredentials(){}
-
     /**
      * Construct the auth credentials.
      * @param username the username.
