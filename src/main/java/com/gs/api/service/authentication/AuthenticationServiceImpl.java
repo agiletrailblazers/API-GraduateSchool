@@ -38,6 +38,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     static final String INVALID_USER_MSG = "Invalid user";
     static final String ERROR_AUTHENTICATING_USER_MSG = "Error authenticating user";
     static final String TOKEN_IS_NOT_AUTHENTICATED_MSG = "Token is not authenticated";
+    static final String USER_IS_NOT_AUTHENTICATED_MSG = "User is not authenticated";
+    static final String RENEWAL_TOKEN_INVALID_MSG = "Renewal token is invalid";
+    static final String RENEWAL_TOKEN_EXPIRED_MSG = "Renewal token has expired";
 
     final Logger logger = LoggerFactory.getLogger(AuthenticationServiceImpl.class);
 
@@ -133,23 +136,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             }
             else {
                 // authenticated tokens must have a user id
-                throw new AuthenticationException(TOKEN_USER_IS_NOT_VALID_MSG);
-            }
-        }
-        else {
-            throw new AuthenticationException(TOKEN_IS_NOT_AUTHENTICATED_MSG);
-        }
-    }
-
-    private void validateAuthenticatedToken(String token) throws AuthenticationException {
-        String[] tokenFields = performBasicValidationFromAuthTokenString(token);
-
-        Role role = Role.valueOf(tokenFields[TOKEN_FIELD_ROLE_INDEX]);
-
-        // verify that the token is authenticated
-        if (role == Role.AUTHENTICATED) {
-            // verify the token has a user
-            if (StringUtils.isBlank(tokenFields[TOKEN_FIELD_USER_INDEX])) {
                 throw new AuthenticationException(TOKEN_USER_IS_NOT_VALID_MSG);
             }
         }
@@ -288,42 +274,46 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public AuthToken reAuthenticateUser(ReAuthCredentials reAuthCredentials) throws AuthenticationException {
 
-        validateAuthenticatedToken(reAuthCredentials.getAuthToken().getToken());
-
         String[] authTokenParams = performBasicValidationFromAuthTokenString(reAuthCredentials.getAuthToken().getToken());
-        String[] renewalTokenParams = getRenewalTokenPieces(reAuthCredentials.getRenewalToken().getToken());
-
+        //Token should not be valid if it will expire in next 30 seconds
+        long authTokenTime = Long.parseLong(authTokenParams[TOKEN_FIELD_TIMESTAMP_INDEX]);
+        // convert expire time from seconds to milliseconds
+        long authTokenExpire = (authTokenExpireMinutes * 60 * 1000) - 30000;
         // check if token is expired
         long currentTime = new Date().getTime();
-        //Token should not be valid if it will expire in next 30 seconds
-        long authTokenTime = Long.parseLong(authTokenParams[TOKEN_FIELD_TIMESTAMP_INDEX]) - 30;
-        long renewalTokenTime = Long.parseLong(renewalTokenParams[TOKEN_FIELD_TIMESTAMP_INDEX]);
-        // convert expire time from seconds to milliseconds
-        long authTokenExpire = authTokenExpireMinutes * 60 * 1000;
-        long renewalTokenExpire = renewalTokenExpireMinutes * 60 * 1000;
 
+        if (!authTokenParams[TOKEN_FIELD_ROLE_INDEX].equals(Role.AUTHENTICATED.name())){
+            //Not an authenticated user token
+            //Return a 401
+            throw new AuthenticationException(USER_IS_NOT_AUTHENTICATED_MSG);
+        }
         //If authtoken is not expired and will not expire within the next 30 seconds
-        if ((authTokenTime + authTokenExpire) < currentTime){
+        else if ((authTokenTime + authTokenExpire) > currentTime){
             return null;
         }
 
+        String[] renewalTokenParams = getRenewalTokenPieces(reAuthCredentials.getRenewalToken().getToken());
+
+        long renewalTokenTime = Long.parseLong(renewalTokenParams[TOKEN_FIELD_TIMESTAMP_INDEX]);
+        long renewalTokenExpire = renewalTokenExpireMinutes * 60 * 1000;
+
         //If renewal token has not expired
-        if ((renewalTokenTime + renewalTokenExpire) < currentTime){
+        if ((renewalTokenTime + renewalTokenExpire) > currentTime){
 
             //If renewal UUID in renewal token and authtoken match generate a new authtoken
-            if (authTokenParams[TOKEN_FIELD_RENEWAL_UUID_INDEX].equals(renewalTokenParams[TOKEN_FIELD_RENEWAL_UUID_INDEX])) {
+            if (authTokenParams[TOKEN_FIELD_RENEWAL_UUID_INDEX].equals(renewalTokenParams[TOKEN_FIELD_UUID_INDEX])) {
                 return generateToken(authTokenParams[TOKEN_FIELD_USER_INDEX], Role.AUTHENTICATED, renewalTokenParams[TOKEN_FIELD_UUID_INDEX]);
             }
 
             else {
                 //Return a 401
-                throw new AuthenticationException("Renewal token is invalid");
+                throw new AuthenticationException(RENEWAL_TOKEN_INVALID_MSG);
             }
 
         }
         else {
             //Return a 401
-            throw new AuthenticationException("Renewal token has expired");
+            throw new AuthenticationException(RENEWAL_TOKEN_EXPIRED_MSG);
         }
     }
 }

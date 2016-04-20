@@ -481,53 +481,214 @@ public class AuthenticationServiceTest {
     }
 
     @Test
-    public void testReAuthenticateUser_Success() throws Exception {
-//        String currentTime = Long.toString(new Date().getTime());
-//        String authToken = "de703f00-8c20-4c74-a254-277e2020244b|"
-//                + currentTime + "|" + Role.AUTHENTICATED + "|" + USER_ID + "|" + RENEWAL_UUID;
-//        String renewalToken = RENEWAL_UUID + "|" + currentTime;
-//        String encryptedAuthToken = encryptor.encrypt(authToken);
-//        String encryptedRenewalToken = encryptor.encrypt(renewalToken);
+    public void testReAuthenticateUser_CurrentTokenNotExpired_Success() throws Exception {
+        String currentTime = Long.toString(new Date().getTime() - 60000);
+        String authTokenString = "de703f00-8c20-4c74-a254-277e2020244b|"
+                + currentTime + "|" + Role.AUTHENTICATED + "|" + USER_ID + "|" + RENEWAL_UUID;
+        String renewalTokenString = RENEWAL_UUID + "|" + currentTime;
 
-//        when(userService.getUser(authCredentials)).thenReturn(validUser);
-//        when(encryptor.encrypt(any(String.class))).thenReturn(ENCRYPTED_TOKEN_STRING);
-//        when(encryptor.decrypt(any(String.class))).thenReturn(renewalToken).thenReturn(authToken);
-//
-//        AuthUser authUser = authenticationService.authenticateUser(authCredentials);
-//
-//        verify(userService).getUser(authCredentials);
-//        verify(encryptor, times(2)).encrypt(encryptStringCaptor.capture());
-//
-//        // inspect the unencrypted token string
-//        List<String> keys = encryptStringCaptor.getAllValues();
-//
-//        String key = keys.get(0);
-//        String[] keyPieces = StringUtils.splitPreserveAllTokens(key, '|');
-//        //Verify the renewal token
-//        assertEquals("Renewal key missing data", 2, keyPieces.length);
-//        // make sure the UUID is not null
-//        assertTrue("No UUID in renewal key", StringUtils.isNotEmpty(keyPieces[0]));
-//        // make sure we have a timestamp
-//        assertTrue("No timestamp in renewal key", StringUtils.isNotEmpty(keyPieces[1]));
-//
-//        key = keys.get(1);
-//        keyPieces = StringUtils.splitPreserveAllTokens(key, '|');
-//        assertEquals("Key missing data", 5, keyPieces.length);
-//        // make sure the UUID is not null
-//        assertTrue("No UUID in key", StringUtils.isNotEmpty(keyPieces[0]));
-//        // make sure we have a timestamp
-//        assertTrue("No timestamp in key", StringUtils.isNotEmpty(keyPieces[1]));
-//        // make sure it is a guest role
-//        assertEquals("Wrong role", Role.AUTHENTICATED.name(), keyPieces[2]);
-//        // make sure user id is not empty
-//        assertEquals("user id should be in key", USER_ID, keyPieces[3]);
-//        // make sure user id is empty
-//        assertEquals("renewal UUID should be in key", RENEWAL_UUID, keyPieces[4]);
-//        // make sure returning the encrypting key
-//        assertEquals("Wrong token generated", ENCRYPTED_TOKEN_STRING, authUser.getAuthToken().getToken());
-//
-//        // very correct user returned
-//        assertSame("wrong user", validUser, authUser.getUser());
+
+        when(encryptor.encrypt(any(String.class))).thenReturn(ENCRYPTED_TOKEN_STRING);
+        when(encryptor.decrypt(any(String.class))).thenReturn(authTokenString).thenReturn(renewalTokenString);
+
+        AuthToken currentAuthToken = new AuthToken(ENCRYPTED_TOKEN_STRING);
+        RenewalToken currentRenewalToken = new RenewalToken(ENCRYPTED_TOKEN_STRING);
+
+        ReAuthCredentials reAuthCredentials = new ReAuthCredentials(currentAuthToken, currentRenewalToken);
+
+        AuthToken authToken = authenticationService.reAuthenticateUser(reAuthCredentials);
+
+        assertEquals("AuthToken should be null", authToken, null);
+    }
+
+    @Test
+    public void testReAuthenticateUser_AuthTokenExpired_Success() throws Exception {
+        long currentTime = new Date().getTime();
+        String timeString = Long.toString(currentTime - (35 *60 * 1000));
+        String authTokenString = "de703f00-8c20-4c74-a254-277e2020244b|"
+                + timeString + "|" + Role.AUTHENTICATED + "|" + USER_ID + "|" + RENEWAL_UUID;
+        String renewalTokenString = RENEWAL_UUID + "|" + timeString;
+
+
+        when(encryptor.encrypt(any(String.class))).thenReturn(ENCRYPTED_TOKEN_STRING);
+        when(encryptor.decrypt(any(String.class))).thenReturn(authTokenString).thenReturn(renewalTokenString);
+
+        AuthToken currentAuthToken = new AuthToken(ENCRYPTED_TOKEN_STRING);
+        RenewalToken currentRenewalToken = new RenewalToken(ENCRYPTED_TOKEN_STRING);
+
+        ReAuthCredentials reAuthCredentials = new ReAuthCredentials(currentAuthToken, currentRenewalToken);
+
+        AuthToken authToken = authenticationService.reAuthenticateUser(reAuthCredentials);
+
+        verify(encryptor).encrypt(encryptStringCaptor.capture());
+
+        String key = encryptStringCaptor.getValue();
+        String[] keyPieces = StringUtils.splitPreserveAllTokens(key, '|');
+        assertEquals("Key missing data", 5, keyPieces.length);
+        // make sure the UUID is not null
+        assertTrue("No UUID in key", StringUtils.isNotEmpty(keyPieces[0]));
+        // make sure we have a timestamp
+        assertTrue("No timestamp in key", StringUtils.isNotEmpty(keyPieces[1]));
+        // make sure it is a guest role
+        assertEquals("Wrong role", Role.AUTHENTICATED.name(), keyPieces[2]);
+        // make sure user id is not empty
+        assertEquals("user id should be in key", USER_ID, keyPieces[3]);
+        // make sure renewal UUID is empty
+        assertEquals("renewal UUID should be in key", RENEWAL_UUID, keyPieces[4]);
+        // make sure returning the encrypting key
+        assertEquals("Wrong token generated", ENCRYPTED_TOKEN_STRING, authToken.getToken());
+
+    }
+
+    @Test
+    public void testReAuthenticateUser_RenewalTokenExpired() throws Exception {
+        long currentTime = new Date().getTime();
+        String timeString = Long.toString(currentTime - (24 * 60 * 60 * 1000));
+        String authTokenString = "de703f00-8c20-4c74-a254-277e2020244b|"
+                + timeString + "|" + Role.AUTHENTICATED + "|" + USER_ID + "|" + RENEWAL_UUID;
+        String renewalTokenString = RENEWAL_UUID + "|" + timeString;
+
+        when(encryptor.decrypt(any(String.class))).thenReturn(authTokenString).thenReturn(renewalTokenString);
+
+        AuthToken currentAuthToken = new AuthToken(ENCRYPTED_TOKEN_STRING);
+        RenewalToken currentRenewalToken = new RenewalToken(ENCRYPTED_TOKEN_STRING);
+
+        ReAuthCredentials reAuthCredentials = new ReAuthCredentials(currentAuthToken, currentRenewalToken);
+
+        try {
+            authenticationService.reAuthenticateUser(reAuthCredentials);
+
+            //Should not reach this line
+            assertTrue(false);
+        } catch (Exception e){
+            assertTrue(e.getMessage().equals("Renewal token has expired"));
+        }
+
+    }
+
+    @Test
+    public void testReAuthenticateUser_RenewalTokenMissing() throws Exception {
+        long currentTime = new Date().getTime();
+        String timeString = Long.toString(currentTime - (35 *60 * 1000));
+        String authTokenString = "de703f00-8c20-4c74-a254-277e2020244b|"
+                + timeString + "|" + Role.AUTHENTICATED + "|" + USER_ID + "|" + RENEWAL_UUID;
+        String renewalTokenString = "";
+        when(encryptor.decrypt(any(String.class))).thenReturn(authTokenString).thenReturn(renewalTokenString);
+
+        AuthToken currentAuthToken = new AuthToken(ENCRYPTED_TOKEN_STRING);
+        RenewalToken currentRenewalToken = new RenewalToken("");
+
+        ReAuthCredentials reAuthCredentials = new ReAuthCredentials(currentAuthToken, currentRenewalToken);
+
+        try {
+            authenticationService.reAuthenticateUser(reAuthCredentials);
+
+            //Should not reach this line
+            assertTrue(false);
+        } catch (Exception e){
+            assertTrue(e.getMessage().equals("Missing required renewal token"));
+        }
+
+    }
+
+    @Test
+    public void testReAuthenticateUser_RenewalTokenInvalidTimestamp() throws Exception {
+        long currentTime = new Date().getTime();
+        String timeString = Long.toString(currentTime - (35 *60 * 1000));
+        String authTokenString = "de703f00-8c20-4c74-a254-277e2020244b|"
+                + timeString + "|" + Role.AUTHENTICATED + "|" + USER_ID + "|" + RENEWAL_UUID;
+        String renewalTokenString = RENEWAL_UUID + "|invalidTimestamp";
+        when(encryptor.decrypt(any(String.class))).thenReturn(authTokenString).thenReturn(renewalTokenString);
+
+        AuthToken currentAuthToken = new AuthToken(ENCRYPTED_TOKEN_STRING);
+        RenewalToken currentRenewalToken = new RenewalToken(ENCRYPTED_TOKEN_STRING);
+
+        ReAuthCredentials reAuthCredentials = new ReAuthCredentials(currentAuthToken, currentRenewalToken);
+
+        try {
+            authenticationService.reAuthenticateUser(reAuthCredentials);
+
+            //Should not reach this line
+            assertTrue(false);
+        } catch (Exception e){
+            assertTrue(e.getMessage().equals("Token timestamp is not valid"));
+        }
+
+    }
+
+    @Test
+    public void testReAuthenticateUser_RenewalTokenInvalidUUID() throws Exception {
+        long currentTime = new Date().getTime();
+        String timeString = Long.toString(currentTime - (35 *60 * 1000));
+        String authTokenString = "de703f00-8c20-4c74-a254-277e2020244b|"
+                + timeString + "|" + Role.AUTHENTICATED + "|" + USER_ID + "|" + RENEWAL_UUID;
+        String renewalTokenString = "invalidUUID|" + timeString;
+        when(encryptor.decrypt(any(String.class))).thenReturn(authTokenString).thenReturn(renewalTokenString);
+
+        AuthToken currentAuthToken = new AuthToken(ENCRYPTED_TOKEN_STRING);
+        RenewalToken currentRenewalToken = new RenewalToken(ENCRYPTED_TOKEN_STRING);
+
+        ReAuthCredentials reAuthCredentials = new ReAuthCredentials(currentAuthToken, currentRenewalToken);
+
+        try {
+            authenticationService.reAuthenticateUser(reAuthCredentials);
+
+            //Should not reach this line
+            assertTrue(false);
+        } catch (Exception e){
+            assertTrue(e.getMessage().equals("Token renewal uuid is not valid"));
+        }
+
+    }
+
+    @Test
+    public void testReAuthenticateUser_RenewalKeysDifferInAuthTokenAndRenewalToken() throws Exception {
+        long currentTime = new Date().getTime();
+        String timeString = Long.toString(currentTime - (35 *60 * 1000));
+        String authTokenString = "de703f00-8c20-4c74-a254-277e2020244b|"
+                + timeString + "|" + Role.AUTHENTICATED + "|" + USER_ID + "|" + "de703f00-8c20-4c74-a254-277e2020244c";
+        String renewalTokenString = RENEWAL_UUID + "|" + timeString;
+        when(encryptor.decrypt(any(String.class))).thenReturn(authTokenString).thenReturn(renewalTokenString);
+
+        AuthToken currentAuthToken = new AuthToken(ENCRYPTED_TOKEN_STRING);
+        RenewalToken currentRenewalToken = new RenewalToken(ENCRYPTED_TOKEN_STRING);
+
+        ReAuthCredentials reAuthCredentials = new ReAuthCredentials(currentAuthToken, currentRenewalToken);
+
+        try {
+            authenticationService.reAuthenticateUser(reAuthCredentials);
+
+            //Should not reach this line
+            assertTrue(false);
+        } catch (Exception e){
+            assertTrue(e.getMessage().equals("Renewal token is invalid"));
+        }
+
+    }
+
+    @Test
+    public void testReAuthenticateUser_reAuthenticateWithGuestRole () throws Exception {
+        long currentTime = new Date().getTime();
+        String timeString = Long.toString(currentTime - (35 *60 * 1000));
+        String authTokenString = "de703f00-8c20-4c74-a254-277e2020244b|"
+                + timeString + "|" + Role.GUEST + "||";
+        String renewalTokenString = RENEWAL_UUID + "|" + timeString;
+        when(encryptor.decrypt(any(String.class))).thenReturn(authTokenString).thenReturn(renewalTokenString);
+
+        AuthToken currentAuthToken = new AuthToken(ENCRYPTED_TOKEN_STRING);
+        RenewalToken currentRenewalToken = new RenewalToken(ENCRYPTED_TOKEN_STRING);
+
+        ReAuthCredentials reAuthCredentials = new ReAuthCredentials(currentAuthToken, currentRenewalToken);
+
+        try {
+            authenticationService.reAuthenticateUser(reAuthCredentials);
+
+            //Should not reach this line
+            assertTrue(false);
+        } catch (Exception e){
+            assertTrue(e.getMessage().equals("User is not authenticated"));
+        }
+
     }
 
 }
