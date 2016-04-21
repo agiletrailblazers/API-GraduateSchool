@@ -28,7 +28,7 @@ This is the source repository for the REST API Application layer used by the Gra
     2. Add the following Tomcat VM argument to specify the location of the CyberSource directory
     `-DcybersourceDir=fullPathToCyberSourceDir`
     3. Update the version of Java that is being used by Tomcat with the security jars that support the type of key used by CyberSource.  Replace [JAVA_HOME]/jre/lib/security/local_policy.jar and [JAVA_HOME]/jre/lib/security/US_export_policy.jar with the versions that can be downloaded from http://confluence.agiletrailblazers.com/display/GS/Cybersource+Simple+Order+API+Security+Certificates
-2. Required configuration to specify which environment configuration should be used
+2. Required configuration to specify which environment configuration should be used by updating the catalina.sh file with the below CATALINA_OPTS.
     * Dev:  `-DpropertiesLoc=/properties/dev`
     * Test: `-DpropertiesLoc=/properties/test`
 
