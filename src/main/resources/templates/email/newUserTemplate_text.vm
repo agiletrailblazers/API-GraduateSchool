@@ -1,11 +1,9 @@
-Graduate School USA
--------------------
-
+#parse("templates/email/partials/emailTemplateTop_text.vm")
+## start email specific content
 Thank you for setting up a self-service account with the Graduate School USA. With your self-service account, you'll have the ability to register online, view your upcoming and previously taken classes, and more. We hope that it makes it easy to manage your learning with us.
  
 You can access your account at anytime by logging into the Graduate School USA website at $accountPage. You can update your account information by using the 'My Account' feature.
 
 The security of your account information is important to us - please review our privacy policy for more information at $privacyPolicy. We look forward to serving your learning needs. Please be sure to save this email for future reference.
-
-Thank you!
-Graduate School USA
+## end email specific content
+#parse("templates/email/partials/emailTemplateBottom_text.vm")

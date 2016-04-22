@@ -4,7 +4,9 @@ import com.gs.api.domain.Address;
 import com.gs.api.domain.Person;
 import com.gs.api.domain.registration.Timezone;
 import com.gs.api.domain.registration.User;
+
 import oracle.jdbc.OracleTypes;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,13 +19,14 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.stereotype.Repository;
 
-import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+
+import javax.sql.DataSource;
 
 @Repository
 public class UserDAO {
@@ -56,6 +59,9 @@ public class UserDAO {
 
     @Value("${sql.user.single.query}")
     private String sqlForSingleUser;
+
+    @Value("${sql.user.username.query}")
+    private String sqlForUserByUsername;
 
     @Value("${sql.user.timezones.query}")
     private String sqlForTimezones;
@@ -110,7 +116,6 @@ public class UserDAO {
      */
     public User getUser(String username, String password) {
         logger.debug("Getting user by username {} and supplied password", username);
-        logger.debug(sqlForUserLogin);
         try {
             User user = this.jdbcTemplate.queryForObject(sqlForUserLogin, new Object[] { username, password },
                     new UserRowMapper());
@@ -142,6 +147,32 @@ public class UserDAO {
 
         // throws sql exception for failure
         return true;
+    }
+
+    /**
+     * Get user details by the username
+     * @param username the username
+     * @return the user or null if no user found matching the supplied username
+     */
+    public User getUserByUsername(String username) {
+
+        logger.debug("Getting user by username {}", username);
+        try {
+            User user = this.jdbcTemplate.queryForObject(sqlForUserByUsername, new Object[] { username },
+                    new UserRowMapper());
+
+            logger.debug("Found user with username {}", username);
+            return user;
+        }
+        catch (IncorrectResultSizeDataAccessException e) {
+            logger.debug("Expected 1 user with username {}, found {}", username, e.getActualSize());
+            return null;
+        }
+    }
+
+    public void resetPassword(String userId, String newPassword) throws Exception {
+
+        // TODO implement this
     }
 
     /**

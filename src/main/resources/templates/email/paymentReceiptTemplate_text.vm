@@ -1,6 +1,5 @@
-Graduate School USA
--------------------
-
+#parse("templates/email/partials/emailTemplateTop_text.vm")
+## start email specific content
 This receipt is for a credit card transaction with the Graduate School USA as described below in ORDER INFORMATION.
 Please note that the Total Amount Charged on this credit card may be less than the Order Total if the payment included
 multiple payments (e.g., more than one credit card, check and credit card, etc.)
@@ -46,6 +45,5 @@ Date(s):               #if($registration.dates)$registration.dates#if($registrat
 Email:                 $registration.email
 #set( $count = $count + 1 )
 #end
-
-Thank you!
-Graduate School USA
+## end email specific content
+#parse("templates/email/partials/emailTemplateBottom_text.vm")

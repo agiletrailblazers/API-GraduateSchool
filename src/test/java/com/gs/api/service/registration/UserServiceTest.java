@@ -7,8 +7,9 @@ import com.gs.api.domain.authentication.AuthCredentials;
 import com.gs.api.domain.registration.Timezone;
 import com.gs.api.domain.registration.User;
 import com.gs.api.exception.NotFoundException;
-
 import com.gs.api.service.email.EmailService;
+
+import org.apache.commons.lang.RandomStringUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -16,10 +17,9 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -27,16 +27,15 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import static org.mockito.Matchers.any;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
+import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = { "classpath:spring/test-root-context.xml" })
+@RunWith(PowerMockRunner.class)
+@PrepareForTest(RandomStringUtils.class)
 public class UserServiceTest {
 
     private static final String USER_ID = "pern0000123123123123";
@@ -50,6 +49,8 @@ public class UserServiceTest {
     private static final String ADDRESS_STATE = "MA";
     private static final String ADDRESS_ZIP = "55555";
     private static final String PHONE = "555-555-5555";
+    // don't change either of these password values, they match the encryption implementation
+    private static final String PASSWORD_CLEAR = "test1234";
     private static final String PASSWORD_ENCRYPTED = "937E8D5FBB48BD4949536CD65B8D35C426B80D2F830C5C308E2CDEC422AE2244";
     private static final String DOB = "05/05/1955";
     private static final String LAST_FOUR_SSN = "5555";
@@ -63,7 +64,6 @@ public class UserServiceTest {
     private EmailService emailService;
 
     @InjectMocks
-    @Autowired
     private UserServiceImpl userService;
 
     /*
@@ -75,7 +75,8 @@ public class UserServiceTest {
 
     @Before
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+
+        mockStatic(RandomStringUtils.class);
 
         user = new User();
         user.setId(USER_ID);
@@ -183,7 +184,7 @@ public class UserServiceTest {
         Timezone expectedTimezone = new Timezone();
         expectedTimezone.setId("tmz123");
         expectedTimezone.setName("Easternish");
-        List<Timezone> expectedList  = new ArrayList<Timezone>();
+        List<Timezone> expectedList  = new ArrayList<>();
         expectedList.add(expectedTimezone);
         when(userDao.getTimezones()).thenReturn(expectedList);
         List<Timezone> returnedTimezones = userService.getTimezones();
@@ -196,14 +197,93 @@ public class UserServiceTest {
     @Test
     public void testGetTimezones_RuntimeException() throws Exception {
 
-        when(userDao.getTimezones()).thenThrow(new RuntimeException("random exception"));
+        final RuntimeException expectedException = new RuntimeException("random exception");
+        when(userDao.getTimezones()).thenThrow(expectedException);
+
+        // setup expected exception
+        thrown.expect(RuntimeException.class);
+        thrown.expectMessage(expectedException.getMessage());
+
+        userService.getTimezones();
+    }
+
+    @Test
+    public void testForgotPassword() throws Exception {
+
+        AuthCredentials acr = new AuthCredentials(user.getUsername(), null);
+        when(userDao.getUserByUsername(user.getUsername())).thenReturn(user);
+
+        when(RandomStringUtils.randomAlphanumeric(10)).thenReturn(PASSWORD_CLEAR);
+
+        userService.forgotPassword(acr);
+
+        PowerMockito.verifyStatic();
+        RandomStringUtils.randomAlphanumeric(10);
+
+        verify(userDao).getUserByUsername(user.getUsername());
+        verify(userDao).resetPassword(USER_ID, PASSWORD_ENCRYPTED);
+        verify(emailService).sendPasswordResetEmail(user, PASSWORD_CLEAR);
+    }
+
+    @Test
+    public void testForgotPassword_userNotFound() throws Exception {
+
+        AuthCredentials acr = new AuthCredentials(user.getUsername(), null);
+        when(userDao.getUserByUsername(user.getUsername())).thenReturn(null);
+
+        // setup expected exception
+        thrown.expect(NotFoundException.class);
+        thrown.expectMessage("No user found with name " + acr.getUsername());
+
+        userService.forgotPassword(acr);
+    }
+
+    @Test
+    public void testForgotPassword_emailNotSentOnFailure() throws Exception {
+
+        AuthCredentials acr = new AuthCredentials(user.getUsername(), null);
+        when(userDao.getUserByUsername(user.getUsername())).thenReturn(user);
+
+        final RuntimeException expectedException = new RuntimeException("test password reset failure");
+        doThrow(expectedException).when(userDao).resetPassword(USER_ID, PASSWORD_ENCRYPTED);
+
+        when(RandomStringUtils.randomAlphanumeric(10)).thenReturn(PASSWORD_CLEAR);
+
         try {
-            userService.getTimezones();
-            assertTrue(false); //Should never reach this line
+            userService.forgotPassword(acr);
         }
-        catch (Exception e) {
-            assertNotNull(e);
-            assertTrue(e instanceof Exception);
+        catch (RuntimeException e) {
+            if (e != expectedException) {
+                fail("Unexpected exception");
+            }
         }
+
+        PowerMockito.verifyStatic();
+        RandomStringUtils.randomAlphanumeric(10);
+
+        verify(userDao).getUserByUsername(user.getUsername());
+        verify(userDao).resetPassword(USER_ID, PASSWORD_ENCRYPTED);
+        verifyZeroInteractions(emailService);
+    }
+
+    @Test
+    public void testForgotPassword_emailFailure() throws Exception {
+
+        AuthCredentials acr = new AuthCredentials(user.getUsername(), null);
+        when(userDao.getUserByUsername(user.getUsername())).thenReturn(user);
+
+        final RuntimeException expectedException = new RuntimeException("test send email failure");
+        doThrow(expectedException).when(emailService).sendPasswordResetEmail(user, PASSWORD_CLEAR);
+
+        when(RandomStringUtils.randomAlphanumeric(10)).thenReturn(PASSWORD_CLEAR);
+
+        userService.forgotPassword(acr);
+
+        PowerMockito.verifyStatic();
+        RandomStringUtils.randomAlphanumeric(10);
+
+        verify(userDao).getUserByUsername(user.getUsername());
+        verify(userDao).resetPassword(USER_ID, PASSWORD_ENCRYPTED);
+        verify(emailService).sendPasswordResetEmail(user, PASSWORD_CLEAR);
     }
 }

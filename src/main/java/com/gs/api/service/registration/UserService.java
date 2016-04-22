@@ -46,4 +46,11 @@ public interface UserService {
      */
     List<Timezone> getTimezones() throws Exception;
 
+    /**
+     * Create and reset the password for the specified user.
+     * @param authCredentials user credentials containing username.
+     * @throws Exception Error resetting the password.
+     */
+    void forgotPassword(final AuthCredentials authCredentials) throws Exception;
+
 }

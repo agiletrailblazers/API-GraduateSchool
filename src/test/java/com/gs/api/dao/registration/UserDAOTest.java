@@ -50,6 +50,9 @@ public class UserDAOTest {
     @Value("${sql.user.timezones.query}")
     private String sqlForTimezones;
 
+    @Value("${sql.user.username.query}")
+    private String sqlForUserByUsername;
+
     @Value("${sql.user.personInsert.procedure}")
     private String insertUserStoredProcedureName;
     @Value("${sql.user.profileInsert.procedure}")
@@ -510,6 +513,43 @@ public class UserDAOTest {
         User returnedUser = userDAO.getUser(USER_ID, PASSWORD);
 
         verify(jdbcTemplate).queryForObject(eq(sqlForUserLogin), singleUserQueryParamsCaptor.capture(), any(UserDAO.UserRowMapper.class));
+
+        Object[] capturedQueryParams = singleUserQueryParamsCaptor.getValue();
+        assertNotNull("Expected parameters", capturedQueryParams);
+        assertArrayEquals("wrong parameters", expectedQueryParams, capturedQueryParams);
+
+        assertNull("No user should be found", returnedUser);
+    }
+
+    @Test
+    public void testGetUserByUsername() throws Exception {
+        Object[] expectedQueryParams = new Object[] { USERNAME};
+
+        when(jdbcTemplate.queryForObject(anyString(), any(Object[].class), any(UserDAO.UserRowMapper.class))).
+                thenReturn(user);
+
+        User returnedUser = userDAO.getUserByUsername(USERNAME);
+
+        verify(jdbcTemplate).queryForObject(eq(sqlForUserByUsername), singleUserQueryParamsCaptor.capture(), any(UserDAO.UserRowMapper.class));
+
+        Object[] capturedQueryParams = singleUserQueryParamsCaptor.getValue();
+        assertNotNull("Expected parameters", capturedQueryParams);
+        assertArrayEquals("wrong parameters", expectedQueryParams, capturedQueryParams);
+
+        assertNotNull("Expected a user to be found", returnedUser);
+        assertSame("Wrong user", user, returnedUser);
+    }
+
+    @Test
+    public void testGetUserByUsername_InvalidUser() throws Exception {
+        Object[] expectedQueryParams = new Object[] { USERNAME};
+
+        when(jdbcTemplate.queryForObject(anyString(), any(Object[].class), any(UserDAO.UserRowMapper.class))).
+                thenThrow(new IncorrectResultSizeDataAccessException("No results found", 1));
+
+        User returnedUser = userDAO.getUserByUsername(USERNAME);
+
+        verify(jdbcTemplate).queryForObject(eq(sqlForUserByUsername), singleUserQueryParamsCaptor.capture(), any(UserDAO.UserRowMapper.class));
 
         Object[] capturedQueryParams = singleUserQueryParamsCaptor.getValue();
         assertNotNull("Expected parameters", capturedQueryParams);

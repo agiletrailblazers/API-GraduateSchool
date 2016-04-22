@@ -3,6 +3,7 @@ package com.gs.api.controller.registration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gs.api.domain.Address;
 import com.gs.api.domain.Person;
+import com.gs.api.domain.authentication.AuthCredentials;
 import com.gs.api.domain.registration.Timezone;
 import com.gs.api.domain.registration.User;
 import com.gs.api.exception.NotFoundException;
@@ -30,6 +31,9 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
@@ -59,6 +63,9 @@ public class UserControllerTest {
 
     @Captor
     private ArgumentCaptor<User> capturedUser;
+
+    @Captor
+    private ArgumentCaptor<AuthCredentials> capturedAuthCredentials;
 
     @Before
     public void setUp() throws Exception {
@@ -156,7 +163,7 @@ public class UserControllerTest {
         Timezone expectedTimezone = new Timezone();
         expectedTimezone.setId("tmz123");
         expectedTimezone.setName("Easternish");
-        List<Timezone> expectedList  = new ArrayList<Timezone>();
+        List<Timezone> expectedList  = new ArrayList<>();
         expectedList.add(expectedTimezone);
         when(userService.getTimezones()).thenReturn(expectedList);
 
@@ -178,6 +185,40 @@ public class UserControllerTest {
                 .andExpect(status().isInternalServerError());
 
         verify(userService).getTimezones();
+    }
+
+    @Test
+    public void testForgotPassword() throws Exception {
+
+        AuthCredentials acr = new AuthCredentials("dummyUsername", "dummyOriginalPwd");
+
+        String jsonModel = new ObjectMapper().writeValueAsString(acr);
+
+        mockMvc.perform(post("/user/password/forgot")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonModel))
+                .andExpect(status().isNoContent());
+
+        verify(userService).forgotPassword(capturedAuthCredentials.capture());
+
+        assertNotNull("Expected new credentials", capturedAuthCredentials.getValue());
+        assertEquals("Wrong username", acr.getUsername(), capturedAuthCredentials.getValue().getUsername());
+    }
+
+    @Test
+    public void testForgotPassword_noSuchUser() throws Exception {
+
+        AuthCredentials acr = new AuthCredentials("dummyUsername", "dummyOriginalPwd");
+        String jsonModel = new ObjectMapper().writeValueAsString(acr);
+
+        doThrow(new NotFoundException("no such test user")).when(userService).forgotPassword(isA(AuthCredentials.class));
+
+        mockMvc.perform(post("/user/password/forgot")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonModel))
+                .andExpect(status().isNotFound());
+
+        verify(userService).forgotPassword(isA(AuthCredentials.class));
     }
 
     private User createValidTestUser() {
