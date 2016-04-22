@@ -30,6 +30,7 @@ public class AuthTokenFilterTest {
     private static final String PATH_WITH_REGEX_REQUIRES_GUEST_ACCESS = "/path/\\w+/wildcard/requires/guest/access";
     private static final String PATH_WITH_REGEX_AT_END_REQUIRES_GUEST_ACCESS = "/path/wildcard/at/end/requires/guest/access/\\w+$";
     private static final String PATH_REQUIRES_AUTHENTICATED_ACCESS = "/path/requires/authenticated/access";
+    private static final String PATH_NO_TIME_CHECK = "/PATH/DOES/NOT/REQUIRE/TIMECHECK";
     private static final String PATH_DOES_NOT_REQUIRE_TOKEN = "/path/does/not/require/token";
     private static final String[] ALLOWED_URI = new String[] {PATH_DOES_NOT_REQUIRE_TOKEN};
     private static final String[] AUTHENTICATION_WHITELIST = new String[] {PATH_REQUIRES_GUEST_ACCESS, PATH_WITH_REGEX_REQUIRES_GUEST_ACCESS, PATH_WITH_REGEX_AT_END_REQUIRES_GUEST_ACCESS};
@@ -53,6 +54,7 @@ public class AuthTokenFilterTest {
     public void setup() {
         ReflectionTestUtils.setField(filter, "guestTokenRequiredList", AUTHENTICATION_WHITELIST);
         ReflectionTestUtils.setField(filter, "noTokenRequiredList", ALLOWED_URI);
+        ReflectionTestUtils.setField(filter, "renewalURI", PATH_NO_TIME_CHECK);
     }
 
     @Test
@@ -120,7 +122,7 @@ public class AuthTokenFilterTest {
         filter.doFilter(request, response, filterChain);
 
         verify(request).getRequestURI();
-        verify(authenticationService).validateAuthenticatedAccess(request);
+        verify(authenticationService).validateAuthenticatedAccess(request, true);
         verify(filterChain).doFilter(request, response);
 
         filter.destroy();
@@ -151,15 +153,29 @@ public class AuthTokenFilterTest {
         when(request.getRequestURI()).thenReturn(PATH_REQUIRES_AUTHENTICATED_ACCESS);
 
         AuthenticationException cause = new AuthenticationException("I caused invalid token");
-        doThrow(cause).when(authenticationService).validateAuthenticatedAccess(request);
+        doThrow(cause).when(authenticationService).validateAuthenticatedAccess(request, true);
 
         filter.doFilter(request, response, filterChain);
 
         verify(request).getRequestURI();
-        verify(authenticationService).validateAuthenticatedAccess(request);
+        verify(authenticationService).validateAuthenticatedAccess(request, true);
         verify(response).setHeader("Content-Type", "application/json");
         verify(response).setStatus(401);
         verifyZeroInteractions(filterChain);
+
+        filter.destroy();
+    }
+
+    @Test
+    public void testDoFilter_uriRequiresAuthenticatedAccess_WithoutTimeCheck() throws Exception {
+
+        when(request.getRequestURI()).thenReturn(PATH_NO_TIME_CHECK);
+
+        filter.doFilter(request, response, filterChain);
+
+        verify(request).getRequestURI();
+        verify(authenticationService).validateAuthenticatedAccess(request, false);
+        verify(filterChain).doFilter(request, response);
 
         filter.destroy();
     }

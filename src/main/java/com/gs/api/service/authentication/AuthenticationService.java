@@ -1,8 +1,6 @@
 package com.gs.api.service.authentication;
 
-import com.gs.api.domain.authentication.AuthCredentials;
-import com.gs.api.domain.authentication.AuthToken;
-import com.gs.api.domain.authentication.AuthUser;
+import com.gs.api.domain.authentication.*;
 import com.gs.api.exception.AuthenticationException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -17,6 +15,12 @@ public interface AuthenticationService {
     AuthToken generateToken() throws AuthenticationException;
 
     /**
+     * Generate the renewal token used to reauthorize a user
+     * @return
+     */
+    RenewalToken generateRenewalToken();
+
+    /**
      * Validate guest access.
      * @param request the http request
      * @throws AuthenticationException error validating the token or the token is not valid.
@@ -26,9 +30,10 @@ public interface AuthenticationService {
     /**
      * Validate authenticated access.  If the token is valid, the user id will be set to the configured request attribute.
      * @param request the http request
+     * @param timeCheck validate time expiration (reauthorization should not validate the timestamp)
      * @throws AuthenticationException error validating the token or the token is not valid.
      */
-    void validateAuthenticatedAccess(HttpServletRequest request) throws AuthenticationException;
+    void validateAuthenticatedAccess(HttpServletRequest request, boolean timeCheck) throws AuthenticationException;
 
     /**
      * Authenticate a user.
@@ -45,5 +50,13 @@ public interface AuthenticationService {
      * @throws AuthenticationException if the supplied user id does not match the user id that was authenticated.
      */
     void verifyUser(HttpServletRequest request, String userId) throws AuthenticationException;
+
+    /**
+     * ReAuthenticate a user with renewal token
+     * @param reAuthCredentials
+     * @return
+     * @throws AuthenticationException
+     */
+    AuthToken reAuthenticateUser(ReAuthCredentials reAuthCredentials) throws AuthenticationException;
 
 }

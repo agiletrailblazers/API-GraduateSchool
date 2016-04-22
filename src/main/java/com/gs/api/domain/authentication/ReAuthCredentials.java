@@ -3,10 +3,9 @@ package com.gs.api.domain.authentication;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.gs.api.domain.registration.User;
 
 @JsonInclude(Include.ALWAYS)
-public class AuthUser {
+public class ReAuthCredentials {
 
     @JsonProperty("authToken")
     private AuthToken authToken;
@@ -14,13 +13,14 @@ public class AuthUser {
     @JsonProperty("renewalToken")
     private RenewalToken renewalToken;
 
-    @JsonProperty("user")
-    private User user;
-
-    public AuthUser(@JsonProperty("authToken") AuthToken authToken, @JsonProperty("renewalToken") RenewalToken renewalToken, @JsonProperty("user") User user) {
+    /**
+     * Contructor for ReAuthCredentials
+     * @param authToken
+     * @param renewalToken
+     */
+    public ReAuthCredentials(@JsonProperty("authToken") AuthToken authToken, @JsonProperty("renewalToken") RenewalToken renewalToken) {
         this.authToken = authToken;
         this.renewalToken = renewalToken;
-        this.user = user;
     }
 
     public AuthToken getAuthToken() {
@@ -29,9 +29,5 @@ public class AuthUser {
 
     public RenewalToken getRenewalToken() {
         return renewalToken;
-    }
-
-    public User getUser() {
-        return user;
     }
 }
