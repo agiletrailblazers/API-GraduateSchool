@@ -30,9 +30,10 @@ public interface AuthenticationService {
     /**
      * Validate authenticated access.  If the token is valid, the user id will be set to the configured request attribute.
      * @param request the http request
+     * @param timeCheck validate time expiration (reauthorization should not validate the timestamp)
      * @throws AuthenticationException error validating the token or the token is not valid.
      */
-    void validateAuthenticatedAccess(HttpServletRequest request) throws AuthenticationException;
+    void validateAuthenticatedAccess(HttpServletRequest request, boolean timeCheck) throws AuthenticationException;
 
     /**
      * Authenticate a user.

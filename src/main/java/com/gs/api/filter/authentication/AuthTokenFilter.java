@@ -23,6 +23,9 @@ public class AuthTokenFilter implements Filter {
     @Value("${auth.token.filter.uri.guest.token.required}")
     private String[] guestTokenRequiredList;
 
+    @Value("${auth.token.renewal.uri}")
+    private String renewalURI;
+
     @Autowired
     private AuthenticationService authenticationService;
 
@@ -52,7 +55,12 @@ public class AuthTokenFilter implements Filter {
                 else {
                     // any URI not specifically listed on the guest token required list must have an authenticated token
                     logger.debug("URI {} requires an authenticated token", requestedURI);
-                    authenticationService.validateAuthenticatedAccess(httpRequest);
+
+                    if (requestedURI.equals(renewalURI)) {
+                        authenticationService.validateAuthenticatedAccess(httpRequest, false);
+                    } else {
+                        authenticationService.validateAuthenticatedAccess(httpRequest, true);
+                    }
                 }
             }
 

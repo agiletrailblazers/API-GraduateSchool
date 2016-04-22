@@ -8,10 +8,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class AuthCredentials {
 
     @JsonProperty("username")
-    protected String username;
+    private String username;
 
     @JsonProperty("password")
-    protected String password;
+    private String password;
 
     /**
      * Construct the auth credentials.

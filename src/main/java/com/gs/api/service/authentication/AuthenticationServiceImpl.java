@@ -110,7 +110,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public void validateAuthenticatedAccess(HttpServletRequest request) throws AuthenticationException {
+    public void validateAuthenticatedAccess(HttpServletRequest request, boolean timeCheck) throws AuthenticationException {
 
         String[] tokenFields = performBasicValidationFromHTTPServletRequest(request);
 
@@ -119,15 +119,17 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         // verify that authenticated token has not expired
         if (role == Role.AUTHENTICATED) {
 
-            // check if token is expired
-            long currentTime = new Date().getTime();
-            long tokenTime = Long.parseLong(tokenFields[TOKEN_FIELD_TIMESTAMP_INDEX]);
-            // convert expire time from seconds to milliseconds
-            long authTokenExpire = authTokenExpireMinutes * 60 * 1000;
+            if(timeCheck) {
+                // check if token is expired
+                long currentTime = new Date().getTime();
+                long tokenTime = Long.parseLong(tokenFields[TOKEN_FIELD_TIMESTAMP_INDEX]);
+                // convert expire time from seconds to milliseconds
+                long authTokenExpire = authTokenExpireMinutes * 60 * 1000;
 
-            if ((tokenTime + authTokenExpire) < currentTime) {
-                // token is expired
-                throw new AuthenticationException(TOKEN_EXPIRED_MSG);
+                if ((tokenTime + authTokenExpire) < currentTime) {
+                    // token is expired
+                    throw new AuthenticationException(TOKEN_EXPIRED_MSG);
+                }
             }
 
             // set the user id in attribute for use in API code
@@ -274,6 +276,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public AuthToken reAuthenticateUser(ReAuthCredentials reAuthCredentials) throws AuthenticationException {
 
+        logger.debug("Entering reAuthenticateUser");
         String[] authTokenParams = performBasicValidationFromAuthTokenString(reAuthCredentials.getAuthToken().getToken());
         //Token should not be valid if it will expire in next 30 seconds
         long authTokenTime = Long.parseLong(authTokenParams[TOKEN_FIELD_TIMESTAMP_INDEX]);

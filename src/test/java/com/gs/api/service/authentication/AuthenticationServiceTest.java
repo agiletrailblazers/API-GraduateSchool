@@ -42,8 +42,6 @@ public class AuthenticationServiceTest {
     private static final String PASSWORD = "test1234";
     private static final String RENEWAL_UUID = UUID.randomUUID().toString().toUpperCase();
 
-    //private String ENCRYPTED_RENEWAL_TOKEN = ec.encrypt(RENEWAL_UUID + "|" + Long.toString(new Date().getTime()));
-
     @Value("${auth.token.header}")
     private String authTokenHeader;
 
@@ -194,7 +192,7 @@ public class AuthenticationServiceTest {
         when(request.getHeader(authTokenHeader)).thenReturn(encryptedToken);
         when(encryptor.decrypt(encryptedToken)).thenReturn(validToken);
 
-        authenticationService.validateAuthenticatedAccess(request);
+        authenticationService.validateAuthenticatedAccess(request, true);
 
         verify(request).getHeader(authTokenHeader);
         verify(encryptor).decrypt(encryptedToken);
@@ -312,7 +310,7 @@ public class AuthenticationServiceTest {
         thrown.expect(AuthenticationException.class);
         thrown.expectMessage(AuthenticationServiceImpl.TOKEN_USER_IS_NOT_VALID_MSG);
 
-        authenticationService.validateAuthenticatedAccess(request);
+        authenticationService.validateAuthenticatedAccess(request, true);
     }
 
     @Test
@@ -334,7 +332,7 @@ public class AuthenticationServiceTest {
         thrown.expect(AuthenticationException.class);
         thrown.expectMessage(AuthenticationServiceImpl.TOKEN_EXPIRED_MSG);
 
-        authenticationService.validateAuthenticatedAccess(request);
+        authenticationService.validateAuthenticatedAccess(request, true);
     }
 
     @Test
@@ -370,7 +368,7 @@ public class AuthenticationServiceTest {
         thrown.expect(AuthenticationException.class);
         thrown.expectMessage(AuthenticationServiceImpl.TOKEN_IS_NOT_AUTHENTICATED_MSG);
 
-        authenticationService.validateAuthenticatedAccess(request);
+        authenticationService.validateAuthenticatedAccess(request, true);
     }
 
     @Test
@@ -689,6 +687,28 @@ public class AuthenticationServiceTest {
             assertTrue(e.getMessage().equals("User is not authenticated"));
         }
 
+    }
+
+    @Test
+    public void testValidateAuthenticatedAccess_AuthenticatedTokenExpired_TimeCheck_False() throws Exception {
+        String user = "testuser";
+        String encryptedToken = "abcde1234554321edcba";
+        long currentTime = new Date().getTime();
+        // make our token old, 10 seconds past the expired time limit
+        long expiredTime = currentTime - ((authTokenExpireMinutes * 60 * 1000) + 10000);
+        String validToken = "de703f00-8c20-4c74-a254-277e2020244b|"
+                + new Date(expiredTime).getTime() + "|" + Role.AUTHENTICATED + "|" + user + "|" + RENEWAL_UUID;
+
+        String validRenewalToken = RENEWAL_UUID + "|" + currentTime;
+
+        when(request.getHeader(authTokenHeader)).thenReturn(encryptedToken);
+        when(encryptor.decrypt(encryptedToken)).thenReturn(validToken).thenReturn(validRenewalToken);
+
+        authenticationService.validateAuthenticatedAccess(request, false);
+
+        verify(request).getHeader(authTokenHeader);
+        verify(encryptor).decrypt(encryptedToken);
+        verify(request).setAttribute(authUserAttribute, user);
     }
 
 }
