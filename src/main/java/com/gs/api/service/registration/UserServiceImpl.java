@@ -104,7 +104,7 @@ public class UserServiceImpl implements UserService {
         final String encryptedPassword = generateHash(newPasswordClear);
 
         // reset the password
-        userDao.resetPassword(user.getId(), encryptedPassword);
+        userDao.resetForgottenPassword(user.getId(), encryptedPassword);
 
         // send password reset email
         try {

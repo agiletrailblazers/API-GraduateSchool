@@ -31,12 +31,16 @@ import javax.sql.DataSource;
 @Repository
 public class UserDAO {
     private static final Logger logger = LoggerFactory.getLogger(UserDAO.class);
+    static final String SABA_GUEST = "sabaguest";
+    static final String SABA_GUEST_ID = "emplo000000000000000";
+    static final String SABA_ADMIN_ID = "emplo000000000000001";
     private JdbcTemplate jdbcTemplate;
 
     private SimpleJdbcCall userInsertActor;
     private SimpleJdbcCall profileInsertActor;
     private SimpleJdbcCall listEntryActor;
     private SimpleJdbcCall deleteUserActor;
+    private SimpleJdbcCall resetPasswordActor;
 
     @Value("${sql.user.personInsert.procedure}")
     private String insertUserStoredProcedureName;
@@ -66,6 +70,12 @@ public class UserDAO {
     @Value("${sql.user.timezones.query}")
     private String sqlForTimezones;
 
+    @Value("${sql.user.resetPassword.procedure}")
+    private String resetPasswordStoredProcedureName;
+
+    @Value("${sql.user.password.query}")
+    private String sqlForPasswordQuery;
+
     @Autowired
     public void setDataSource(DataSource dataSource) {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
@@ -73,6 +83,7 @@ public class UserDAO {
         this.profileInsertActor = new SimpleJdbcCall(this.jdbcTemplate).withProcedureName(insertProfileStoredProcedureName);
         this.listEntryActor = new SimpleJdbcCall(this.jdbcTemplate).withProcedureName(insertfgtListEntryStoredProcedureName);
         this.deleteUserActor = new SimpleJdbcCall(this.jdbcTemplate).withProcedureName(deleteUserStoredProcedureName);
+        this.resetPasswordActor = new SimpleJdbcCall(this.jdbcTemplate).withProcedureName(resetPasswordStoredProcedureName);
     }
 
     /**
@@ -170,9 +181,17 @@ public class UserDAO {
         }
     }
 
-    public void resetPassword(String userId, String newPassword) throws Exception {
+    public void resetForgottenPassword(String userId, String newPassword) throws Exception {
 
-        // TODO implement this
+        logger.debug("Reset forgotten password for user {}, looking up current password", userId);
+
+        // lookup the current password, it is needed to reset the password
+        String currentPassword = this.jdbcTemplate.queryForObject(sqlForPasswordQuery, new Object[]{userId}, String.class);
+
+        logger.debug("Found password for user {}", userId);
+
+        // reset the password using the saba admin user id and the users current password
+        resetPassword(userId, SABA_ADMIN_ID, currentPassword, newPassword);
     }
 
     /**
@@ -190,8 +209,8 @@ public class UserDAO {
         long millis = currentDate.getTime();
 
         //Defaults to use until we figure out something else
-        String createdByName = "sabaguest"; // hardcode default saba user till we decide otherwise
-        String createdById = "emplo000000000000000";
+        String createdByName = SABA_GUEST; // hardcode default saba user till we decide otherwise
+        String createdById = SABA_GUEST_ID;
         String split = "domin000000000000001";
         String homeDomain = "domin000000000000001"; //not sure why this is the same as above but different fields in DB
         String currency = "crncy000000000000167"; //We could execute a query to find active currency in system but this is standard
@@ -285,6 +304,80 @@ public class UserDAO {
         insertListEntry(personId, domainIDcprivIDListID);
 
         return personId;
+    }
+
+    /**
+     * Maps a user result to a User object
+     */
+    protected final class UserRowMapper implements RowMapper<User> {
+        /**
+         * Map row for Course object from result set
+         */
+        public User mapRow(ResultSet rs, int rowNum) throws SQLException {
+            User user = new User();
+            user.setId(rs.getString("USER_ID"));
+            user.setUsername(rs.getString("USERNAME"));
+            String ssn = rs.getString("SS_NO");
+            if (ssn != null) {
+                if (ssn.length() > 4) {
+                    user.setLastFourSSN(ssn.substring(ssn.length() - 4, ssn.length()));
+                }
+                else if (ssn.length() == 4) {
+                    user.setLastFourSSN(ssn);
+                }
+                else {
+                    user.setLastFourSSN(null);
+                }
+            }
+            user.setTimezoneId(rs.getString("TIMEZONE_ID"));
+            user.setAccountId(rs.getString("ACCOUNT_ID"));
+            user.setSplit(rs.getString("SPLIT"));
+            user.setCurrencyId(rs.getString("CURRENCY_ID"));
+            user.setTimestamp(rs.getString("TIME_STAMP"));
+
+            Person person = new Person();
+            person.setFirstName(rs.getString("FNAME"));
+            person.setLastName(rs.getString("LNAME"));
+            person.setEmailAddress(rs.getString("EMAIL"));
+            person.setPrimaryPhone(rs.getString("HOMEPHONE"));
+            person.setSecondaryPhone(rs.getString("WORKPHONE"));
+            if (rs.getDate("DATE_OF_BIRTH") != null) {
+                person.setDateOfBirth(rs.getDate("DATE_OF_BIRTH").toString());
+            }
+            String veteranStatus = rs.getString("VETERAN");
+            if (veteranStatus != null) {
+                //Translate y/Y and n/N to true false
+                if (veteranStatus.equalsIgnoreCase("y")) {
+                    person.setVeteran(true);
+                } else if (veteranStatus.equalsIgnoreCase("n")) {
+                    person.setVeteran(false);
+                }
+            }
+
+            Address address = new Address();
+            address.setAddress1(rs.getString("ADDRESS1"));
+            address.setAddress2(rs.getString("ADDRESS2"));
+            address.setCity(rs.getString("CITY"));
+            address.setState(rs.getString("STATE"));
+            address.setPostalCode(rs.getString("ZIP"));
+
+            person.setPrimaryAddress(address);
+            user.setPerson(person);
+
+            return user;
+        }
+    }
+
+    protected final class TimezoneRowMapper implements RowMapper<Timezone> {
+        /**
+         * Map a row for a Timezone object from a result set
+         */
+        public Timezone mapRow(ResultSet rs, int rowNum) throws SQLException {
+            Timezone timezone = new Timezone();
+            timezone.setId(rs.getString("ID"));
+            timezone.setName(rs.getString("NAME"));
+            return timezone;
+        }
     }
 
     private Map<String, Object> insertUserProfile(String createdBy, String createdById, String personId, String split) throws Exception {
@@ -415,77 +508,17 @@ public class UserDAO {
         return sabaFormattedAddress;
     }
 
-    /**
-     * Maps a user result to a User object
-     */
-    protected final class UserRowMapper implements RowMapper<User> {
-        /**
-         * Map row for Course object from result set
-         */
-        public User mapRow(ResultSet rs, int rowNum) throws SQLException {
-            User user = new User();
-            user.setId(rs.getString("USER_ID"));
-            user.setUsername(rs.getString("USERNAME"));
-            String ssn = rs.getString("SS_NO");
-            if (ssn != null) {
-                if (ssn.length() > 4) {
-                    user.setLastFourSSN(ssn.substring(ssn.length() - 4, ssn.length()));
-                }
-                else if (ssn.length() == 4) {
-                    user.setLastFourSSN(ssn);
-                }
-                else {
-                    user.setLastFourSSN(null);
-                }
-            }
-            user.setTimezoneId(rs.getString("TIMEZONE_ID"));
-            user.setAccountId(rs.getString("ACCOUNT_ID"));
-            user.setSplit(rs.getString("SPLIT"));
-            user.setCurrencyId(rs.getString("CURRENCY_ID"));
-            user.setTimestamp(rs.getString("TIME_STAMP"));
+    private void resetPassword(String userId, String currentUserId, String oldPassword, String newPassword) throws Exception {
 
-            Person person = new Person();
-            person.setFirstName(rs.getString("FNAME"));
-            person.setLastName(rs.getString("LNAME"));
-            person.setEmailAddress(rs.getString("EMAIL"));
-            person.setPrimaryPhone(rs.getString("HOMEPHONE"));
-            person.setSecondaryPhone(rs.getString("WORKPHONE"));
-            if (rs.getDate("DATE_OF_BIRTH") != null) {
-                person.setDateOfBirth(rs.getDate("DATE_OF_BIRTH").toString());
-            }
-            String veteranStatus = rs.getString("VETERAN");
-            if (veteranStatus != null) {
-                //Translate y/Y and n/N to true false
-                if (veteranStatus.equalsIgnoreCase("y")) {
-                    person.setVeteran(true);
-                } else if (veteranStatus.equalsIgnoreCase("n")) {
-                    person.setVeteran(false);
-                }
-            }
+        MapSqlParameterSource in = new MapSqlParameterSource()
+                .addValue("xid", userId, OracleTypes.CHAR)
+                .addValue("xold_password", oldPassword, OracleTypes.VARCHAR)
+                .addValue("xnew_password", newPassword, OracleTypes.VARCHAR)
+                .addValue("xcurr_user_id", currentUserId, OracleTypes.CHAR);
 
-            Address address = new Address();
-            address.setAddress1(rs.getString("ADDRESS1"));
-            address.setAddress2(rs.getString("ADDRESS2"));
-            address.setCity(rs.getString("CITY"));
-            address.setState(rs.getString("STATE"));
-            address.setPostalCode(rs.getString("ZIP"));
-
-            person.setPrimaryAddress(address);
-            user.setPerson(person);
-
-            return user;
-        }
+        logger.debug("Resetting user password. Executing stored procedure: {}", resetPasswordStoredProcedureName);
+        executeUserStoredProcedure(in, resetPasswordActor);
     }
 
-    protected final class TimezoneRowMapper implements RowMapper<Timezone> {
-        /**
-         * Map a row for a Timezone object from a result set
-         */
-        public Timezone mapRow(ResultSet rs, int rowNum) throws SQLException {
-            Timezone timezone = new Timezone();
-            timezone.setId(rs.getString("ID"));
-            timezone.setName(rs.getString("NAME"));
-            return timezone;
-        }
-    }
+
 }

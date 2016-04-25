@@ -47,6 +47,9 @@ public class UserDAOTest {
     @Value("${sql.user.login.query}")
     private String sqlForUserLogin;
 
+    @Value("${sql.user.password.query}")
+    private String sqlForUserPassword;
+
     @Value("${sql.user.timezones.query}")
     private String sqlForTimezones;
 
@@ -83,6 +86,7 @@ public class UserDAOTest {
     private static final String ADDRESS_ZIP = "55555";
     private static final String PHONE = "555-555-5555";
     private static final String PASSWORD = "test1234";
+    private static final String NEW_PASSWORD = "newtest1234";
     private static final String DOB = "19550505";
     private static final String LAST_FOUR_SSN = "5555";
     private static final String TIMEZONE_ID = "testId";
@@ -115,6 +119,9 @@ public class UserDAOTest {
     @Mock
     private SimpleJdbcCall deleteUserActor;
 
+    @Mock
+    private SimpleJdbcCall resetPasswordActor;
+
     @Captor
     private ArgumentCaptor<SqlParameterSource> insertUserCaptor;
 
@@ -126,6 +133,9 @@ public class UserDAOTest {
 
     @Captor
     private ArgumentCaptor<SqlParameterSource> deleteUserCaptor;
+
+    @Captor
+    private ArgumentCaptor<SqlParameterSource> resetPasswordCaptor;
 
     @Captor
     private ArgumentCaptor<Object[]> singleUserQueryParamsCaptor;
@@ -556,6 +566,35 @@ public class UserDAOTest {
         assertArrayEquals("wrong parameters", expectedQueryParams, capturedQueryParams);
 
         assertNull("No user should be found", returnedUser);
+    }
+
+    @Test
+    public void testForgotPassword() throws Exception {
+
+        // setup mock for current password
+        Object[] expectedQueryParams = new Object[] {USER_ID};
+        when(jdbcTemplate.queryForObject(anyString(), any(Object[].class), eq(String.class))).thenReturn(PASSWORD);
+
+        HashMap<String, Object> sqlResult = new HashMap<>();
+        doReturn(sqlResult).when(resetPasswordActor).execute(any(SqlParameterSource.class));
+
+        userDAO.resetForgottenPassword(USER_ID, NEW_PASSWORD);
+
+        // verify query for current password
+        verify(jdbcTemplate).queryForObject(eq(sqlForUserPassword), singleUserQueryParamsCaptor.capture(), eq(String.class));
+        Object[] capturedQueryParams = singleUserQueryParamsCaptor.getValue();
+        assertNotNull("Expected parameters", capturedQueryParams);
+        assertArrayEquals("wrong parameters", expectedQueryParams, capturedQueryParams);
+
+        // verify stored procedure call to reset password
+        verify(resetPasswordActor).execute(resetPasswordCaptor.capture());
+        SqlParameterSource parameters = resetPasswordCaptor.getValue();
+
+        assertNotNull("no parameters passed to reset password", parameters);
+        assertEquals(USER_ID, parameters.getValue("xid"));
+        assertEquals(PASSWORD, parameters.getValue("xold_password"));
+        assertEquals(NEW_PASSWORD, parameters.getValue("xnew_password"));
+        assertEquals(UserDAO.SABA_ADMIN_ID, parameters.getValue("xcurr_user_id"));
     }
 
     @Test

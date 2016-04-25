@@ -221,7 +221,7 @@ public class UserServiceTest {
         RandomStringUtils.randomAlphanumeric(10);
 
         verify(userDao).getUserByUsername(user.getUsername());
-        verify(userDao).resetPassword(USER_ID, PASSWORD_ENCRYPTED);
+        verify(userDao).resetForgottenPassword(USER_ID, PASSWORD_ENCRYPTED);
         verify(emailService).sendPasswordResetEmail(user, PASSWORD_CLEAR);
     }
 
@@ -245,7 +245,7 @@ public class UserServiceTest {
         when(userDao.getUserByUsername(user.getUsername())).thenReturn(user);
 
         final RuntimeException expectedException = new RuntimeException("test password reset failure");
-        doThrow(expectedException).when(userDao).resetPassword(USER_ID, PASSWORD_ENCRYPTED);
+        doThrow(expectedException).when(userDao).resetForgottenPassword(USER_ID, PASSWORD_ENCRYPTED);
 
         when(RandomStringUtils.randomAlphanumeric(10)).thenReturn(PASSWORD_CLEAR);
 
@@ -262,7 +262,7 @@ public class UserServiceTest {
         RandomStringUtils.randomAlphanumeric(10);
 
         verify(userDao).getUserByUsername(user.getUsername());
-        verify(userDao).resetPassword(USER_ID, PASSWORD_ENCRYPTED);
+        verify(userDao).resetForgottenPassword(USER_ID, PASSWORD_ENCRYPTED);
         verifyZeroInteractions(emailService);
     }
 
@@ -283,7 +283,7 @@ public class UserServiceTest {
         RandomStringUtils.randomAlphanumeric(10);
 
         verify(userDao).getUserByUsername(user.getUsername());
-        verify(userDao).resetPassword(USER_ID, PASSWORD_ENCRYPTED);
+        verify(userDao).resetForgottenPassword(USER_ID, PASSWORD_ENCRYPTED);
         verify(emailService).sendPasswordResetEmail(user, PASSWORD_CLEAR);
     }
 }
