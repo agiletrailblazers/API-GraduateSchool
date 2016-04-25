@@ -7,6 +7,7 @@ import com.gs.api.domain.payment.Payment;
 import com.gs.api.domain.registration.Registration;
 import com.gs.api.domain.registration.RegistrationResponse;
 import com.gs.api.domain.registration.User;
+
 import org.apache.velocity.app.VelocityEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,25 +21,33 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.velocity.VelocityEngineUtils;
 
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
-import java.util.Map;
-import java.util.HashMap;
 import java.util.ArrayList;
-import java.util.Locale;
-import java.util.List;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
 
 @Service
 public class EmailServiceImpl implements EmailService {
 
+    public static final String UTF_8_ENCODING = "UTF-8";
+
     static final String PAYMENT_RECEIPT_HTML_TEMPLATE_VM = "templates/email/paymentReceiptTemplate_html.vm";
     static final String PAYMENT_RECEIPT_TEXT_TEMPLATE_VM = "templates/email/paymentReceiptTemplate_text.vm";
-    public static final String NEW_USER_HTML_TEMPLATE_VM = "templates/email/newUserTemplate_html.vm";
-    public static final String NEW_USER_TEXT_TEMPLATE_VM = "templates/email/newUserTemplate_text.vm";
-    public static final String UTF_8_ENCODING = "UTF-8";
+    static final String NEW_USER_HTML_TEMPLATE_VM = "templates/email/newUserTemplate_html.vm";
+    static final String NEW_USER_TEXT_TEMPLATE_VM = "templates/email/newUserTemplate_text.vm";
+    static final String PASSWORD_RESET_HTML_TEMPLATE_VM = "templates/email/passwordResetTemplate_html.vm";
+    static final String PASSWORD_RESET_TEXT_TEMPLATE_VM = "templates/email/passwordResetTemplate_text.vm";
+    static final String USER_LOGIN_PAGE = "userLoginPage";
+    static final String USER_NAME = "username";
+    static final String NEW_PASSWORD = "newPassword";
+
     final Logger logger = LoggerFactory.getLogger(EmailServiceImpl.class);
 
     @Autowired
@@ -65,6 +74,12 @@ public class EmailServiceImpl implements EmailService {
     @Value("${email.subject.newUser}")
     private String newUserEmailSubject;
 
+    @Value("${email.subject.passwordReset}")
+    private String passwordResetSubject;
+
+    @Value("${email.user.loginPage}")
+    private String userLoginPage;
+
 
     // ONLY SET FROM UNIT TESTS!
     private MimeMessageHelper mimeMessageHelper;
@@ -87,16 +102,16 @@ public class EmailServiceImpl implements EmailService {
                 message.setSubject(paymentReceiptEmailSubject);
 
                 // create the data model for passing the info into the template
-                Map<String, Object> orderModel= getOrderData(registrationResponse);
+                Map<String, Object> model= getOrderData(registrationResponse);
 
-                String htmlText = mergeTemplate(velocityEngine, PAYMENT_RECEIPT_HTML_TEMPLATE_VM, "UTF-8", orderModel);
-                String plainText = mergeTemplate(velocityEngine, PAYMENT_RECEIPT_TEXT_TEMPLATE_VM, "UTF-8", orderModel);
+                String htmlText = mergeTemplate(velocityEngine, PAYMENT_RECEIPT_HTML_TEMPLATE_VM, "UTF-8", model);
+                String plainText = mergeTemplate(velocityEngine, PAYMENT_RECEIPT_TEXT_TEMPLATE_VM, "UTF-8", model);
                 message.setText(plainText, htmlText);
             }
         };
         try {
             mailSender.send(preparator);
-            logger.debug("Payment receipt successfully sent for order " + registrationResponse.getRegistrations().get(0).getOrderNumber());
+            logger.debug("Payment receipt successfully sent for order {}", registrationResponse.getRegistrations().get(0).getOrderNumber());
         }
         catch (MailException e) {
             logger.error("Error sending payment receipt", e);
@@ -121,32 +136,56 @@ public class EmailServiceImpl implements EmailService {
                 message.setSubject(newUser.getPerson().getFirstName() + " " + newUser.getPerson().getLastName() + " " + newUserEmailSubject);
 
                 // create the data model for passing the info into the template
-                Map<String, Object> orderModel= new HashMap<>();
+                Map<String, Object> model= new HashMap<>();
 
-                orderModel.put("accountPage", userAccountPage);
-                orderModel.put("privacyPolicy", userPrivacyPolicyPage);
+                model.put("accountPage", userAccountPage);
+                model.put("privacyPolicy", userPrivacyPolicyPage);
 
-                String htmlText = mergeTemplate(velocityEngine, NEW_USER_HTML_TEMPLATE_VM, UTF_8_ENCODING, orderModel);
-                String plainText = mergeTemplate(velocityEngine, NEW_USER_TEXT_TEMPLATE_VM, UTF_8_ENCODING, orderModel);
+                String htmlText = mergeTemplate(velocityEngine, NEW_USER_HTML_TEMPLATE_VM, UTF_8_ENCODING, model);
+                String plainText = mergeTemplate(velocityEngine, NEW_USER_TEXT_TEMPLATE_VM, UTF_8_ENCODING, model);
                 message.setText(plainText, htmlText);
             }
         };
         try {
             mailSender.send(preparator);
-            logger.debug("New User email successfully sent for user " + newUser.getId());
+            logger.debug("New User email successfully sent for user {}", newUser.getId());
         }
         catch (MailException e) {
             logger.error("Error sending new user email", e);
         }
     }
 
-    /**
-     * Safely create the string which contains the template
-     * @return the string containing the rendered template
-     */
-    public String mergeTemplate(VelocityEngine velocityEngine, String templatePath, String encoding, Map<String, Object> model) {
-        return VelocityEngineUtils.mergeTemplateIntoString(
-                velocityEngine, templatePath, encoding, model);
+    @Override
+    @Async
+    public void sendPasswordResetEmail(final User user, final String newPassword) throws Exception {
+
+        MimeMessagePreparator preparator = new MimeMessagePreparator() {
+
+            public void prepare(MimeMessage mimeMessage) throws Exception {
+                // Setup email
+                MimeMessageHelper message = getMimeMessageHelper(mimeMessage);
+                message.setTo(new String[] {user.getPerson().getEmailAddress()});
+                message.setSubject(passwordResetSubject);
+
+                // create the data model for passing the info into the template
+                Map<String, Object> model= new HashMap<>();
+
+                model.put(USER_LOGIN_PAGE, userLoginPage);
+                model.put(NEW_PASSWORD, newPassword);
+                model.put(USER_NAME, user.getUsername());
+
+                String htmlText = mergeTemplate(velocityEngine, PASSWORD_RESET_HTML_TEMPLATE_VM, UTF_8_ENCODING, model);
+                String plainText = mergeTemplate(velocityEngine, PASSWORD_RESET_TEXT_TEMPLATE_VM, UTF_8_ENCODING, model);
+                message.setText(plainText, htmlText);
+            }
+        };
+        try {
+            mailSender.send(preparator);
+            logger.debug("Password reset email successfully sent for user {}", user.getId());
+        }
+        catch (MailException e) {
+            logger.error("Error sending password reset email", e);
+        }
     }
 
     /**
@@ -163,6 +202,15 @@ public class EmailServiceImpl implements EmailService {
         else {
             return mimeMessageHelper;
         }
+    }
+
+    /**
+     * Safely create the string which contains the template
+     * @return the string containing the rendered template
+     */
+    private String mergeTemplate(VelocityEngine velocityEngine, String templatePath, String encoding, Map<String, Object> model) {
+        return VelocityEngineUtils.mergeTemplateIntoString(
+                velocityEngine, templatePath, encoding, model);
     }
 
     private Map<String, Object> getOrderData(RegistrationResponse registrationResponse) throws Exception{

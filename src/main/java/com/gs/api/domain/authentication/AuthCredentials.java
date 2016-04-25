@@ -16,7 +16,7 @@ public class AuthCredentials {
     /**
      * Construct the auth credentials.
      * @param username the username.
-     * @param password the clear-text password.
+     * @param password the encrypted password.
      */
     public AuthCredentials(@JsonProperty("username")String username, @JsonProperty("password")String password) {
         this.username = username;

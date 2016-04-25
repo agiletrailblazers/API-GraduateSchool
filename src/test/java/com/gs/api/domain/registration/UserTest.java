@@ -1,16 +1,19 @@
-package com.gs.api.domain;
+package com.gs.api.domain.registration;
 
-import com.gs.api.domain.registration.User;
+import com.gs.api.domain.Address;
+import com.gs.api.domain.Person;
 import com.gs.api.helper.ValidationHelper;
+
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.Validator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+
+import javax.validation.ConstraintViolation;
+import javax.validation.Validator;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;

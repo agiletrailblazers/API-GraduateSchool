@@ -1,6 +1,7 @@
 package com.gs.api.controller.registration;
 
 import com.gs.api.controller.BaseController;
+import com.gs.api.domain.authentication.AuthCredentials;
 import com.gs.api.domain.registration.Timezone;
 import com.gs.api.domain.registration.User;
 import com.gs.api.service.registration.UserService;
@@ -69,5 +70,18 @@ public class UserController extends BaseController {
         logger.debug("Get timezones");
 
         return userService.getTimezones();
+    }
+
+    /**
+     * Status 204 (NO CONTENT) - success
+     * Status 404 (NOT FOUND) - no user found with specified username
+     */
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @RequestMapping(value = "/password/forgot", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    public void forgotPassword(@RequestBody @Valid AuthCredentials authCredentials) throws Exception  {
+
+        logger.debug("Resetting password for user {}", authCredentials.getUsername());
+
+        userService.forgotPassword(authCredentials);
     }
 }
