@@ -125,7 +125,7 @@ public class CourseController extends BaseController {
      * @return the course session
      * @throws Exception
      */
-    @RequestMapping(value = "/session/{sessionId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/sessions/{sessionId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody CourseSession getSessionById(@PathVariable("sessionId") String sessionId) throws Exception {
         logger.debug("Get course session by session id {}", sessionId);
         final CourseSession session = courseService.getSessionById(sessionId);

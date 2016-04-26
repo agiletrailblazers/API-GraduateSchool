@@ -117,7 +117,7 @@ public class RegistrationControllerTest {
 
         when(registrationService.register(eq(USER_ID), isA(RegistrationRequest.class))).thenReturn(createdRegistrationResponse);
 
-        mockMvc.perform(post("/registration/user/" + USER_ID)
+        mockMvc.perform(post("/registrations/users/" + USER_ID)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonModel))
                 .andExpect(status().isCreated())
@@ -155,7 +155,7 @@ public class RegistrationControllerTest {
         PaymentException pe = new PaymentException("I made payment fail");
         when(registrationService.register(eq(USER_ID), isA(RegistrationRequest.class))).thenThrow(pe);
 
-        mockMvc.perform(post("/registration/user/" + USER_ID)
+        mockMvc.perform(post("/registrations/users/" + USER_ID)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonModel))
                 .andExpect(status().isInternalServerError())
@@ -184,7 +184,7 @@ public class RegistrationControllerTest {
         PaymentDeclinedException pe = new PaymentDeclinedException("I made payment fail");
         when(registrationService.register(eq(USER_ID), isA(RegistrationRequest.class))).thenThrow(pe);
 
-        mockMvc.perform(post("/registration/user/" + USER_ID)
+        mockMvc.perform(post("/registrations/users/" + USER_ID)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonModel))
                 .andExpect(status().isPaymentRequired())
@@ -213,7 +213,7 @@ public class RegistrationControllerTest {
         PaymentAcceptedException pe = new PaymentAcceptedException("I made payment fail");
         when(registrationService.register(eq(USER_ID), isA(RegistrationRequest.class))).thenThrow(pe);
 
-        mockMvc.perform(post("/registration/user/" + USER_ID)
+        mockMvc.perform(post("/registrations/users/" + USER_ID)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonModel))
                 .andExpect(status().isAccepted())
@@ -241,7 +241,7 @@ public class RegistrationControllerTest {
 
         doThrow(new AuthenticationException("test user is a fraud")).when(authenticationService).verifyUser(isA(HttpServletRequest.class), eq(USER_ID));
 
-        mockMvc.perform(post("/registration/user/" + USER_ID)
+        mockMvc.perform(post("/registrations/users/" + USER_ID)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonModel))
                 .andExpect(status().isUnauthorized());
@@ -259,7 +259,7 @@ public class RegistrationControllerTest {
 
         when(registrationService.getRegistrationForSession(eq(USER_ID), eq(SESSION_ID))).thenReturn(Arrays.asList(createdRegistration));
 
-        mockMvc.perform(get("/registration/user/" + USER_ID + "/session/" + SESSION_ID)
+        mockMvc.perform(get("/registrations/users/" + USER_ID + "/sessions/" + SESSION_ID)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.[0].id", is(REGISTRATION_ID)))

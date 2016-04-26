@@ -75,7 +75,7 @@ public class PaymentControllerTest {
         List<Payment> payments = Collections.singletonList(payment);
         String jsonModel = new ObjectMapper().writeValueAsString(payments);
 
-        mockMvc.perform(post("/payment/reverse")
+        mockMvc.perform(post("/payments/reversals")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonModel))
                 .andExpect(status().isNoContent());
@@ -98,7 +98,7 @@ public class PaymentControllerTest {
         PaymentException pe = new PaymentException("I made reversal fail");
         doThrow(pe).when(paymentService).reversePayment(any(Payment.class));
 
-        mockMvc.perform(post("/payment/reverse")
+        mockMvc.perform(post("/payments/reversals")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonModel))
                 .andExpect(status().isInternalServerError())
