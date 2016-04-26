@@ -2,11 +2,9 @@ package com.gs.api.service.registration;
 
 import com.gs.api.dao.registration.UserDAO;
 import com.gs.api.domain.authentication.AuthCredentials;
-import com.gs.api.domain.registration.Timezone;
 import com.gs.api.domain.registration.User;
 import com.gs.api.exception.NotFoundException;
 import com.gs.api.service.email.EmailService;
-
 import org.apache.commons.lang.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.security.MessageDigest;
-import java.util.List;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -78,12 +75,6 @@ public class UserServiceImpl implements UserService {
         }
 
         return user;
-    }
-
-    @Override
-    public List<Timezone> getTimezones() throws Exception {
-
-        return userDao.getTimezones();
     }
 
     @Override
