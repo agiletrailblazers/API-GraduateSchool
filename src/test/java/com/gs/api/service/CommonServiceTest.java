@@ -2,15 +2,12 @@ package com.gs.api.service;
 
 import com.gs.api.dao.CommonDAO;
 import com.gs.api.domain.registration.Timezone;
-import org.apache.commons.lang.RandomStringUtils;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.util.ArrayList;
@@ -18,10 +15,8 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest(RandomStringUtils.class)
 public class CommonServiceTest {
 
     @Mock
@@ -37,13 +32,6 @@ public class CommonServiceTest {
     */
     @Rule
     public ExpectedException thrown = ExpectedException.none();
-
-    @Before
-    public void setUp() throws Exception {
-
-        mockStatic(RandomStringUtils.class);
-
-    }
 
     @Test
     public void testGetTimezones() throws Exception {
