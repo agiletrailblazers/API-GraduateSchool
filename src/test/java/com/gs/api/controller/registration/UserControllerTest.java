@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gs.api.domain.Address;
 import com.gs.api.domain.Person;
 import com.gs.api.domain.authentication.AuthCredentials;
-import com.gs.api.domain.registration.Timezone;
 import com.gs.api.domain.registration.User;
 import com.gs.api.exception.NotFoundException;
 import com.gs.api.service.registration.UserService;
@@ -25,9 +24,6 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
@@ -80,7 +76,7 @@ public class UserControllerTest {
 
         String jsonModel = new ObjectMapper().writeValueAsString(user);
 
-        mockMvc.perform(post("/user")
+        mockMvc.perform(post("/users")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonModel))
                 .andExpect(status().isCreated())
@@ -100,7 +96,7 @@ public class UserControllerTest {
 
         String jsonModel = new ObjectMapper().writeValueAsString(user);
 
-        mockMvc.perform(post("/user")
+        mockMvc.perform(post("/users")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonModel))
                 .andExpect(status().isBadRequest())
@@ -116,7 +112,7 @@ public class UserControllerTest {
 
         String id = "persn0001234";
 
-        mockMvc.perform(delete("/user/" + id)
+        mockMvc.perform(delete("/users/" + id)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent());
 
@@ -133,7 +129,7 @@ public class UserControllerTest {
 
         when(userService.getUser(id)).thenReturn(user);
 
-        mockMvc.perform(get("/user/" + id)
+        mockMvc.perform(get("/users/" + id)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.username").value(is(USER_NAME)));
@@ -151,40 +147,11 @@ public class UserControllerTest {
 
         when(userService.getUser(id)).thenThrow(new NotFoundException("User not found"));
 
-        mockMvc.perform(get("/user/" + id)
+        mockMvc.perform(get("/users/" + id)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
 
         verify(userService).getUser(id);
-    }
-
-    @Test
-    public void testGetTimezones() throws Exception {
-        Timezone expectedTimezone = new Timezone();
-        expectedTimezone.setId("tmz123");
-        expectedTimezone.setName("Easternish");
-        List<Timezone> expectedList  = new ArrayList<>();
-        expectedList.add(expectedTimezone);
-        when(userService.getTimezones()).thenReturn(expectedList);
-
-        mockMvc.perform(get("/user/timezones")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.[0].id", is(expectedTimezone.getId())))
-                .andExpect(jsonPath("$.[0].name", is(expectedTimezone.getName())));
-
-        verify(userService).getTimezones();
-    }
-
-    @Test
-    public void testGetTimezones_RuntimeException() throws Exception {
-        when(userService.getTimezones()).thenThrow(new RuntimeException("The test broke stuff intentionally"));
-
-        mockMvc.perform(get("/user/timezones")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isInternalServerError());
-
-        verify(userService).getTimezones();
     }
 
     @Test
@@ -194,7 +161,7 @@ public class UserControllerTest {
 
         String jsonModel = new ObjectMapper().writeValueAsString(acr);
 
-        mockMvc.perform(post("/user/password/forgot")
+        mockMvc.perform(post("/users/password/forgot")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonModel))
                 .andExpect(status().isNoContent());
@@ -213,7 +180,7 @@ public class UserControllerTest {
 
         doThrow(new NotFoundException("no such test user")).when(userService).forgotPassword(isA(AuthCredentials.class));
 
-        mockMvc.perform(post("/user/password/forgot")
+        mockMvc.perform(post("/users/password/forgot")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonModel))
                 .andExpect(status().isNotFound());

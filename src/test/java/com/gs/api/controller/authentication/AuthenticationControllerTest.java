@@ -70,7 +70,7 @@ public class AuthenticationControllerTest {
 
         when(authenticationService.generateToken()).thenReturn(authToken);
 
-        mockMvc.perform(get("/token")
+        mockMvc.perform(get("/tokens")
                 .accept(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").value(is(TEST_TOKEN)));

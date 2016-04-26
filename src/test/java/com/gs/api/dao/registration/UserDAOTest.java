@@ -2,9 +2,7 @@ package com.gs.api.dao.registration;
 
 import com.gs.api.domain.Address;
 import com.gs.api.domain.Person;
-import com.gs.api.domain.registration.Timezone;
 import com.gs.api.domain.registration.User;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -13,8 +11,6 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
@@ -26,16 +22,24 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.sql.ResultSet;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.mock;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -98,7 +102,6 @@ public class UserDAOTest {
     private User user;
 
     private UserDAO.UserRowMapper userRowMapper;
-    private UserDAO.TimezoneRowMapper timezoneRowMapper;
 
     @InjectMocks
     @Autowired
@@ -175,7 +178,6 @@ public class UserDAOTest {
         user.setPerson(person);
 
         userRowMapper = userDAO.new UserRowMapper();
-        timezoneRowMapper = userDAO.new TimezoneRowMapper();
     }
 
     @Test
@@ -595,45 +597,5 @@ public class UserDAOTest {
         assertEquals(PASSWORD, parameters.getValue("xold_password"));
         assertEquals(NEW_PASSWORD, parameters.getValue("xnew_password"));
         assertEquals(UserDAO.SABA_ADMIN_ID, parameters.getValue("xcurr_user_id"));
-    }
-
-    @Test
-    public void testGetTimezonesSuccess() throws Exception {
-        when(jdbcTemplate.query(anyString(), any(UserDAO.TimezoneRowMapper.class))).thenAnswer(new Answer<List<Timezone>>() {
-            @Override
-            public List<Timezone> answer(InvocationOnMock invocation) throws Throwable {
-                return new ArrayList<Timezone>();
-            }
-        });
-        List<Timezone> list = userDAO.getTimezones();
-        assertNotNull(list);
-        assertEquals(0, list.size());
-    }
-
-    @Test
-    public void testGetTimezones_RuntimeException() throws Exception {
-        when(jdbcTemplate.query(anyString(), any(UserDAO.TimezoneRowMapper.class))).thenThrow(new RuntimeException("random exception"));
-
-        try {
-            userDAO.getTimezones();
-            assertTrue(false); //Should never reach this line
-        }
-        catch (Exception e) {
-            assertNotNull(e);
-            assertTrue(e instanceof Exception);
-        }
-    }
-
-    @Test
-    public void testTimezoneDAO_RowMapper() throws Exception {
-        String expectedId = "tmz0011";
-        String expectedName = "Eastern Time";
-        ResultSet rs = mock(ResultSet.class);
-        when(rs.getString("ID")).thenReturn(expectedId);
-        when(rs.getString("NAME")).thenReturn(expectedName);
-        Timezone timezone = timezoneRowMapper.mapRow(rs, 0);
-        assertNotNull(timezone);
-        assertEquals(expectedId, timezone.getId());
-        assertEquals(expectedName, timezone.getName());
     }
 }

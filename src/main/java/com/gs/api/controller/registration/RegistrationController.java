@@ -6,7 +6,6 @@ import com.gs.api.domain.registration.RegistrationRequest;
 import com.gs.api.domain.registration.RegistrationResponse;
 import com.gs.api.service.authentication.AuthenticationService;
 import com.gs.api.service.registration.RegistrationService;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,21 +13,15 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.EnableAsync;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 @Configuration
 @EnableAsync
 @RestController
-@RequestMapping("/registration")
+@RequestMapping("/registrations")
 public class RegistrationController extends BaseController {
 
     final Logger logger = LoggerFactory.getLogger(RegistrationController.class);
@@ -40,7 +33,7 @@ public class RegistrationController extends BaseController {
     private AuthenticationService authenticationService;
 
     @ResponseStatus(HttpStatus.CREATED)
-    @RequestMapping(value = "/user/{id}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/users/{id}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public RegistrationResponse createRegistration(@PathVariable("id") String id, @RequestBody RegistrationRequest registrationRequest, HttpServletRequest request) throws Exception  {
 
         logger.debug("{} is creating {} registration(s)", id, registrationRequest.getRegistrations().size());
@@ -59,7 +52,7 @@ public class RegistrationController extends BaseController {
      * @return
      * @throws Exception
      */
-    @RequestMapping(value = "/user/{uid}/session/{sessionId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/users/{uid}/sessions/{sessionId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public List<Registration> getRegistration(@PathVariable("uid") String userId, @PathVariable("sessionId") String sessionId) throws Exception {
 
         logger.debug("Checking for duplicate registration for " + userId +

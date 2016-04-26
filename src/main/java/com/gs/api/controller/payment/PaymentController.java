@@ -20,7 +20,7 @@ import java.util.List;
 
 @Configuration
 @RestController
-@RequestMapping("/payment")
+@RequestMapping("/payments")
 public class PaymentController extends BaseController {
 
     final Logger logger = LoggerFactory.getLogger(PaymentController.class);
@@ -29,7 +29,7 @@ public class PaymentController extends BaseController {
     private PaymentService paymentService;
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @RequestMapping(value = "/reverse", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/reversals", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public void reversePayment(@RequestBody List<Payment> payments) throws Exception  {
 
         // TODO should we be passing user id in the URI and verifying user with token?

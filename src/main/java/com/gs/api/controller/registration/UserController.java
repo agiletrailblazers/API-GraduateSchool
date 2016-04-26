@@ -2,10 +2,8 @@ package com.gs.api.controller.registration;
 
 import com.gs.api.controller.BaseController;
 import com.gs.api.domain.authentication.AuthCredentials;
-import com.gs.api.domain.registration.Timezone;
 import com.gs.api.domain.registration.User;
 import com.gs.api.service.registration.UserService;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,21 +11,19 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.EnableAsync;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import javax.validation.Valid;
 
 @Configuration
 @EnableAsync
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/users")
 public class UserController extends BaseController {
 
     final Logger logger = LoggerFactory.getLogger(UserController.class);
@@ -62,14 +58,6 @@ public class UserController extends BaseController {
         logger.debug("Get User {}", id);
 
         return userService.getUser(id);
-    }
-
-    @RequestMapping(value = "/timezones", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<Timezone> getTimezones() throws Exception {
-
-        logger.debug("Get timezones");
-
-        return userService.getTimezones();
     }
 
     /**

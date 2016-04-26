@@ -4,11 +4,9 @@ import com.gs.api.dao.registration.UserDAO;
 import com.gs.api.domain.Address;
 import com.gs.api.domain.Person;
 import com.gs.api.domain.authentication.AuthCredentials;
-import com.gs.api.domain.registration.Timezone;
 import com.gs.api.domain.registration.User;
 import com.gs.api.exception.NotFoundException;
 import com.gs.api.service.email.EmailService;
-
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.Before;
 import org.junit.Rule;
@@ -20,18 +18,14 @@ import org.mockito.Mock;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
 @RunWith(PowerMockRunner.class)
@@ -177,34 +171,6 @@ public class UserServiceTest {
         thrown.expectMessage("User not found by id " + USER_ID);
 
         userService.getUser(USER_ID);
-    }
-
-    @Test
-    public void testGetTimezones() throws Exception {
-        Timezone expectedTimezone = new Timezone();
-        expectedTimezone.setId("tmz123");
-        expectedTimezone.setName("Easternish");
-        List<Timezone> expectedList  = new ArrayList<>();
-        expectedList.add(expectedTimezone);
-        when(userDao.getTimezones()).thenReturn(expectedList);
-        List<Timezone> returnedTimezones = userService.getTimezones();
-        assertEquals(1, returnedTimezones.size());
-        assertEquals(returnedTimezones.get(0).getId(), expectedTimezone.getId());
-        assertEquals(returnedTimezones.get(0).getName(), expectedTimezone.getName());
-
-    }
-
-    @Test
-    public void testGetTimezones_RuntimeException() throws Exception {
-
-        final RuntimeException expectedException = new RuntimeException("random exception");
-        when(userDao.getTimezones()).thenThrow(expectedException);
-
-        // setup expected exception
-        thrown.expect(RuntimeException.class);
-        thrown.expectMessage(expectedException.getMessage());
-
-        userService.getTimezones();
     }
 
     @Test

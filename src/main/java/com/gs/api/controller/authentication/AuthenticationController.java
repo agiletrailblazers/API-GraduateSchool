@@ -27,7 +27,7 @@ public class AuthenticationController extends BaseController {
     @Autowired
     private AuthenticationService authenticationService;
 
-    @RequestMapping(value = "/token", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/tokens", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public AuthToken generateToken() throws Exception  {
 
         logger.debug("Generating an API token");

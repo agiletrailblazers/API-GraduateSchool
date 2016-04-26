@@ -2,11 +2,8 @@ package com.gs.api.dao.registration;
 
 import com.gs.api.domain.Address;
 import com.gs.api.domain.Person;
-import com.gs.api.domain.registration.Timezone;
 import com.gs.api.domain.registration.User;
-
 import oracle.jdbc.OracleTypes;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,14 +16,12 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.stereotype.Repository;
 
+import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
-
-import javax.sql.DataSource;
 
 @Repository
 public class UserDAO {
@@ -84,19 +79,6 @@ public class UserDAO {
         this.listEntryActor = new SimpleJdbcCall(this.jdbcTemplate).withProcedureName(insertfgtListEntryStoredProcedureName);
         this.deleteUserActor = new SimpleJdbcCall(this.jdbcTemplate).withProcedureName(deleteUserStoredProcedureName);
         this.resetPasswordActor = new SimpleJdbcCall(this.jdbcTemplate).withProcedureName(resetPasswordStoredProcedureName);
-    }
-
-    /**
-     * Get the list of timezones
-     * @return list of timezones
-     * @throws Exception
-     */
-    public List<Timezone> getTimezones() throws Exception {
-        logger.debug("Getting list of timezones - " + sqlForTimezones);
-
-        final List<Timezone> timezones = this.jdbcTemplate.query(sqlForTimezones, new TimezoneRowMapper());
-        logger.debug("Found {} timezones", timezones.size());
-        return timezones;
     }
 
     /**
@@ -365,18 +347,6 @@ public class UserDAO {
             user.setPerson(person);
 
             return user;
-        }
-    }
-
-    protected final class TimezoneRowMapper implements RowMapper<Timezone> {
-        /**
-         * Map a row for a Timezone object from a result set
-         */
-        public Timezone mapRow(ResultSet rs, int rowNum) throws SQLException {
-            Timezone timezone = new Timezone();
-            timezone.setId(rs.getString("ID"));
-            timezone.setName(rs.getString("NAME"));
-            return timezone;
         }
     }
 

@@ -234,7 +234,7 @@ public class CourseControllerTest {
 
         when(courseService.getSessionById(sessionId)).thenReturn(CourseTestHelper.createSession(sessionId));
 
-        mockMvc.perform(get("/courses/session/{sessionId}", sessionId).accept(MediaType.APPLICATION_JSON_VALUE))
+        mockMvc.perform(get("/courses/sessions/{sessionId}", sessionId).accept(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("classNumber").value(is(sessionId)));
@@ -258,7 +258,7 @@ public class CourseControllerTest {
 
         when(courseService.getSessionById(sessionId)).thenReturn(null);
 
-        mockMvc.perform(get("/courses/session/{sessionId}", sessionId).accept(MediaType.APPLICATION_JSON_VALUE))
+        mockMvc.perform(get("/courses/sessions/{sessionId}", sessionId).accept(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentType("application/json"));
     }
