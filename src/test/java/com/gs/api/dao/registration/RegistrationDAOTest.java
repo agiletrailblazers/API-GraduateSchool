@@ -15,7 +15,10 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.sql.ResultSet;
 import java.util.*;
 
@@ -148,6 +151,17 @@ public class RegistrationDAOTest {
 
     @Test
     public void testRegister() throws Exception {
+        //Check if method is annotated for Spring Transaction
+        Method method = RegistrationDAO.class.getMethod("registerForCourse", new Class[] {User.class, User.class, CourseSession.class});
+        Annotation[] annotations = method.getAnnotations();
+        boolean classAnnotatedWithTransactional = false;
+        for (int i=0; i<annotations.length; i++){
+            if(annotations[i].annotationType().equals(Transactional.class)){
+                classAnnotatedWithTransactional = true;
+            }
+        }
+        assertTrue(classAnnotatedWithTransactional);
+
         HashMap<String, Object> sqlResult = new HashMap<>();
 
         String expectedOfferingActionProfileId = "ofapr100";
