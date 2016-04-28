@@ -19,7 +19,10 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ClassUtils;
 
+import java.lang.reflect.Method;
 import java.sql.ResultSet;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -40,6 +43,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.mock;
+
+import java.lang.annotation.Annotation;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -182,6 +187,19 @@ public class UserDAOTest {
 
     @Test
     public void testInsertUser() throws Exception {
+
+        //Check if method is annotated for Spring Transaction
+        Method method = UserDAO.class.getMethod("insertNewUser", new Class[] {User.class});
+        Annotation[] annotations = method.getAnnotations();
+        boolean classAnnotatedWithTransactional = false;
+        for (int i=0; i<annotations.length; i++){
+            if(annotations[i].annotationType().equals(Transactional.class)){
+                classAnnotatedWithTransactional = true;
+            }
+        }
+        assertTrue(classAnnotatedWithTransactional);
+
+
         HashMap<String, Object> sqlResult = new HashMap<>();
         String expectedPersonId = "persn100";
         String expectedProfileId = "ppcor1000";

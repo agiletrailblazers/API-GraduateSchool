@@ -16,6 +16,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -93,6 +94,7 @@ public class RegistrationDAO {
      * @return the created registration.
      * @throws Exception error creating registration.
      */
+    @Transactional("transactionManager")
     public Registration registerForCourse(User user, User student, CourseSession session) throws Exception {
         logger.debug("Inserting registration into the database");
 

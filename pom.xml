@@ -91,6 +91,11 @@
               <artifactId>ehcache-spring-annotations</artifactId>
               <version>1.2.0</version>
         </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-tx</artifactId>
+            <version>${org.springframework-version}</version>
+        </dependency>
 
         <!-- Mail -->
         <dependency>

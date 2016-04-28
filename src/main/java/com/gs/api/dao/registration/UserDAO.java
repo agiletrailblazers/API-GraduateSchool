@@ -15,6 +15,9 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import javax.sql.DataSource;
 import java.sql.ResultSet;
@@ -182,6 +185,7 @@ public class UserDAO {
      * @return the id of the newley created user.
      * @throws Exception error creating user.
      */
+    @Transactional("transactionManager")
     public String insertNewUser(final User user) throws Exception {
         Person person = user.getPerson();
         Address sabaFormattedAddress = mapAddressToSabaFormat(person.getPrimaryAddress());
