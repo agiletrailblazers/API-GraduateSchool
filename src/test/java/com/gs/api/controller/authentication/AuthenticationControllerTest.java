@@ -85,7 +85,7 @@ public class AuthenticationControllerTest {
         AuthCredentials authCredentials = new AuthCredentials(USERNAME, PASSWORD);
         final User user = new User();
         user.setId("user12345");
-        AuthUser authUser = new AuthUser(new AuthToken(TEST_TOKEN), new RenewalToken(TEST_TOKEN), user);
+        AuthUser authUser = new AuthUser(new AuthToken(TEST_TOKEN), new RenewalToken(TEST_TOKEN), user, false);
         String jsonModel = new ObjectMapper().writeValueAsString(authCredentials);
 
         when(authenticationService.authenticateUser(any(AuthCredentials.class))).thenReturn(authUser);

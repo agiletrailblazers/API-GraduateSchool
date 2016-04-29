@@ -85,6 +85,9 @@ public class UserDAO {
     @Value("${sql.user.password.query}")
     private String sqlForPasswordQuery;
 
+    @Value("${sql.user.needPWChange.query}")
+    private String sqlForNeedPWChangeCheck;
+
     @Autowired
     public void setDataSource(DataSource dataSource) {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
@@ -525,5 +528,18 @@ public class UserDAO {
 
         logger.debug("Resetting user password. Executing stored procedure: {}", changePasswordStoredProcedureName);
         executeUserStoredProcedure(in, changePasswordActor);
+    }
+
+    public boolean needsPasswordChange(String userId){
+        String createdBy = this.jdbcTemplate.queryForObject(sqlForNeedPWChangeCheck, new Object[] { userId }, String.class);
+
+        //the stored procedure 'tpp_person_ins' inserts value for newly created user
+        // in tpt_password_history table with 'emp' in the createdby field
+        if (!createdBy.equalsIgnoreCase(userId) && !createdBy.equalsIgnoreCase("emp")){
+            return true;
+        }
+
+        return false;
+
     }
 }

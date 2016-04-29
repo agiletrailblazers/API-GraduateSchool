@@ -33,6 +33,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
@@ -84,6 +85,9 @@ public class UserDAOTest {
     private String getProfileIdSequenceQuery;
     @Value("${sql.user.listEntry.sequence}")
     private String getListEntryIdSequenceQuery;
+
+    @Value("${sql.user.needPWChange.query}")
+    private String sqlForNeedPWChangeCheck;
 
     private static final String USER_ID = "persn0001";
     private static final String FIRST_NAME = "Joe";
@@ -156,6 +160,9 @@ public class UserDAOTest {
 
     @Captor
     private ArgumentCaptor<Object[]> singleUserQueryParamsCaptor;
+
+    @Captor
+    private ArgumentCaptor<Object[]> needsPWChangeCheckCaptor;
 
     @Before
     public void setUp() throws Exception {
@@ -651,7 +658,7 @@ public class UserDAOTest {
     }
 
     @Test
-    public void testChangePassword() throws Exception {
+     public void testChangePassword() throws Exception {
         HashMap<String, Object> sqlResult = new HashMap<>();
         doReturn(sqlResult).when(changePasswordActor).execute(any(SqlParameterSource.class));
 
@@ -666,5 +673,56 @@ public class UserDAOTest {
         assertEquals(PASSWORD, parameters.getValue("xold_password"));
         assertEquals(NEW_PASSWORD, parameters.getValue("xnew_password"));
         assertEquals(USER_ID, parameters.getValue("xcurr_user_id"));
+    }
+
+    @Test
+    public void testNeedsPasswordChange_true() throws Exception {
+        Object[] expectedQueryParams = new Object[] { USER_ID };
+
+        when(jdbcTemplate.queryForObject(anyString(), any(Object[].class), eq(String.class))).thenReturn("notTheUserId");
+
+        boolean needsPWChange = userDAO.needsPasswordChange(USER_ID);
+
+        assertNotNull("Expected boolean response", needsPWChange);
+        assertTrue(needsPWChange);
+
+        verify(jdbcTemplate).queryForObject(eq(sqlForNeedPWChangeCheck), needsPWChangeCheckCaptor.capture(), eq(String.class));
+        Object[] capturedQueryParams = needsPWChangeCheckCaptor.getValue();
+        assertNotNull("Expected parameters", capturedQueryParams);
+        assertArrayEquals("wrong parameters", expectedQueryParams, capturedQueryParams);
+    }
+
+    @Test
+    public void testNeedsPasswordChange_falseWithUserIdReturned() throws Exception {
+        Object[] expectedQueryParams = new Object[] { USER_ID };
+
+        when(jdbcTemplate.queryForObject(anyString(), any(Object[].class), eq(String.class))).thenReturn(USER_ID);
+
+        boolean needsPWChange = userDAO.needsPasswordChange(USER_ID);
+
+        assertNotNull("Expected boolean response", needsPWChange);
+        assertFalse(needsPWChange);
+
+        verify(jdbcTemplate).queryForObject(eq(sqlForNeedPWChangeCheck), needsPWChangeCheckCaptor.capture(), eq(String.class));
+        Object[] capturedQueryParams = needsPWChangeCheckCaptor.getValue();
+        assertNotNull("Expected parameters", capturedQueryParams);
+        assertArrayEquals("wrong parameters", expectedQueryParams, capturedQueryParams);
+    }
+
+    @Test
+    public void testNeedsPasswordChange_falseWithEMPReturned() throws Exception {
+        Object[] expectedQueryParams = new Object[] { USER_ID };
+
+        when(jdbcTemplate.queryForObject(anyString(), any(Object[].class), eq(String.class))).thenReturn("emp");
+
+        boolean needsPWChange = userDAO.needsPasswordChange(USER_ID);
+
+        assertNotNull("Expected boolean response", needsPWChange);
+        assertFalse(needsPWChange);
+
+        verify(jdbcTemplate).queryForObject(eq(sqlForNeedPWChangeCheck), needsPWChangeCheckCaptor.capture(), eq(String.class));
+        Object[] capturedQueryParams = needsPWChangeCheckCaptor.getValue();
+        assertNotNull("Expected parameters", capturedQueryParams);
+        assertArrayEquals("wrong parameters", expectedQueryParams, capturedQueryParams);
     }
 }
