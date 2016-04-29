@@ -137,7 +137,7 @@ public class UserDAOTest {
     private SimpleJdbcCall deleteUserActor;
 
     @Mock
-    private SimpleJdbcCall resetPasswordActor;
+    private SimpleJdbcCall changePasswordActor;
 
     @Captor
     private ArgumentCaptor<SqlParameterSource> insertUserCaptor;
@@ -152,7 +152,7 @@ public class UserDAOTest {
     private ArgumentCaptor<SqlParameterSource> deleteUserCaptor;
 
     @Captor
-    private ArgumentCaptor<SqlParameterSource> resetPasswordCaptor;
+    private ArgumentCaptor<SqlParameterSource> changePasswordCaptor;
 
     @Captor
     private ArgumentCaptor<Object[]> singleUserQueryParamsCaptor;
@@ -629,7 +629,7 @@ public class UserDAOTest {
         when(jdbcTemplate.queryForObject(anyString(), any(Object[].class), eq(String.class))).thenReturn(PASSWORD);
 
         HashMap<String, Object> sqlResult = new HashMap<>();
-        doReturn(sqlResult).when(resetPasswordActor).execute(any(SqlParameterSource.class));
+        doReturn(sqlResult).when(changePasswordActor).execute(any(SqlParameterSource.class));
 
         userDAO.resetForgottenPassword(USER_ID, NEW_PASSWORD);
 
@@ -640,13 +640,31 @@ public class UserDAOTest {
         assertArrayEquals("wrong parameters", expectedQueryParams, capturedQueryParams);
 
         // verify stored procedure call to reset password
-        verify(resetPasswordActor).execute(resetPasswordCaptor.capture());
-        SqlParameterSource parameters = resetPasswordCaptor.getValue();
+        verify(changePasswordActor).execute(changePasswordCaptor.capture());
+        SqlParameterSource parameters = changePasswordCaptor.getValue();
 
         assertNotNull("no parameters passed to reset password", parameters);
         assertEquals(USER_ID, parameters.getValue("xid"));
         assertEquals(PASSWORD, parameters.getValue("xold_password"));
         assertEquals(NEW_PASSWORD, parameters.getValue("xnew_password"));
         assertEquals(UserDAO.SABA_ADMIN_ID, parameters.getValue("xcurr_user_id"));
+    }
+
+    @Test
+    public void testChangePassword() throws Exception {
+        HashMap<String, Object> sqlResult = new HashMap<>();
+        doReturn(sqlResult).when(changePasswordActor).execute(any(SqlParameterSource.class));
+
+        userDAO.changeUserPassword(USER_ID, PASSWORD, NEW_PASSWORD);
+
+        // verify stored procedure call to reset password
+        verify(changePasswordActor).execute(changePasswordCaptor.capture());
+        SqlParameterSource parameters = changePasswordCaptor.getValue();
+
+        assertNotNull("no parameters passed to reset password", parameters);
+        assertEquals(USER_ID, parameters.getValue("xid"));
+        assertEquals(PASSWORD, parameters.getValue("xold_password"));
+        assertEquals(NEW_PASSWORD, parameters.getValue("xnew_password"));
+        assertEquals(USER_ID, parameters.getValue("xcurr_user_id"));
     }
 }

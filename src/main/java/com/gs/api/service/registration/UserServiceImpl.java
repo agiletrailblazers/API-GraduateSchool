@@ -1,6 +1,7 @@
 package com.gs.api.service.registration;
 
 import com.gs.api.dao.registration.UserDAO;
+import com.gs.api.domain.PWChangeCredentials;
 import com.gs.api.domain.authentication.AuthCredentials;
 import com.gs.api.domain.registration.User;
 import com.gs.api.exception.NotFoundException;
@@ -104,6 +105,21 @@ public class UserServiceImpl implements UserService {
         catch (Exception e) {
             logger.error("Password reset for user {} but failed to send new user email", user.getUsername(), e);
         }
+    }
+
+    @Override
+    public void changePassword(final PWChangeCredentials pwChangeCredentials) throws Exception{
+        logger.info("Changing password for user: {}", pwChangeCredentials.getUsername());
+
+        // get the user
+        User user = userDao.getUser(pwChangeCredentials.getUsername(), pwChangeCredentials.getPassword());
+
+        if (user == null) {
+            logger.debug("Username or Password Incorrect for user {}", pwChangeCredentials.getUsername());
+            throw new NotFoundException("Username or Password Incorrect for user " + pwChangeCredentials.getUsername());
+        }
+
+        userDao.changeUserPassword(user.getId(), pwChangeCredentials.getPassword(), pwChangeCredentials.getNewPassword());
     }
 
     /**

@@ -2,6 +2,7 @@ package com.gs.api.controller.registration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gs.api.domain.Address;
+import com.gs.api.domain.PWChangeCredentials;
 import com.gs.api.domain.Person;
 import com.gs.api.domain.authentication.AuthCredentials;
 import com.gs.api.domain.registration.User;
@@ -62,6 +63,9 @@ public class UserControllerTest {
 
     @Captor
     private ArgumentCaptor<AuthCredentials> capturedAuthCredentials;
+
+    @Captor
+    private ArgumentCaptor<PWChangeCredentials> capturedPWChangeCredentials;
 
     @Before
     public void setUp() throws Exception {
@@ -187,6 +191,42 @@ public class UserControllerTest {
 
         verify(userService).forgotPassword(isA(AuthCredentials.class));
     }
+
+    @Test
+    public void testChangePassword() throws Exception {
+
+        PWChangeCredentials pwChangeCredentials = new PWChangeCredentials("dummyUsername", "dummyOriginalPwd", "dummyNewPassword");
+
+        String jsonModel = new ObjectMapper().writeValueAsString(pwChangeCredentials);
+
+        mockMvc.perform(post("/users/password/change")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonModel))
+                .andExpect(status().isNoContent());
+
+        verify(userService).changePassword(capturedPWChangeCredentials.capture());
+
+        assertNotNull("Expected new credentials", capturedPWChangeCredentials.getValue());
+        assertEquals("Wrong username", pwChangeCredentials.getUsername(), capturedPWChangeCredentials.getValue().getUsername());
+        assertEquals("Wrong new password", pwChangeCredentials.getNewPassword(), capturedPWChangeCredentials.getValue().getNewPassword());
+    }
+
+    @Test
+    public void testChangePassword_noSuchUser() throws Exception {
+
+        PWChangeCredentials pwChangeCredentials = new PWChangeCredentials("dummyUsername", "dummyOriginalPwd", "dummyNewPassword");
+        String jsonModel = new ObjectMapper().writeValueAsString(pwChangeCredentials);
+
+        doThrow(new NotFoundException("no such test user")).when(userService).changePassword(isA(PWChangeCredentials.class));
+
+        mockMvc.perform(post("/users/password/change")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonModel))
+                .andExpect(status().isNotFound());
+
+        verify(userService).changePassword(isA(PWChangeCredentials.class));
+    }
+
 
     private User createValidTestUser() {
         User user = new User();
