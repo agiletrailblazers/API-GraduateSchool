@@ -35,7 +35,7 @@ public class UserDAO {
     private SimpleJdbcCall profileInsertActor;
     private SimpleJdbcCall listEntryActor;
     private SimpleJdbcCall deleteUserActor;
-    private SimpleJdbcCall resetPasswordActor;
+    private SimpleJdbcCall changePasswordActor;
 
     @Value("${sql.user.personInsert.procedure}")
     private String insertUserStoredProcedureName;
@@ -65,8 +65,8 @@ public class UserDAO {
     @Value("${sql.user.timezones.query}")
     private String sqlForTimezones;
 
-    @Value("${sql.user.resetPassword.procedure}")
-    private String resetPasswordStoredProcedureName;
+    @Value("${sql.user.changePassword.procedure}")
+    private String changePasswordStoredProcedureName;
 
     @Value("${sql.user.password.query}")
     private String sqlForPasswordQuery;
@@ -78,7 +78,7 @@ public class UserDAO {
         this.profileInsertActor = new SimpleJdbcCall(this.jdbcTemplate).withProcedureName(insertProfileStoredProcedureName);
         this.listEntryActor = new SimpleJdbcCall(this.jdbcTemplate).withProcedureName(insertfgtListEntryStoredProcedureName);
         this.deleteUserActor = new SimpleJdbcCall(this.jdbcTemplate).withProcedureName(deleteUserStoredProcedureName);
-        this.resetPasswordActor = new SimpleJdbcCall(this.jdbcTemplate).withProcedureName(resetPasswordStoredProcedureName);
+        this.changePasswordActor = new SimpleJdbcCall(this.jdbcTemplate).withProcedureName(changePasswordStoredProcedureName);
     }
 
     /**
@@ -173,7 +173,15 @@ public class UserDAO {
         logger.debug("Found password for user {}", userId);
 
         // reset the password using the saba admin user id and the users current password
-        resetPassword(userId, SABA_ADMIN_ID, currentPassword, newPassword);
+        changePassword(userId, SABA_ADMIN_ID, currentPassword, newPassword);
+    }
+
+    public void changeUserPassword(String userId, String currentPassword, String newPassword) throws Exception {
+
+        logger.debug("Changing password for user {}", userId);
+
+        // change the password using the saba admin user id and the users current password
+        changePassword(userId, userId, currentPassword, newPassword);
     }
 
     /**
@@ -478,7 +486,7 @@ public class UserDAO {
         return sabaFormattedAddress;
     }
 
-    private void resetPassword(String userId, String currentUserId, String oldPassword, String newPassword) throws Exception {
+    private void changePassword(String userId, String currentUserId, String oldPassword, String newPassword) throws Exception {
 
         MapSqlParameterSource in = new MapSqlParameterSource()
                 .addValue("xid", userId, OracleTypes.CHAR)
@@ -486,8 +494,8 @@ public class UserDAO {
                 .addValue("xnew_password", newPassword, OracleTypes.VARCHAR)
                 .addValue("xcurr_user_id", currentUserId, OracleTypes.CHAR);
 
-        logger.debug("Resetting user password. Executing stored procedure: {}", resetPasswordStoredProcedureName);
-        executeUserStoredProcedure(in, resetPasswordActor);
+        logger.debug("Resetting user password. Executing stored procedure: {}", changePasswordStoredProcedureName);
+        executeUserStoredProcedure(in, changePasswordActor);
     }
 
 
