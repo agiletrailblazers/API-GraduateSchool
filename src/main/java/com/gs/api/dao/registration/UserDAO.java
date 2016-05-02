@@ -5,12 +5,14 @@ import com.gs.api.domain.Person;
 import com.gs.api.domain.registration.Timezone;
 import com.gs.api.domain.registration.User;
 import com.gs.api.exception.DuplicateUserException;
+import com.gs.api.exception.ReusedPasswordException;
 import oracle.jdbc.OracleTypes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
+import org.springframework.jdbc.UncategorizedSQLException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -527,7 +529,17 @@ public class UserDAO {
                 .addValue("xcurr_user_id", currentUserId, OracleTypes.CHAR);
 
         logger.debug("Resetting user password. Executing stored procedure: {}", changePasswordStoredProcedureName);
-        executeUserStoredProcedure(in, changePasswordActor);
+        try {
+            executeUserStoredProcedure(in, changePasswordActor);
+        } catch (UncategorizedSQLException e) {
+            //Stored proc throws error 20958 when password is reused
+            if (e.getMessage().contains("20958")){
+                throw new ReusedPasswordException("Cannot reuse password", e);
+            } else {
+                //Rethrow exception
+                throw e;
+            }
+        }
     }
 
     public boolean needsPasswordChange(String userId){

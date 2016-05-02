@@ -9,6 +9,7 @@ import com.gs.api.exception.PaymentAcceptedException;
 import com.gs.api.exception.PaymentDeclinedException;
 import com.gs.api.exception.PaymentException;
 import com.gs.api.exception.DuplicateUserException;
+import com.gs.api.exception.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -165,6 +166,17 @@ public abstract class BaseController {
     @ExceptionHandler({ DuplicateUserException.class })
     @ResponseBody
     public String handleDuplicateUserException(DuplicateUserException ex) {
+        return "{\"message\": \"" + ex.getMessage() + "\"}";
+    }
+
+    /**
+     * Return json formatted error response for a generic payment failure
+     * @return ResponseBody
+     */
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler({ ReusedPasswordException.class })
+    @ResponseBody
+    public String handleReusedPasswordException(ReusedPasswordException ex) {
         return "{\"message\": \"" + ex.getMessage() + "\"}";
     }
 
