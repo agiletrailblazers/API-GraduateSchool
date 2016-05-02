@@ -200,7 +200,7 @@ public class UserDAO {
         User existingUser = getUserByUsername(user.getUsername());
         if (existingUser != null) {
             String errorString = "User "+ user.getUsername() + " already exists";
-            logger.error(errorString);
+            logger.debug(errorString);
             throw new DuplicateUserException(errorString);
         }
 
