@@ -3,6 +3,7 @@ package com.gs.api.dao.registration;
 import com.gs.api.domain.Address;
 import com.gs.api.domain.Person;
 import com.gs.api.domain.registration.User;
+import com.gs.api.exception.ReusedPasswordException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,6 +15,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
+import org.springframework.jdbc.UncategorizedSQLException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
@@ -21,6 +23,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -37,6 +40,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.times;
@@ -622,6 +626,37 @@ public class UserDAOTest {
         assertEquals(PASSWORD, parameters.getValue("xold_password"));
         assertEquals(NEW_PASSWORD, parameters.getValue("xnew_password"));
         assertEquals(USER_ID, parameters.getValue("xcurr_user_id"));
+    }
+
+    @Test
+     public void testChangePassword_ReusedPasswordException() throws Exception {
+        UncategorizedSQLException ex = new UncategorizedSQLException(null, null, new SQLException("20958"));
+        doThrow(ex).when(changePasswordActor).execute(any(SqlParameterSource.class));
+
+        try {
+            userDAO.changeUserPassword(USER_ID, PASSWORD, NEW_PASSWORD);
+
+            //Should never get to this line
+            assertTrue(false);
+        } catch (Exception e) {
+            assertEquals("Wrong exception thrown", e.getClass().getTypeName(), ReusedPasswordException.class.getTypeName());
+            assertEquals("Wrong exception message", e.getMessage(),"Cannot reuse password");
+        }
+    }
+
+    @Test
+    public void testChangePassword_GenericSQLException() throws Exception {
+        UncategorizedSQLException ex = new UncategorizedSQLException(null, null, new SQLException("generic exception"));
+        doThrow(ex).when(changePasswordActor).execute(any(SqlParameterSource.class));
+
+        try {
+            userDAO.changeUserPassword(USER_ID, PASSWORD, NEW_PASSWORD);
+
+            //Should never get to this line
+            assertTrue(false);
+        } catch (Exception e) {
+            assertEquals("Wrong exception thrown", e, ex);
+        }
     }
 
     @Test

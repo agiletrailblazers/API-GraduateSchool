@@ -3,11 +3,7 @@ package com.gs.api.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gs.api.domain.error.ValidationError;
-import com.gs.api.exception.AuthenticationException;
-import com.gs.api.exception.NotFoundException;
-import com.gs.api.exception.PaymentAcceptedException;
-import com.gs.api.exception.PaymentDeclinedException;
-import com.gs.api.exception.PaymentException;
+import com.gs.api.exception.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -154,6 +150,17 @@ public abstract class BaseController {
             validationErrors.add(validationError);
         }
         return "{\"validationErrors\":" + mapper.writeValueAsString(validationErrors) + "}";
+    }
+
+    /**
+     * Return json formatted error response for a generic payment failure
+     * @return ResponseBody
+     */
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler({ ReusedPasswordException.class })
+    @ResponseBody
+    public String handleReusedPasswordException(ReusedPasswordException ex) {
+        return "{\"message\": \"" + ex.getMessage() + "\"}";
     }
 
 }
