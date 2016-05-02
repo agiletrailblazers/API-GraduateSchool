@@ -100,11 +100,11 @@ public class UserServiceTest {
     @Test
     public void testCreateUser() throws Exception {
 
-        when(userDao.insertNewUser(user)).thenReturn(USER_ID);
+        when(userDao.createUser(user)).thenReturn(USER_ID);
 
         userService.createUser(user);
 
-        verify(userDao).insertNewUser(user);
+        verify(userDao).createUser(user);
 
         assertEquals("ID not set on user", USER_ID, user.getId());
         assertEquals("Encrypted password not set on user", PASSWORD_ENCRYPTED, user.getPassword());
@@ -114,11 +114,11 @@ public class UserServiceTest {
     public void testCreateUserEmailFails() throws Exception {
 
         Exception expectedException = new Exception("Mail Fail");
-        when(userDao.insertNewUser(user)).thenReturn(USER_ID);
+        when(userDao.createUser(user)).thenReturn(USER_ID);
         doThrow(expectedException).when(emailService).sendNewUserEmail(user);
         userService.createUser(user);
 
-        verify(userDao).insertNewUser(user);
+        verify(userDao).createUser(user);
 
         assertEquals("ID not set on user", USER_ID, user.getId());
         assertEquals("Encrypted password not set on user", PASSWORD_ENCRYPTED, user.getPassword());

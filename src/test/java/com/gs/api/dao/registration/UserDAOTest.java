@@ -3,8 +3,12 @@ package com.gs.api.dao.registration;
 import com.gs.api.domain.Address;
 import com.gs.api.domain.Person;
 import com.gs.api.domain.registration.User;
+import com.gs.api.exception.DuplicateUserException;
+import org.hamcrest.Matchers;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -108,6 +112,11 @@ public class UserDAOTest {
 
     private UserDAO.UserRowMapper userRowMapper;
 
+    /* By default, no exceptions are expected to be thrown (i.e. tests will fail if an exception is thrown),
+    but using this rule allows for verification of operations that are expected to throw specific exception */
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
+
     @InjectMocks
     @Autowired
     private UserDAO userDAO;
@@ -186,10 +195,10 @@ public class UserDAOTest {
     }
 
     @Test
-    public void testInsertUser() throws Exception {
+    public void testCreateUserSuccess() throws Exception {
 
         //Check if method is annotated for Spring Transaction
-        Method method = UserDAO.class.getMethod("insertNewUser", new Class[] {User.class});
+        Method method = UserDAO.class.getMethod("createUser", new Class[] {User.class});
         Annotation[] annotations = method.getAnnotations();
         boolean classAnnotatedWithTransactional = false;
         for (int i=0; i<annotations.length; i++){
@@ -199,11 +208,13 @@ public class UserDAOTest {
         }
         assertTrue(classAnnotatedWithTransactional);
 
-
         HashMap<String, Object> sqlResult = new HashMap<>();
         String expectedPersonId = "persn100";
         String expectedProfileId = "ppcor1000";
         String expectedListEntryId = "liste10000";
+
+        when(jdbcTemplate.queryForObject(anyString(), any(Object[].class), any(UserDAO.UserRowMapper.class))).
+                thenReturn(null);
 
         when(jdbcTemplate.queryForObject(getPersIdSequenceQuery, String.class)).thenReturn("100");
         doReturn(sqlResult).when(userInsertActor).execute(any(SqlParameterSource.class));
@@ -214,7 +225,7 @@ public class UserDAOTest {
         when(jdbcTemplate.queryForObject(getListEntryIdSequenceQuery, String.class)).thenReturn("10000");
         doReturn(sqlResult).when(listEntryActor).execute(any(SqlParameterSource.class));
 
-        String actualUserId = userDAO.insertNewUser(user);
+        String actualUserId = userDAO.createUser(user);
 
         verify(userInsertActor).execute(insertUserCaptor.capture());
         SqlParameterSource userParameters = insertUserCaptor.getValue();
@@ -263,12 +274,28 @@ public class UserDAOTest {
     }
 
     @Test
+    public void testCreateUserThrowsDuplicateException() throws Exception {
+        // setup expected exception
+        thrown.expect(DuplicateUserException.class);
+        thrown.expectMessage(("User "+ USERNAME + " already exists"));
+
+        Object[] expectedQueryParams = new Object[] { USERNAME};
+
+        when(jdbcTemplate.queryForObject(anyString(), any(Object[].class), any(UserDAO.UserRowMapper.class))).
+                thenReturn(user);
+
+        userDAO.createUser(user);
+    }
+
+    @Test
     public void testFailToInsertUser() throws Exception {
+        when(jdbcTemplate.queryForObject(anyString(), any(Object[].class), any(UserDAO.UserRowMapper.class))).
+                thenReturn(null);
         when(jdbcTemplate.queryForObject(getPersIdSequenceQuery, String.class)).thenReturn("100");
         final IllegalArgumentException illegalArgumentException = new IllegalArgumentException("BAD SQL");
         when(userInsertActor.execute(any(SqlParameterSource.class))).thenThrow(illegalArgumentException);
         try {
-            userDAO.insertNewUser(user);
+            userDAO.createUser(user);
             assertTrue(false); //Should never reach this line
         }
         catch (IllegalArgumentException iE) {
@@ -280,6 +307,9 @@ public class UserDAOTest {
     public void testFailToInsertProfile() throws Exception {
         HashMap<String, Object> sqlResult = new HashMap<>();
 
+        when(jdbcTemplate.queryForObject(anyString(), any(Object[].class), any(UserDAO.UserRowMapper.class))).
+                thenReturn(null);
+
         //Mock successful User insert
         when(jdbcTemplate.queryForObject(getPersIdSequenceQuery, String.class)).thenReturn("100");
         doReturn(sqlResult).when(userInsertActor).execute(any(SqlParameterSource.class));
@@ -290,7 +320,7 @@ public class UserDAOTest {
                 .thenThrow(illegalArgumentException);
 
         try {
-            userDAO.insertNewUser(user);
+            userDAO.createUser(user);
             assertTrue(false); //Should never reach this line
         }
         catch (IllegalArgumentException iE) {
@@ -301,6 +331,9 @@ public class UserDAOTest {
     @Test
     public void testFailInsertListEntry() throws Exception {
         HashMap<String, Object> sqlResult = new HashMap<>();
+
+        when(jdbcTemplate.queryForObject(anyString(), any(Object[].class), any(UserDAO.UserRowMapper.class))).
+                thenReturn(null);
 
         when(jdbcTemplate.queryForObject(getPersIdSequenceQuery, String.class)).thenReturn("100");
         doReturn(sqlResult).when(userInsertActor).execute(any(SqlParameterSource.class));
@@ -314,7 +347,7 @@ public class UserDAOTest {
                 .thenThrow(illegalArgumentException);
 
         try {
-            userDAO.insertNewUser(user);
+            userDAO.createUser(user);
             assertTrue(false); //Should never reach this line
         } catch (IllegalArgumentException iE) {
             assertSame(illegalArgumentException, iE);

@@ -29,7 +29,7 @@ public class UserServiceImpl implements UserService {
 
         logger.info("Creating new user: {} {} {}", new String[] {user.getPerson().getFirstName(), user.getPerson().getMiddleName(), user.getPerson().getLastName()});
 
-        String userId = userDao.insertNewUser(user);
+        String userId = userDao.createUser(user);
 
         // update the user with the generated ID
         user.setId(userId);
