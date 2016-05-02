@@ -2,7 +2,9 @@ package com.gs.api.dao.registration;
 
 import com.gs.api.domain.Address;
 import com.gs.api.domain.Person;
+import com.gs.api.domain.registration.Timezone;
 import com.gs.api.domain.registration.User;
+import com.gs.api.exception.DuplicateUserException;
 import oracle.jdbc.OracleTypes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,14 +26,23 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 @Repository
 public class UserDAO {
     private static final Logger logger = LoggerFactory.getLogger(UserDAO.class);
+    static final String SABA_ADMIN_ID = "emplo000000000000001";
     static final String SABA_GUEST = "sabaguest";
     static final String SABA_GUEST_ID = "emplo000000000000000";
-    static final String SABA_ADMIN_ID = "emplo000000000000001";
+    static final String SPLIT_ID = "domin000000000000001"; //Seems to be an alias for domain but different fields in DB
+    static final String HOME_DOMAIN_ID = "domin000000000000001"; //Seems to be an alias for split but different fields in DB
+    static final String CURRENCY_ID = "crncy000000000000167"; //We could execute a query to find active currency in system but this is standard
+    static final String DESKTOP_PERMISSION_LIST_ID = "listl000000000000101"; //External security role grants permission to main saba app
+    static final String DOMAIN_ID_CPRIV_ID_LIST_ID = "listl000000000001004"; // Concat of two security tables ids [domin000000000000001][cpriv000000000000117]
+    static final String LOCALE_ID = "local000000000000001"; //Some SP automatically generate this but person_ins does not so it must be specified
+    static final String ENTRY_TYPE_ID = "ppetp000000000000018"; //This is a guess, it may be a different lookup but all active rows have this
+
     private JdbcTemplate jdbcTemplate;
 
     private SimpleJdbcCall userInsertActor;
@@ -91,7 +102,6 @@ public class UserDAO {
      */
     public User getUser(String userId) {
         logger.debug("Getting user {}", userId);
-        logger.debug(sqlForSingleUser);
         try {
             User user = this.jdbcTemplate.queryForObject(sqlForSingleUser, new Object[]{userId},
                     new UserRowMapper());
@@ -126,7 +136,7 @@ public class UserDAO {
     }
 
     /**
-     *
+     * Deletes specified user. Will only work if the user is not registered for any courses
      * @param userId the id of the user to be deleted.
      * @param userTimestamp the timestamp associated with the user id.
      * @throws Exception error deleting user.
@@ -180,26 +190,42 @@ public class UserDAO {
     }
 
     /**
-     *
+     * Executes all procedures to insert a new user into the database
      * @param user the user information for the user to be created.
      * @return the id of the newley created user.
      * @throws Exception error creating user.
      */
     @Transactional("transactionManager")
-    public String insertNewUser(final User user) throws Exception {
+    public String createUser(final User user) throws Exception {
+        User existingUser = getUserByUsername(user.getUsername());
+        if (existingUser != null) {
+            String errorString = "User "+ user.getUsername() + " already exists";
+            logger.error(errorString);
+            throw new DuplicateUserException(errorString);
+        }
+
+        String userId = insertNewUser(user);
+
+        insertUserProfile(userId);
+
+        insertListEntry(userId, DESKTOP_PERMISSION_LIST_ID);
+        insertListEntry(userId, DOMAIN_ID_CPRIV_ID_LIST_ID);
+        return userId;
+    }
+
+    /**
+     * Inserts the person into the database
+     * @param user the user information for the user to be created.
+     * @return the id of the newley created user.
+     * @throws Exception error creating user.
+     */
+    private String insertNewUser(final User user) throws Exception {
         Person person = user.getPerson();
         Address sabaFormattedAddress = mapAddressToSabaFormat(person.getPrimaryAddress());
 
         //Setup audit data
         Date currentDate = new Date();
         long millis = currentDate.getTime();
-
-        //Defaults to use until we figure out something else
-        String createdByName = SABA_GUEST; // hardcode default saba user till we decide otherwise
-        String createdById = SABA_GUEST_ID;
-        String split = "domin000000000000001";
-        String homeDomain = "domin000000000000001"; //not sure why this is the same as above but different fields in DB
-        String currency = "crncy000000000000167"; //We could execute a query to find active currency in system but this is standard
 
         //Generate person id
         String personId = "persn" + this.jdbcTemplate.queryForObject(getPersIdSequenceQuery, String.class);
@@ -231,18 +257,19 @@ public class UserDAO {
                 .addValue("xpassword", user.getPassword(), OracleTypes.VARCHAR)
                 .addValue("xtimezone_id", user.getTimezoneId(), OracleTypes.FIXED_CHAR)
                 .addValue("xcreated_on", currentDate, OracleTypes.DATE)
-                .addValue("xcreated_by", createdByName, OracleTypes.VARCHAR)
+                .addValue("xcreated_by", SABA_GUEST, OracleTypes.VARCHAR)
                 .addValue("xupdated_on", currentDate, OracleTypes.DATE)
-                .addValue("xupdated_by", createdByName, OracleTypes.VARCHAR)
+                .addValue("xupdated_by", SABA_GUEST, OracleTypes.VARCHAR)
                 .addValue("xnewts", millis, OracleTypes.VARCHAR)
+                //Hardcoded values till we figure out something better
                 .addValue("xgender", "2", OracleTypes.FIXED_CHAR)
                 .addValue("xcorres_pref1", "1", OracleTypes.FIXED_CHAR)
                 .addValue("xcorres_pref2", "0", OracleTypes.FIXED_CHAR)
                 .addValue("xcorres_pref3", "0", OracleTypes.FIXED_CHAR)
-                .addValue("xsplit", split, OracleTypes.VARCHAR)
-                .addValue("xhome_domain", homeDomain, OracleTypes.FIXED_CHAR)
-                .addValue("xcurrency_id", currency, OracleTypes.FIXED_CHAR)
-                //Insert lots of nulls
+                .addValue("xsplit", SPLIT_ID, OracleTypes.VARCHAR)
+                .addValue("xhome_domain", HOME_DOMAIN_ID, OracleTypes.FIXED_CHAR)
+                .addValue("xcurrency_id", CURRENCY_ID, OracleTypes.FIXED_CHAR)
+                //Null values must be inserted for all other parameters
                 .addValue("xaccount_no", null, OracleTypes.VARCHAR)
                 .addValue("xcompany_id", null, OracleTypes.FIXED_CHAR)
                 .addValue("xcountry", null, OracleTypes.VARCHAR)
@@ -277,19 +304,138 @@ public class UserDAO {
                 .addValue("xts", null, OracleTypes.VARCHAR);
 
         logger.debug("Inserting new user. Executing stored procedure: {}", insertUserStoredProcedureName);
-
-        //TODO Can this  be wrapped in a transaction, if the later queries fail roll back the first
         executeUserStoredProcedure(in, userInsertActor);
 
-        insertUserProfile(createdByName, createdById, personId, split);
-
-        String desktopPermissionListID = "listl000000000000101"; //External security role grants permission to main saba app
-        String domainIDcprivIDListID = "listl000000000001004"; // Concat of two security tables ids [domin000000000000001][cpriv000000000000117]
-
-        insertListEntry(personId, desktopPermissionListID);
-        insertListEntry(personId, domainIDcprivIDListID);
-
         return personId;
+    }
+
+    /**
+     * Inserts information about the user's profile
+     * Note: insertUserProfile results in one row in the profile table with an active flag. However, Saba inserts
+     * 6 other rows with different entry_type_id and the acronym in the profile id. Might need to execute additional times
+     * @param personId created person id
+     * @throws Exception
+     */
+    private void insertUserProfile(String personId) throws Exception {
+        Date currentDate = new Date();
+        long millis = currentDate.getTime();
+
+        String profileId = "ppcor" +  this.jdbcTemplate.queryForObject(getProfileIdSequenceQuery, String.class);
+
+        SqlParameterSource in = new MapSqlParameterSource()
+                .addValue("xid", profileId, OracleTypes.CHAR)
+                .addValue("xcreated_on", currentDate, OracleTypes.DATE)
+                .addValue("xcreated_by", SABA_GUEST, OracleTypes.VARCHAR)
+                .addValue("xcreated_id", SABA_GUEST_ID, OracleTypes.CHAR)
+                .addValue("xupdated_on", currentDate, OracleTypes.DATE)
+                .addValue("xupdated_by", SABA_GUEST, OracleTypes.VARCHAR)
+                .addValue("xtime_stamp", millis, OracleTypes.VARCHAR)
+                .addValue("xnewts", millis, OracleTypes.VARCHAR)
+                .addValue("xprofiled_id", personId, OracleTypes.VARCHAR)
+                .addValue("xflags", "0010000000", OracleTypes.CHAR) //active flag
+                //Hardcoded values till we figure out something better
+                .addValue("xentry_type_id", ENTRY_TYPE_ID, OracleTypes.VARCHAR)
+                .addValue("xlocale_id", LOCALE_ID, OracleTypes.CHAR)
+                .addValue("xsplit", SPLIT_ID, OracleTypes.CHAR)
+                //Null values must be inserted for all other parameters
+                .addValue("xcustom0", null, OracleTypes.VARCHAR)
+                .addValue("xcustom1", null, OracleTypes.VARCHAR)
+                .addValue("xcustom2", null, OracleTypes.VARCHAR)
+                .addValue("xcustom3", null, OracleTypes.VARCHAR)
+                .addValue("xcustom4", null, OracleTypes.VARCHAR)
+                .addValue("xcustom5", null, OracleTypes.VARCHAR)
+                .addValue("xcustom6", null, OracleTypes.VARCHAR)
+                .addValue("xcustom7", null, OracleTypes.VARCHAR)
+                .addValue("xcustom8", null, OracleTypes.VARCHAR)
+                .addValue("xcustom9", null, OracleTypes.VARCHAR)
+                .addValue("xjob_type_id", null, OracleTypes.FIXED_CHAR)
+                .addValue("xorganization_id", null, OracleTypes.FIXED_CHAR)
+                .addValue("xlocation_id", null, OracleTypes.FIXED_CHAR)
+                .addValue("xperson_id", null, OracleTypes.FIXED_CHAR)
+                .addValue("xsyslov1_id", null, OracleTypes.VARCHAR)
+                .addValue("xsyslov2_id", null, OracleTypes.VARCHAR)
+                .addValue("xsyslov3_id", null, OracleTypes.VARCHAR)
+                .addValue("xsyslov4_id", null, OracleTypes.VARCHAR)
+                .addValue("xsyslov5_id", null, OracleTypes.VARCHAR)
+                .addValue("xuserlov1_id", null, OracleTypes.VARCHAR)
+                .addValue("xuserlov2_id", null, OracleTypes.VARCHAR)
+                .addValue("xuserlov3_id", null, OracleTypes.VARCHAR)
+                .addValue("xuserlov4_id", null, OracleTypes.VARCHAR)
+                .addValue("xuserlov5_id", null, OracleTypes.VARCHAR)
+                .addValue("xlongtext0_1", null, OracleTypes.VARCHAR)
+                .addValue("xlongtext0_2", null, OracleTypes.VARCHAR)
+                .addValue("xlongtext0_3", null, OracleTypes.VARCHAR)
+                .addValue("xlongtext0_4", null, OracleTypes.VARCHAR)
+                .addValue("xlongtext0_5", null, OracleTypes.VARCHAR)
+                .addValue("xlongtext0_6", null, OracleTypes.VARCHAR)
+                .addValue("xlongtext0_7", null, OracleTypes.VARCHAR)
+                .addValue("xlongtext0_8", null, OracleTypes.VARCHAR)
+                .addValue("xlongtext1_1", null, OracleTypes.VARCHAR)
+                .addValue("xlongtext1_2", null, OracleTypes.VARCHAR)
+                .addValue("xlongtext1_3", null, OracleTypes.VARCHAR)
+                .addValue("xlongtext1_4", null, OracleTypes.VARCHAR)
+                .addValue("xlongtext1_5", null, OracleTypes.VARCHAR)
+                .addValue("xlongtext1_6", null, OracleTypes.VARCHAR)
+                .addValue("xlongtext1_7", null, OracleTypes.VARCHAR)
+                .addValue("xlongtext1_8", null, OracleTypes.VARCHAR)
+                .addValue("xtext1", null, OracleTypes.VARCHAR)
+                .addValue("xtext2", null, OracleTypes.VARCHAR)
+                .addValue("xtext3", null, OracleTypes.VARCHAR)
+                .addValue("xtext4", null, OracleTypes.VARCHAR)
+                .addValue("xtext5", null, OracleTypes.VARCHAR)
+                .addValue("xdate1", null, OracleTypes.DATE)
+                .addValue("xdate2", null, OracleTypes.DATE)
+                .addValue("xdate3", null, OracleTypes.DATE)
+                .addValue("xint1", null, OracleTypes.INTEGER)
+                .addValue("xint2", null, OracleTypes.INTEGER)
+                .addValue("xint3", null, OracleTypes.INTEGER);
+
+        logger.debug("Inserting user profile. Executing stored procedure: {}", insertProfileStoredProcedureName);
+
+        executeUserStoredProcedure(in, profileInsertActor);
+    }
+
+    /**
+     * Inserts security information about the user. May be called multiple times with different security lists
+     * @param personId the newly created user
+     * @param listId the list which the user is being added to
+     * @return the results of the stored procedure
+     * @throws Exception
+     */
+    private Map<String, Object> insertListEntry(String personId, String listId) throws Exception {
+        long millis = new Date().getTime();
+
+        String listEntryId = "liste" +  this.jdbcTemplate.queryForObject(getListEntryIdSequenceQuery, String.class);
+
+        SqlParameterSource in = new MapSqlParameterSource()
+                .addValue("xid", listEntryId, OracleTypes.FIXED_CHAR)
+                .addValue("xts", null, OracleTypes.VARCHAR)
+                .addValue("xperson_id", personId, OracleTypes.FIXED_CHAR)
+                .addValue("xlist_id", listId, OracleTypes.FIXED_CHAR)
+                .addValue("xgroup_label", null, OracleTypes.VARCHAR)
+                .addValue("xnewts", millis, OracleTypes.VARCHAR);
+
+        logger.debug("Inserting user list entry for user. Executing stored procedure: {}", insertfgtListEntryStoredProcedureName);
+        return executeUserStoredProcedure(in, listEntryActor);
+    }
+
+    private Map<String,Object> executeUserStoredProcedure(SqlParameterSource inParameters, SimpleJdbcCall spCallToExecute) throws Exception {
+        Map<String,Object> out = spCallToExecute.execute(inParameters);
+
+        logger.debug("Stored Procedure executed successfully");
+        return out;
+    }
+
+    private void resetPassword(String userId, String currentUserId, String oldPassword, String newPassword) throws Exception {
+
+        MapSqlParameterSource in = new MapSqlParameterSource()
+                .addValue("xid", userId, OracleTypes.CHAR)
+                .addValue("xold_password", oldPassword, OracleTypes.VARCHAR)
+                .addValue("xnew_password", newPassword, OracleTypes.VARCHAR)
+                .addValue("xcurr_user_id", currentUserId, OracleTypes.CHAR);
+
+        logger.debug("Resetting user password. Executing stored procedure: {}", resetPasswordStoredProcedureName);
+        executeUserStoredProcedure(in, resetPasswordActor);
     }
 
     /**
@@ -354,115 +500,6 @@ public class UserDAO {
         }
     }
 
-    private Map<String, Object> insertUserProfile(String createdBy, String createdById, String personId, String split) throws Exception {
-        Date currentDate = new Date();
-        long millis = currentDate.getTime();
-
-        String locale = "local000000000000001"; //This SP doesn't automatically generate this even though person_ins does
-        String entryTypeId = "ppetp000000000000018"; //This is a guess, it may be a different lookup but all active rows have this
-
-        String flags = "0010000000"; //active flag
-        String profileId = "ppcor" +  this.jdbcTemplate.queryForObject(getProfileIdSequenceQuery, String.class);
-
-        SqlParameterSource in = new MapSqlParameterSource()
-                .addValue("xid", profileId, OracleTypes.CHAR)
-                .addValue("xcreated_on", currentDate, OracleTypes.DATE)
-                .addValue("xcreated_by", createdBy, OracleTypes.VARCHAR)
-                .addValue("xcreated_id", createdById, OracleTypes.CHAR)
-                .addValue("xupdated_on", currentDate, OracleTypes.DATE)
-                .addValue("xupdated_by", createdBy, OracleTypes.VARCHAR)
-                .addValue("xtime_stamp", millis, OracleTypes.VARCHAR)
-                .addValue("xentry_type_id", entryTypeId, OracleTypes.VARCHAR)
-                .addValue("xprofiled_id", personId, OracleTypes.VARCHAR)
-                .addValue("xlocale_id", locale, OracleTypes.CHAR)
-                .addValue("xflags", flags, OracleTypes.CHAR)
-                .addValue("xsplit", split, OracleTypes.CHAR)
-                .addValue("xnewts", millis, OracleTypes.VARCHAR)
-                //Insert lots of nulls
-                .addValue("xcustom0", null, OracleTypes.VARCHAR)
-                .addValue("xcustom1", null, OracleTypes.VARCHAR)
-                .addValue("xcustom2", null, OracleTypes.VARCHAR)
-                .addValue("xcustom3", null, OracleTypes.VARCHAR)
-                .addValue("xcustom4", null, OracleTypes.VARCHAR)
-                .addValue("xcustom5", null, OracleTypes.VARCHAR)
-                .addValue("xcustom6", null, OracleTypes.VARCHAR)
-                .addValue("xcustom7", null, OracleTypes.VARCHAR)
-                .addValue("xcustom8", null, OracleTypes.VARCHAR)
-                .addValue("xcustom9", null, OracleTypes.VARCHAR)
-                .addValue("xjob_type_id", null, OracleTypes.FIXED_CHAR)
-                .addValue("xorganization_id", null, OracleTypes.FIXED_CHAR)
-                .addValue("xlocation_id", null, OracleTypes.FIXED_CHAR)
-                .addValue("xperson_id", null, OracleTypes.FIXED_CHAR)
-                .addValue("xsyslov1_id", null, OracleTypes.VARCHAR)
-                .addValue("xsyslov2_id", null, OracleTypes.VARCHAR)
-                .addValue("xsyslov3_id", null, OracleTypes.VARCHAR)
-                .addValue("xsyslov4_id", null, OracleTypes.VARCHAR)
-                .addValue("xsyslov5_id", null, OracleTypes.VARCHAR)
-                .addValue("xuserlov1_id", null, OracleTypes.VARCHAR)
-                .addValue("xuserlov2_id", null, OracleTypes.VARCHAR)
-                .addValue("xuserlov3_id", null, OracleTypes.VARCHAR)
-                .addValue("xuserlov4_id", null, OracleTypes.VARCHAR)
-                .addValue("xuserlov5_id", null, OracleTypes.VARCHAR)
-                .addValue("xlongtext0_1", null, OracleTypes.VARCHAR)
-                .addValue("xlongtext0_2", null, OracleTypes.VARCHAR)
-                .addValue("xlongtext0_3", null, OracleTypes.VARCHAR)
-                .addValue("xlongtext0_4", null, OracleTypes.VARCHAR)
-                .addValue("xlongtext0_5", null, OracleTypes.VARCHAR)
-                .addValue("xlongtext0_6", null, OracleTypes.VARCHAR)
-                .addValue("xlongtext0_7", null, OracleTypes.VARCHAR)
-                .addValue("xlongtext0_8", null, OracleTypes.VARCHAR)
-                .addValue("xlongtext1_1", null, OracleTypes.VARCHAR)
-                .addValue("xlongtext1_2", null, OracleTypes.VARCHAR)
-                .addValue("xlongtext1_3", null, OracleTypes.VARCHAR)
-                .addValue("xlongtext1_4", null, OracleTypes.VARCHAR)
-                .addValue("xlongtext1_5", null, OracleTypes.VARCHAR)
-                .addValue("xlongtext1_6", null, OracleTypes.VARCHAR)
-                .addValue("xlongtext1_7", null, OracleTypes.VARCHAR)
-                .addValue("xlongtext1_8", null, OracleTypes.VARCHAR)
-                .addValue("xtext1", null, OracleTypes.VARCHAR)
-                .addValue("xtext2", null, OracleTypes.VARCHAR)
-                .addValue("xtext3", null, OracleTypes.VARCHAR)
-                .addValue("xtext4", null, OracleTypes.VARCHAR)
-                .addValue("xtext5", null, OracleTypes.VARCHAR)
-                .addValue("xdate1", null, OracleTypes.DATE)
-                .addValue("xdate2", null, OracleTypes.DATE)
-                .addValue("xdate3", null, OracleTypes.DATE)
-                .addValue("xint1", null, OracleTypes.INTEGER)
-                .addValue("xint2", null, OracleTypes.INTEGER)
-                .addValue("xint3", null, OracleTypes.INTEGER);
-
-        logger.debug("Inserting user profile. Executing stored procedure: {}", insertProfileStoredProcedureName);
-
-        /*TODO This results in one row in the profile table with an active flag. However, Saba inserts 6 additional rows,
-        the only difference is entry_type_id and the acronym in the profile id. Might need to execute additional times*/
-
-        return executeUserStoredProcedure(in, profileInsertActor);
-    }
-
-    private Map<String, Object> insertListEntry(String personId, String listId) throws Exception {
-        long millis = new Date().getTime();
-
-        String listEntryId = "liste" +  this.jdbcTemplate.queryForObject(getListEntryIdSequenceQuery, String.class);
-
-        SqlParameterSource in = new MapSqlParameterSource()
-                .addValue("xid", listEntryId, OracleTypes.FIXED_CHAR)
-                .addValue("xts", null, OracleTypes.VARCHAR)
-                .addValue("xperson_id", personId, OracleTypes.FIXED_CHAR)
-                .addValue("xlist_id", listId, OracleTypes.FIXED_CHAR)
-                .addValue("xgroup_label", null, OracleTypes.VARCHAR)
-                .addValue("xnewts", millis, OracleTypes.VARCHAR);
-
-        logger.debug("Inserting user profile. Executing stored procedure: {}", insertfgtListEntryStoredProcedureName);
-        return executeUserStoredProcedure(in, listEntryActor);
-    }
-
-    private Map<String,Object> executeUserStoredProcedure(SqlParameterSource inParameters, SimpleJdbcCall spCallToExecute) throws Exception {
-        Map<String,Object> out = spCallToExecute.execute(inParameters);
-
-        logger.debug("Stored Procedure executed successfully");
-        return out;
-    }
-
     /**
      * In SABA, when entering a new user, address1 = Office/Dept, address2 = Ste/Mail Stop, and address3 = Street/PO Box
      * The new database will use address1 = Street/PO Box, then additional optional address2 and address3 fields
@@ -481,18 +518,4 @@ public class UserDAO {
 
         return sabaFormattedAddress;
     }
-
-    private void resetPassword(String userId, String currentUserId, String oldPassword, String newPassword) throws Exception {
-
-        MapSqlParameterSource in = new MapSqlParameterSource()
-                .addValue("xid", userId, OracleTypes.CHAR)
-                .addValue("xold_password", oldPassword, OracleTypes.VARCHAR)
-                .addValue("xnew_password", newPassword, OracleTypes.VARCHAR)
-                .addValue("xcurr_user_id", currentUserId, OracleTypes.CHAR);
-
-        logger.debug("Resetting user password. Executing stored procedure: {}", resetPasswordStoredProcedureName);
-        executeUserStoredProcedure(in, resetPasswordActor);
-    }
-
-
 }
