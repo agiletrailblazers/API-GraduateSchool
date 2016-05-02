@@ -3,7 +3,12 @@ package com.gs.api.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gs.api.domain.error.ValidationError;
-import com.gs.api.exception.*;
+import com.gs.api.exception.AuthenticationException;
+import com.gs.api.exception.NotFoundException;
+import com.gs.api.exception.PaymentAcceptedException;
+import com.gs.api.exception.PaymentDeclinedException;
+import com.gs.api.exception.PaymentException;
+import com.gs.api.exception.DuplicateUserException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
