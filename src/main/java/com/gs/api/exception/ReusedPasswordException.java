@@ -4,6 +4,7 @@ package com.gs.api.exception;
 public class ReusedPasswordException extends Exception {
 
     /**
+<<<<<<< HEAD
      * Constructs a new exception with the specified detail message.  The cause is not initialized, and
      * may subsequently be initialized by a call to {@link #initCause}.
      *
@@ -15,6 +16,8 @@ public class ReusedPasswordException extends Exception {
     }
 
     /**
+=======
+>>>>>>> 7b2801adb32db263b9968bc04ae0dfccf4e171a0
      * Constructs a new exception with the specified detail message and cause.  <p>Note that the detail
      * message associated with {@code cause} is <i>not</i> automatically incorporated in this
      * exception's detail message.
