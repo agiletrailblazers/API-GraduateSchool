@@ -7,6 +7,7 @@ import com.gs.api.domain.Person;
 import com.gs.api.domain.authentication.AuthCredentials;
 import com.gs.api.domain.registration.User;
 import com.gs.api.exception.NotFoundException;
+import com.gs.api.exception.ReusedPasswordException;
 import com.gs.api.service.registration.UserService;
 
 import org.junit.Before;
@@ -223,6 +224,22 @@ public class UserControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonModel))
                 .andExpect(status().isNotFound());
+
+        verify(userService).changePassword(isA(PWChangeCredentials.class));
+    }
+
+    @Test
+    public void testChangePassword_reUsedPassword() throws Exception {
+
+        PWChangeCredentials pwChangeCredentials = new PWChangeCredentials("dummyUsername", "dummyOriginalPwd", "dummyNewPassword");
+        String jsonModel = new ObjectMapper().writeValueAsString(pwChangeCredentials);
+
+        doThrow(new ReusedPasswordException("Password already used")).when(userService).changePassword(isA(PWChangeCredentials.class));
+
+        mockMvc.perform(post("/users/password/change")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonModel))
+                .andExpect(status().isConflict());
 
         verify(userService).changePassword(isA(PWChangeCredentials.class));
     }
