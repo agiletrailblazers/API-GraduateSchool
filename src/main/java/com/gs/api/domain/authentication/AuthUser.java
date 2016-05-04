@@ -17,10 +17,14 @@ public class AuthUser {
     @JsonProperty("user")
     private User user;
 
-    public AuthUser(@JsonProperty("authToken") AuthToken authToken, @JsonProperty("renewalToken") RenewalToken renewalToken, @JsonProperty("user") User user) {
+    @JsonProperty("passwordChangeRequired")
+    private boolean passwordChangeRequired;
+
+    public AuthUser(@JsonProperty("authToken") AuthToken authToken, @JsonProperty("renewalToken") RenewalToken renewalToken, @JsonProperty("user") User user, @JsonProperty("passwordChangeRequired") boolean passwordChangeRequired) {
         this.authToken = authToken;
         this.renewalToken = renewalToken;
         this.user = user;
+        this.passwordChangeRequired = passwordChangeRequired;
     }
 
     public AuthToken getAuthToken() {
@@ -34,4 +38,6 @@ public class AuthUser {
     public User getUser() {
         return user;
     }
+
+    public boolean getPasswordChangeRequired() { return passwordChangeRequired; }
 }

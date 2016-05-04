@@ -2,31 +2,30 @@ package com.gs.api.dao.registration;
 
 import com.gs.api.domain.Address;
 import com.gs.api.domain.Person;
-import com.gs.api.domain.registration.Timezone;
 import com.gs.api.domain.registration.User;
+import com.gs.api.exception.AuthenticationException;
 import com.gs.api.exception.DuplicateUserException;
+import com.gs.api.exception.ReusedPasswordException;
 import oracle.jdbc.OracleTypes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
+import org.springframework.jdbc.UncategorizedSQLException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 
 @Repository
@@ -49,7 +48,7 @@ public class UserDAO {
     private SimpleJdbcCall profileInsertActor;
     private SimpleJdbcCall listEntryActor;
     private SimpleJdbcCall deleteUserActor;
-    private SimpleJdbcCall resetPasswordActor;
+    private SimpleJdbcCall changePasswordActor;
 
     @Value("${sql.user.personInsert.procedure}")
     private String insertUserStoredProcedureName;
@@ -79,11 +78,14 @@ public class UserDAO {
     @Value("${sql.user.timezones.query}")
     private String sqlForTimezones;
 
-    @Value("${sql.user.resetPassword.procedure}")
-    private String resetPasswordStoredProcedureName;
+    @Value("${sql.user.changePassword.procedure}")
+    private String changePasswordStoredProcedureName;
 
     @Value("${sql.user.password.query}")
     private String sqlForPasswordQuery;
+
+    @Value("${sql.user.passwordChangeRequired.query}")
+    private String sqlForNeedPWChangeCheck;
 
     @Autowired
     public void setDataSource(DataSource dataSource) {
@@ -92,7 +94,7 @@ public class UserDAO {
         this.profileInsertActor = new SimpleJdbcCall(this.jdbcTemplate).withProcedureName(insertProfileStoredProcedureName);
         this.listEntryActor = new SimpleJdbcCall(this.jdbcTemplate).withProcedureName(insertfgtListEntryStoredProcedureName);
         this.deleteUserActor = new SimpleJdbcCall(this.jdbcTemplate).withProcedureName(deleteUserStoredProcedureName);
-        this.resetPasswordActor = new SimpleJdbcCall(this.jdbcTemplate).withProcedureName(resetPasswordStoredProcedureName);
+        this.changePasswordActor = new SimpleJdbcCall(this.jdbcTemplate).withProcedureName(changePasswordStoredProcedureName);
     }
 
     /**
@@ -186,7 +188,15 @@ public class UserDAO {
         logger.debug("Found password for user {}", userId);
 
         // reset the password using the saba admin user id and the users current password
-        resetPassword(userId, SABA_ADMIN_ID, currentPassword, newPassword);
+        changePassword(userId, SABA_ADMIN_ID, currentPassword, newPassword);
+    }
+
+    public void changeUserPassword(String userId, String currentPassword, String newPassword) throws Exception {
+
+        logger.debug("Changing password for user {}", userId);
+
+        // change the password using the saba admin user id and the users current password
+        changePassword(userId, userId, currentPassword, newPassword);
     }
 
     /**
@@ -426,18 +436,6 @@ public class UserDAO {
         return out;
     }
 
-    private void resetPassword(String userId, String currentUserId, String oldPassword, String newPassword) throws Exception {
-
-        MapSqlParameterSource in = new MapSqlParameterSource()
-                .addValue("xid", userId, OracleTypes.CHAR)
-                .addValue("xold_password", oldPassword, OracleTypes.VARCHAR)
-                .addValue("xnew_password", newPassword, OracleTypes.VARCHAR)
-                .addValue("xcurr_user_id", currentUserId, OracleTypes.CHAR);
-
-        logger.debug("Resetting user password. Executing stored procedure: {}", resetPasswordStoredProcedureName);
-        executeUserStoredProcedure(in, resetPasswordActor);
-    }
-
     /**
      * Maps a user result to a User object
      */
@@ -517,5 +515,44 @@ public class UserDAO {
         sabaFormattedAddress.setPostalCode(addressToChange.getPostalCode());
 
         return sabaFormattedAddress;
+    }
+
+    private void changePassword(String userId, String currentUserId, String oldPassword, String newPassword) throws Exception {
+
+        MapSqlParameterSource in = new MapSqlParameterSource()
+                .addValue("xid", userId, OracleTypes.CHAR)
+                .addValue("xold_password", oldPassword, OracleTypes.VARCHAR)
+                .addValue("xnew_password", newPassword, OracleTypes.VARCHAR)
+                .addValue("xcurr_user_id", currentUserId, OracleTypes.CHAR);
+
+        logger.debug("Changing user password. Executing stored procedure: {}", changePasswordStoredProcedureName);
+        try {
+            executeUserStoredProcedure(in, changePasswordActor);
+        } catch (UncategorizedSQLException e) {
+            //Stored proc throws error 20958 when password is reused
+            if (e.getMessage().contains("20958")){
+                throw new ReusedPasswordException("Cannot reuse password", e);
+            }
+            //Stored proc throws error 20956 when password is incorrect
+            else if (e.getMessage().contains("20956")) {
+                throw new AuthenticationException("Current Password incorrect", e);
+            } else {
+                //Rethrow exception
+                throw e;
+            }
+        }
+    }
+
+    public boolean needsPasswordChange(String userId){
+        String createdBy = this.jdbcTemplate.queryForObject(sqlForNeedPWChangeCheck, new Object[] { userId }, String.class);
+
+        //the stored procedure 'tpp_person_ins' inserts value for newly created user
+        // in tpt_password_history table with 'emp' in the createdby field
+        if (!createdBy.equalsIgnoreCase(userId) && !createdBy.equalsIgnoreCase("emp")){
+            return true;
+        }
+
+        return false;
+
     }
 }

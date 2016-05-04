@@ -1,5 +1,6 @@
 package com.gs.api.service.authentication;
 
+import com.gs.api.dao.registration.UserDAO;
 import com.gs.api.domain.authentication.*;
 import com.gs.api.domain.registration.User;
 import com.gs.api.exception.AuthenticationException;
@@ -62,6 +63,9 @@ public class AuthenticationServiceTest {
 
     @Mock
     private UserService userService;
+
+    @Mock
+    private UserDAO userDAO;
 
     @InjectMocks
     private AuthenticationServiceImpl authenticationService;
@@ -386,11 +390,72 @@ public class AuthenticationServiceTest {
         when(userService.getUser(authCredentials)).thenReturn(validUser);
         when(encryptor.encrypt(any(String.class))).thenReturn(ENCRYPTED_TOKEN_STRING);
         when(encryptor.decrypt(any(String.class))).thenReturn(renewalToken).thenReturn(authToken);
+        when(userDAO.needsPasswordChange(any(String.class))).thenReturn(false);
 
         AuthUser authUser = authenticationService.authenticateUser(authCredentials);
 
         verify(userService).getUser(authCredentials);
+        verify(userDAO).needsPasswordChange(USER_ID);
         verify(encryptor, times(2)).encrypt(encryptStringCaptor.capture());
+
+        assertEquals("Reset Password Check is wrong", authUser.getPasswordChangeRequired(), false);
+
+        // inspect the unencrypted token string
+        List<String> keys = encryptStringCaptor.getAllValues();
+
+        String key = keys.get(0);
+        String[] keyPieces = StringUtils.splitPreserveAllTokens(key, '|');
+        //Verify the renewal token
+        assertEquals("Renewal key missing data", 2, keyPieces.length);
+        // make sure the UUID is not null
+        assertTrue("No UUID in renewal key", StringUtils.isNotEmpty(keyPieces[0]));
+        // make sure we have a timestamp
+        assertTrue("No timestamp in renewal key", StringUtils.isNotEmpty(keyPieces[1]));
+
+        key = keys.get(1);
+        keyPieces = StringUtils.splitPreserveAllTokens(key, '|');
+        assertEquals("Key missing data", 5, keyPieces.length);
+        // make sure the UUID is not null
+        assertTrue("No UUID in key", StringUtils.isNotEmpty(keyPieces[0]));
+        // make sure we have a timestamp
+        assertTrue("No timestamp in key", StringUtils.isNotEmpty(keyPieces[1]));
+        // make sure it is a guest role
+        assertEquals("Wrong role", Role.AUTHENTICATED.name(), keyPieces[2]);
+        // make sure user id is not empty
+        assertEquals("user id should be in key", USER_ID, keyPieces[3]);
+        // make sure user id is empty
+        assertEquals("renewal UUID should be in key", RENEWAL_UUID, keyPieces[4]);
+        // make sure returning the encrypting key
+        assertEquals("Wrong token generated", ENCRYPTED_TOKEN_STRING, authUser.getAuthToken().getToken());
+
+        // very correct user returned
+        assertSame("wrong user", validUser, authUser.getUser());
+    }
+
+    @Test
+    public void testAuthenticateUser_SuccessAndNeedsPWReset() throws Exception {
+        AuthCredentials authCredentials = new AuthCredentials(USERNAME, PASSWORD);
+        User validUser = new User();
+        validUser.setId(USER_ID);
+
+        String currentTime = Long.toString(new Date().getTime());
+        String renewalToken = RENEWAL_UUID + "|" + currentTime;
+        String authToken = "de703f00-8c20-4c74-a254-277e2020244b|"
+                + currentTime + "|" + Role.AUTHENTICATED + "|" + USER_ID + "|" + RENEWAL_UUID;
+        String validRenewalToken = new Date().getTime() + "|" + RENEWAL_UUID;
+
+        when(userService.getUser(authCredentials)).thenReturn(validUser);
+        when(encryptor.encrypt(any(String.class))).thenReturn(ENCRYPTED_TOKEN_STRING);
+        when(encryptor.decrypt(any(String.class))).thenReturn(renewalToken).thenReturn(authToken);
+        when(userDAO.needsPasswordChange(any(String.class))).thenReturn(true);
+
+        AuthUser authUser = authenticationService.authenticateUser(authCredentials);
+
+        verify(userService).getUser(authCredentials);
+        verify(userDAO).needsPasswordChange(USER_ID);
+        verify(encryptor, times(2)).encrypt(encryptStringCaptor.capture());
+
+        assertEquals("Reset Password Check is wrong", authUser.getPasswordChangeRequired(), true);
 
         // inspect the unencrypted token string
         List<String> keys = encryptStringCaptor.getAllValues();
@@ -434,6 +499,7 @@ public class AuthenticationServiceTest {
         AuthCredentials authCredentials = new AuthCredentials(USERNAME, PASSWORD);
 
         when(userService.getUser(authCredentials)).thenReturn(null);
+        when(userDAO.needsPasswordChange(any(String.class))).thenReturn(false);
 
         authenticationService.authenticateUser(authCredentials);
     }
@@ -450,6 +516,7 @@ public class AuthenticationServiceTest {
         AuthCredentials authCredentials = new AuthCredentials(USERNAME, PASSWORD);
 
         when(userService.getUser(authCredentials)).thenThrow(cause);
+        when(userDAO.needsPasswordChange(any(String.class))).thenReturn(false);
 
         authenticationService.authenticateUser(authCredentials);
     }

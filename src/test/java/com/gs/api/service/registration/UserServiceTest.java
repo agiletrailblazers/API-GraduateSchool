@@ -2,6 +2,7 @@ package com.gs.api.service.registration;
 
 import com.gs.api.dao.registration.UserDAO;
 import com.gs.api.domain.Address;
+import com.gs.api.domain.PasswordChangeAuthCredentials;
 import com.gs.api.domain.Person;
 import com.gs.api.domain.authentication.AuthCredentials;
 import com.gs.api.domain.registration.User;
@@ -251,5 +252,16 @@ public class UserServiceTest {
         verify(userDao).getUserByUsername(user.getUsername());
         verify(userDao).resetForgottenPassword(USER_ID, PASSWORD_ENCRYPTED);
         verify(emailService).sendPasswordResetEmail(user, PASSWORD_CLEAR);
+    }
+
+    @Test
+    public void testChangePassword() throws Exception {
+
+        PasswordChangeAuthCredentials passwordChangeAuthCredentials = new PasswordChangeAuthCredentials(user.getUsername(), PASSWORD_ENCRYPTED, "NewPassword");
+        when(userDao.getUser(user.getUsername(), PASSWORD_ENCRYPTED)).thenReturn(user);
+
+        userService.changePassword(passwordChangeAuthCredentials, USER_ID);
+
+        verify(userDao).changeUserPassword(USER_ID, PASSWORD_ENCRYPTED, "NewPassword");
     }
 }

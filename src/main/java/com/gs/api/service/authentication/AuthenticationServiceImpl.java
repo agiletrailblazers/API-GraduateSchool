@@ -1,5 +1,6 @@
 package com.gs.api.service.authentication;
 
+import com.gs.api.dao.registration.UserDAO;
 import com.gs.api.domain.authentication.*;
 import com.gs.api.domain.registration.User;
 import com.gs.api.exception.AuthenticationException;
@@ -46,6 +47,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Autowired
     private PBEStringCleanablePasswordEncryptor encryptor;
+
+    @Autowired
+    private UserDAO userDao;
 
     @Autowired
     private UserService userService;
@@ -167,7 +171,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         // user is valid, create an authenticated token
         AuthToken authToken = generateToken(user.getId(), Role.AUTHENTICATED, getRenewalTokenPieces(renewalToken.getToken())[TOKEN_FIELD_UUID_INDEX]);
 
-        return new AuthUser(authToken, renewalToken, user);
+        boolean resetRequired = userDao.needsPasswordChange(user.getId());
+
+        return new AuthUser(authToken, renewalToken, user, resetRequired);
     }
 
     @Override

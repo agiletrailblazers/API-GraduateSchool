@@ -1,5 +1,6 @@
 package com.gs.api.service.registration;
 
+import com.gs.api.domain.PasswordChangeAuthCredentials;
 import com.gs.api.domain.authentication.AuthCredentials;
 import com.gs.api.domain.registration.User;
 
@@ -42,5 +43,12 @@ public interface UserService {
      * @throws Exception Error resetting the password.
      */
     void forgotPassword(final AuthCredentials authCredentials) throws Exception;
+
+    /**
+     * Change the password for specified user/
+     * @param passwordChangeAuthCredentials Contains username, old password, and new password.
+     * @throws Exception
+     */
+    void changePassword(final PasswordChangeAuthCredentials passwordChangeAuthCredentials, final String authUserID) throws Exception;
 
 }
