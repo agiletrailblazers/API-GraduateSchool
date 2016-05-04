@@ -2,14 +2,17 @@ package com.gs.api.controller.registration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gs.api.domain.Address;
-import com.gs.api.domain.PWChangeCredentials;
+import com.gs.api.domain.PasswordChangeAuthCredentials;
 import com.gs.api.domain.Person;
 import com.gs.api.domain.authentication.AuthCredentials;
 import com.gs.api.domain.registration.User;
+import com.gs.api.exception.AuthenticationException;
 import com.gs.api.exception.NotFoundException;
 import com.gs.api.exception.ReusedPasswordException;
+import com.gs.api.service.authentication.AuthenticationService;
 import com.gs.api.service.registration.UserService;
 
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,9 +30,12 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import javax.servlet.http.HttpServletRequest;
+
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
@@ -47,6 +53,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class UserControllerTest {
 
     private static final String USER_NAME = "joe.tester@test.com";
+    private static final String USER_ID = "PRSN0000123123123123";
+
     private MockMvc mockMvc;
 
     @Autowired
@@ -54,6 +62,9 @@ public class UserControllerTest {
 
     @Mock
     private UserService userService;
+
+    @Mock
+    private AuthenticationService authenticationService;
 
     @Autowired
     @InjectMocks
@@ -66,7 +77,10 @@ public class UserControllerTest {
     private ArgumentCaptor<AuthCredentials> capturedAuthCredentials;
 
     @Captor
-    private ArgumentCaptor<PWChangeCredentials> capturedPWChangeCredentials;
+    private ArgumentCaptor<PasswordChangeAuthCredentials> capturedPWChangeCredentials;
+
+    @Captor
+    private ArgumentCaptor<String> capturedUserId;
 
     @Before
     public void setUp() throws Exception {
@@ -196,54 +210,72 @@ public class UserControllerTest {
     @Test
     public void testChangePassword() throws Exception {
 
-        PWChangeCredentials pwChangeCredentials = new PWChangeCredentials("dummyUsername", "dummyOriginalPwd", "dummyNewPassword");
+        PasswordChangeAuthCredentials passwordChangeAuthCredentials = new PasswordChangeAuthCredentials("dummyUsername", "dummyOriginalPwd", "dummyNewPassword");
 
-        String jsonModel = new ObjectMapper().writeValueAsString(pwChangeCredentials);
+        String jsonModel = new ObjectMapper().writeValueAsString(passwordChangeAuthCredentials);
 
-        mockMvc.perform(post("/users/password/change")
+        mockMvc.perform(post("/users/" + USER_ID + "/password")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonModel))
                 .andExpect(status().isNoContent());
 
-        verify(userService).changePassword(capturedPWChangeCredentials.capture());
+        verify(userService).changePassword(capturedPWChangeCredentials.capture(), capturedUserId.capture());
+        verify(authenticationService).verifyUser(isA(HttpServletRequest.class), eq(USER_ID));
 
         assertNotNull("Expected new credentials", capturedPWChangeCredentials.getValue());
-        assertEquals("Wrong username", pwChangeCredentials.getUsername(), capturedPWChangeCredentials.getValue().getUsername());
-        assertEquals("Wrong new password", pwChangeCredentials.getNewPassword(), capturedPWChangeCredentials.getValue().getNewPassword());
+        assertEquals("Wrong username", passwordChangeAuthCredentials.getUsername(), capturedPWChangeCredentials.getValue().getUsername());
+        assertEquals("Wrong new password", passwordChangeAuthCredentials.getNewPassword(), capturedPWChangeCredentials.getValue().getNewPassword());
     }
 
-    @Test
+    /*@Test
     public void testChangePassword_noSuchUser() throws Exception {
 
-        PWChangeCredentials pwChangeCredentials = new PWChangeCredentials("dummyUsername", "dummyOriginalPwd", "dummyNewPassword");
-        String jsonModel = new ObjectMapper().writeValueAsString(pwChangeCredentials);
+        PasswordChangeAuthCredentials passwordChangeAuthCredentials = new PasswordChangeAuthCredentials("dummyUsername", "dummyOriginalPwd", "dummyNewPassword");
+        String jsonModel = new ObjectMapper().writeValueAsString(passwordChangeAuthCredentials);
 
-        doThrow(new NotFoundException("no such test user")).when(userService).changePassword(isA(PWChangeCredentials.class));
+        doThrow(new NotFoundException("no such test user")).when(userService).changePassword(isA(PasswordChangeAuthCredentials.class), isA(String.class));
 
-        mockMvc.perform(post("/users/password/change")
+        mockMvc.perform(post("/users/" + USER_ID + "/password")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonModel))
                 .andExpect(status().isNotFound());
 
-        verify(userService).changePassword(isA(PWChangeCredentials.class));
-    }
+        verify(userService).changePassword(isA(PasswordChangeAuthCredentials.class), isA(String.class));
+    }*/
 
     @Test
     public void testChangePassword_reUsedPassword() throws Exception {
 
-        PWChangeCredentials pwChangeCredentials = new PWChangeCredentials("dummyUsername", "dummyOriginalPwd", "dummyNewPassword");
-        String jsonModel = new ObjectMapper().writeValueAsString(pwChangeCredentials);
+        PasswordChangeAuthCredentials passwordChangeAuthCredentials = new PasswordChangeAuthCredentials("dummyUsername", "dummyOriginalPwd", "dummyNewPassword");
+        String jsonModel = new ObjectMapper().writeValueAsString(passwordChangeAuthCredentials);
 
-        doThrow(new ReusedPasswordException("Password already used")).when(userService).changePassword(isA(PWChangeCredentials.class));
+        doThrow(new ReusedPasswordException("Password already used", new Exception("I caused this to happen"))).when(userService).changePassword(isA(PasswordChangeAuthCredentials.class), isA(String.class));
 
-        mockMvc.perform(post("/users/password/change")
+        mockMvc.perform(post("/users/" + USER_ID + "/password")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonModel))
                 .andExpect(status().isConflict());
 
-        verify(userService).changePassword(isA(PWChangeCredentials.class));
+        verify(userService).changePassword(isA(PasswordChangeAuthCredentials.class), isA(String.class));
+        verify(authenticationService).verifyUser(isA(HttpServletRequest.class), eq(USER_ID));
+
     }
 
+    @Test
+    public void testChangePassword_badUserId() throws Exception {
+
+        PasswordChangeAuthCredentials passwordChangeAuthCredentials = new PasswordChangeAuthCredentials("dummyUsername", "dummyOriginalPwd", "dummyNewPassword");
+        String jsonModel = new ObjectMapper().writeValueAsString(passwordChangeAuthCredentials);
+
+        doThrow(new AuthenticationException("I caused this error")).when(authenticationService).verifyUser(isA(HttpServletRequest.class), eq(USER_ID));
+
+        mockMvc.perform(post("/users/" + USER_ID + "/password")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonModel))
+                .andExpect(status().isUnauthorized());
+
+        verify(authenticationService).verifyUser(isA(HttpServletRequest.class), eq(USER_ID));
+    }
 
     private User createValidTestUser() {
         User user = new User();

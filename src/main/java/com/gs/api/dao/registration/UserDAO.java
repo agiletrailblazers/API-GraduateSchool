@@ -2,8 +2,8 @@ package com.gs.api.dao.registration;
 
 import com.gs.api.domain.Address;
 import com.gs.api.domain.Person;
-import com.gs.api.domain.registration.Timezone;
 import com.gs.api.domain.registration.User;
+import com.gs.api.exception.AuthenticationException;
 import com.gs.api.exception.DuplicateUserException;
 import com.gs.api.exception.ReusedPasswordException;
 import oracle.jdbc.OracleTypes;
@@ -19,16 +19,13 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 
 @Repository
@@ -87,7 +84,7 @@ public class UserDAO {
     @Value("${sql.user.password.query}")
     private String sqlForPasswordQuery;
 
-    @Value("${sql.user.needPWChange.query}")
+    @Value("${sql.user.passwordChangeRequired.query}")
     private String sqlForNeedPWChangeCheck;
 
     @Autowired
@@ -528,13 +525,17 @@ public class UserDAO {
                 .addValue("xnew_password", newPassword, OracleTypes.VARCHAR)
                 .addValue("xcurr_user_id", currentUserId, OracleTypes.CHAR);
 
-        logger.debug("Resetting user password. Executing stored procedure: {}", changePasswordStoredProcedureName);
+        logger.debug("Changing user password. Executing stored procedure: {}", changePasswordStoredProcedureName);
         try {
             executeUserStoredProcedure(in, changePasswordActor);
         } catch (UncategorizedSQLException e) {
             //Stored proc throws error 20958 when password is reused
             if (e.getMessage().contains("20958")){
                 throw new ReusedPasswordException("Cannot reuse password", e);
+            }
+            //Stored proc throws error 20956 when password is incorrect
+            else if (e.getMessage().contains("20956")) {
+                throw new AuthenticationException("Current Password incorrect", e);
             } else {
                 //Rethrow exception
                 throw e;

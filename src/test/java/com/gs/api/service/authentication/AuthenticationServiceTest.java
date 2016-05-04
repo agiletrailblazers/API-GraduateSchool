@@ -398,7 +398,7 @@ public class AuthenticationServiceTest {
         verify(userDAO).needsPasswordChange(USER_ID);
         verify(encryptor, times(2)).encrypt(encryptStringCaptor.capture());
 
-        assertEquals("Reset Password Check is wrong", authUser.getResetRequired(), false);
+        assertEquals("Reset Password Check is wrong", authUser.getPasswordChangeRequired(), false);
 
         // inspect the unencrypted token string
         List<String> keys = encryptStringCaptor.getAllValues();
@@ -455,7 +455,7 @@ public class AuthenticationServiceTest {
         verify(userDAO).needsPasswordChange(USER_ID);
         verify(encryptor, times(2)).encrypt(encryptStringCaptor.capture());
 
-        assertEquals("Reset Password Check is wrong", authUser.getResetRequired(), true);
+        assertEquals("Reset Password Check is wrong", authUser.getPasswordChangeRequired(), true);
 
         // inspect the unencrypted token string
         List<String> keys = encryptStringCaptor.getAllValues();

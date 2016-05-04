@@ -3,6 +3,7 @@ package com.gs.api.dao.registration;
 import com.gs.api.domain.Address;
 import com.gs.api.domain.Person;
 import com.gs.api.domain.registration.User;
+import com.gs.api.exception.AuthenticationException;
 import com.gs.api.exception.DuplicateUserException;
 import org.hamcrest.Matchers;
 import com.gs.api.exception.ReusedPasswordException;
@@ -90,7 +91,7 @@ public class UserDAOTest {
     @Value("${sql.user.listEntry.sequence}")
     private String getListEntryIdSequenceQuery;
 
-    @Value("${sql.user.needPWChange.query}")
+    @Value("${sql.user.passwordChangeRequired.query}")
     private String sqlForNeedPWChangeCheck;
 
     private static final String USER_ID = "persn0001";
@@ -681,18 +682,26 @@ public class UserDAOTest {
 
     @Test
      public void testChangePassword_ReusedPasswordException() throws Exception {
+        // setup expected exception
+        thrown.expect(ReusedPasswordException.class);
+        thrown.expectMessage("Cannot reuse password");
+
         UncategorizedSQLException ex = new UncategorizedSQLException(null, null, new SQLException("20958"));
         doThrow(ex).when(changePasswordActor).execute(any(SqlParameterSource.class));
 
-        try {
-            userDAO.changeUserPassword(USER_ID, PASSWORD, NEW_PASSWORD);
+        userDAO.changeUserPassword(USER_ID, PASSWORD, NEW_PASSWORD);
+    }
 
-            //Should never get to this line
-            assertTrue(false);
-        } catch (Exception e) {
-            assertEquals("Wrong exception thrown", e.getClass().getTypeName(), ReusedPasswordException.class.getTypeName());
-            assertEquals("Wrong exception message", e.getMessage(),"Cannot reuse password");
-        }
+    @Test
+    public void testChangePassword_BadPassword() throws Exception {
+        // setup expected exception
+        thrown.expect(AuthenticationException.class);
+        thrown.expectMessage("Current Password incorrect");
+
+        UncategorizedSQLException ex = new UncategorizedSQLException(null, null, new SQLException("20956"));
+        doThrow(ex).when(changePasswordActor).execute(any(SqlParameterSource.class));
+
+        userDAO.changeUserPassword(USER_ID, PASSWORD, NEW_PASSWORD);
     }
 
     @Test

@@ -1,9 +1,10 @@
 package com.gs.api.controller.registration;
 
 import com.gs.api.controller.BaseController;
-import com.gs.api.domain.PWChangeCredentials;
+import com.gs.api.domain.PasswordChangeAuthCredentials;
 import com.gs.api.domain.authentication.AuthCredentials;
 import com.gs.api.domain.registration.User;
+import com.gs.api.service.authentication.AuthenticationService;
 import com.gs.api.service.registration.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 @Configuration
@@ -31,6 +33,9 @@ public class UserController extends BaseController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private AuthenticationService authenticationService;
 
     @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(value = "", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -76,11 +81,14 @@ public class UserController extends BaseController {
 
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @RequestMapping(value = "/password/change", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public void changePassword(@RequestBody @Valid PWChangeCredentials pwChangeCredentials) throws Exception  {
+    @RequestMapping(value = "/{id}/password", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    public void changePassword(@RequestBody @Valid PasswordChangeAuthCredentials passwordChangeAuthCredentials,@PathVariable("id") String id, HttpServletRequest request) throws Exception  {
 
-        logger.debug("Changing password for user {}", pwChangeCredentials.getUsername());
+        logger.debug("Changing password for user {}", passwordChangeAuthCredentials.getUsername());
 
-        userService.changePassword(pwChangeCredentials);
+        // verify that the user making the request is the authenticated user
+        authenticationService.verifyUser(request, id);
+
+        userService.changePassword(passwordChangeAuthCredentials, id);
     }
 }

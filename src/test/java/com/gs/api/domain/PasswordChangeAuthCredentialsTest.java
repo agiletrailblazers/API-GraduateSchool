@@ -12,7 +12,7 @@ import java.util.Set;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-public class PWChangeCredentialsTest {
+public class PasswordChangeAuthCredentialsTest {
     public static final String NEW_PASSWORD_TEXT = "newPassword";
     private Validator validator = ValidationHelper.getValidator();
 
@@ -21,18 +21,18 @@ public class PWChangeCredentialsTest {
 
     @Test
     public void testValidCredentials(){
-        PWChangeCredentials validPWCredentials = new PWChangeCredentials(USERNAME, OLD_PASSWORD, "newPassord");
+        PasswordChangeAuthCredentials validPWCredentials = new PasswordChangeAuthCredentials(USERNAME, OLD_PASSWORD, "newPassord");
 
-        Set<ConstraintViolation<PWChangeCredentials>> violations = this.validator.validate(validPWCredentials);
+        Set<ConstraintViolation<PasswordChangeAuthCredentials>> violations = this.validator.validate(validPWCredentials);
 
         assertTrue(violations.isEmpty());
     }
 
     @Test
     public void testNullNewPassword(){
-        PWChangeCredentials invalidPWChangeCredentials = new PWChangeCredentials(USERNAME, OLD_PASSWORD, null);
+        PasswordChangeAuthCredentials invalidPasswordChangeAuthCredentials = new PasswordChangeAuthCredentials(USERNAME, OLD_PASSWORD, null);
 
-        HashMap<String, List<ConstraintViolation<Object>>> violations =  ValidationHelper.convertConstraintViolationsToHashMap(validator.validate(invalidPWChangeCredentials));
+        HashMap<String, List<ConstraintViolation<Object>>> violations =  ValidationHelper.convertConstraintViolationsToHashMap(validator.validate(invalidPasswordChangeAuthCredentials));
 
         //Test for password error
         assertNotNull(violations.get(NEW_PASSWORD_TEXT));
@@ -41,9 +41,9 @@ public class PWChangeCredentialsTest {
 
     @Test
     public void testPasswordEmptyString(){
-        PWChangeCredentials invalidPWChangeCredentials = new PWChangeCredentials(USERNAME, OLD_PASSWORD, "");
+        PasswordChangeAuthCredentials invalidPasswordChangeAuthCredentials = new PasswordChangeAuthCredentials(USERNAME, OLD_PASSWORD, "");
 
-        HashMap<String, List<ConstraintViolation<Object>>> violations =  ValidationHelper.convertConstraintViolationsToHashMap(validator.validate(invalidPWChangeCredentials));
+        HashMap<String, List<ConstraintViolation<Object>>> violations =  ValidationHelper.convertConstraintViolationsToHashMap(validator.validate(invalidPasswordChangeAuthCredentials));
 
         //Test for password error
         assertNotNull(violations.get(NEW_PASSWORD_TEXT));
@@ -52,9 +52,9 @@ public class PWChangeCredentialsTest {
 
     @Test
     public void testPasswordTooLongStrings(){
-        PWChangeCredentials invalidPWChangeCredentials = new PWChangeCredentials(USERNAME, OLD_PASSWORD, RandomStringUtils.randomAlphanumeric(1021));
+        PasswordChangeAuthCredentials invalidPasswordChangeAuthCredentials = new PasswordChangeAuthCredentials(USERNAME, OLD_PASSWORD, RandomStringUtils.randomAlphanumeric(1021));
 
-        HashMap<String, List<ConstraintViolation<Object>>> violations =  ValidationHelper.convertConstraintViolationsToHashMap(validator.validate(invalidPWChangeCredentials));
+        HashMap<String, List<ConstraintViolation<Object>>> violations =  ValidationHelper.convertConstraintViolationsToHashMap(validator.validate(invalidPasswordChangeAuthCredentials));
 
         //Test for password error
         assertNotNull(violations.get(NEW_PASSWORD_TEXT));

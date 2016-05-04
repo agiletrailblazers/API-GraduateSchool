@@ -9,7 +9,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 @JsonInclude(Include.ALWAYS)
-public class PWChangeCredentials extends AuthCredentials{
+public class PasswordChangeAuthCredentials extends AuthCredentials{
 
     @NotNull(message = "Required field")
     @Size(min = 5, max = 1020, message="Length must be between 5 and 1020 characters")
@@ -22,7 +22,7 @@ public class PWChangeCredentials extends AuthCredentials{
      * @param password the encrypted password.
      * @param newPassword the new encrypted password
      */
-    public PWChangeCredentials(@JsonProperty("username") String username, @JsonProperty("password") String password, @JsonProperty("newPassword") String newPassword) {
+    public PasswordChangeAuthCredentials(@JsonProperty("username") String username, @JsonProperty("password") String password, @JsonProperty("newPassword") String newPassword) {
         super(username, password);
         this.newPassword = newPassword;
     }

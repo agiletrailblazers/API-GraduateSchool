@@ -2,7 +2,7 @@ package com.gs.api.service.registration;
 
 import com.gs.api.dao.registration.UserDAO;
 import com.gs.api.domain.Address;
-import com.gs.api.domain.PWChangeCredentials;
+import com.gs.api.domain.PasswordChangeAuthCredentials;
 import com.gs.api.domain.Person;
 import com.gs.api.domain.authentication.AuthCredentials;
 import com.gs.api.domain.registration.User;
@@ -257,25 +257,11 @@ public class UserServiceTest {
     @Test
     public void testChangePassword() throws Exception {
 
-        PWChangeCredentials pwChangeCredentials = new PWChangeCredentials(user.getUsername(), PASSWORD_ENCRYPTED, "NewPassword");
+        PasswordChangeAuthCredentials passwordChangeAuthCredentials = new PasswordChangeAuthCredentials(user.getUsername(), PASSWORD_ENCRYPTED, "NewPassword");
         when(userDao.getUser(user.getUsername(), PASSWORD_ENCRYPTED)).thenReturn(user);
 
-        userService.changePassword(pwChangeCredentials);
+        userService.changePassword(passwordChangeAuthCredentials, USER_ID);
 
-        verify(userDao).getUser(user.getUsername(), PASSWORD_ENCRYPTED);
         verify(userDao).changeUserPassword(USER_ID, PASSWORD_ENCRYPTED, "NewPassword");
-    }
-
-    @Test
-    public void testChangePassword_userNotFound() throws Exception {
-
-        PWChangeCredentials pwChangeCredentials = new PWChangeCredentials(user.getUsername(), PASSWORD_ENCRYPTED, "NewPassword");
-        when(userDao.getUser(user.getUsername(), PASSWORD_ENCRYPTED)).thenReturn(null);
-
-        // setup expected exception
-        thrown.expect(NotFoundException.class);
-        thrown.expectMessage("Username or Password Incorrect for user " + pwChangeCredentials.getUsername());
-
-        userService.changePassword(pwChangeCredentials);
     }
 }
