@@ -7,10 +7,7 @@ import com.gs.api.domain.Person;
 import com.gs.api.domain.course.CourseSession;
 import com.gs.api.domain.payment.Payment;
 import com.gs.api.domain.payment.PaymentConfirmation;
-import com.gs.api.domain.registration.Registration;
-import com.gs.api.domain.registration.RegistrationRequest;
-import com.gs.api.domain.registration.RegistrationResponse;
-import com.gs.api.domain.registration.User;
+import com.gs.api.domain.registration.*;
 import com.gs.api.exception.PaymentAcceptedException;
 import com.gs.api.exception.PaymentException;
 import com.gs.api.service.email.EmailService;
@@ -28,10 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
@@ -56,6 +50,11 @@ public class RegistrationServiceTest {
 
     private static final String REGISTRATION_ID = "12345";
     public static final String ORDER_NUMBER = "23456";
+
+    private static final Date START_DATE = new Date();
+    private static final Date END_DATE = new Date(START_DATE.getTime() + 1000);
+    private static final String LOCATION = "Washington, DC";
+    private static final String TYPE = "CLASSROOM";
 
     //private List<Registration> registrations;
     private RegistrationRequest registrationRequest;
@@ -266,5 +265,28 @@ public class RegistrationServiceTest {
         assertEquals(SESSION_ID, createdRegistration.get(0).getSessionId());
         assertEquals(ORDER_NUMBER, createdRegistration.get(0).getOrderNumber());
         assertEquals(REGISTRATION_ID, createdRegistration.get(0).getId());
+    }
+
+    @Test
+    public void testGetRegistrationDetails() throws Exception {
+        RegistrationDetails registrationDetails = new RegistrationDetails(
+                SESSION_ID,
+                START_DATE,
+                END_DATE,
+                LOCATION,
+                TYPE
+        );
+
+        when(registrationDao.getRegistrationDetails(USER_ID)).thenReturn(Collections.singletonList(registrationDetails));
+
+        List<RegistrationDetails> createdRegistrationDetailsList = registrationService.getRegistrationDetails(USER_ID);
+
+        verify(registrationDao).getRegistrationDetails(eq(USER_ID));
+
+        assertEquals(SESSION_ID, createdRegistrationDetailsList.get(0).getSessionId());
+        assertEquals(START_DATE, createdRegistrationDetailsList.get(0).getStartDate());
+        assertEquals(END_DATE, createdRegistrationDetailsList.get(0).getEndDate());
+        assertEquals(LOCATION, createdRegistrationDetailsList.get(0).getLocation());
+        assertEquals(TYPE, createdRegistrationDetailsList.get(0).getType());
     }
 }

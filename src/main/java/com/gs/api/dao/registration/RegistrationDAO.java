@@ -2,6 +2,7 @@ package com.gs.api.dao.registration;
 
 import com.gs.api.domain.course.CourseSession;
 import com.gs.api.domain.registration.Registration;
+import com.gs.api.domain.registration.RegistrationDetails;
 import com.gs.api.domain.registration.User;
 import com.gs.api.exception.NotFoundException;
 
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -573,6 +575,10 @@ public class RegistrationDAO {
 
             return registration;
         }
+    }
+
+    public List<RegistrationDetails> getRegistrationDetails(String userId) throws Exception {
+        return new ArrayList<RegistrationDetails>();
     }
 }
 

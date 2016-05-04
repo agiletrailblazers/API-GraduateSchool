@@ -2,6 +2,7 @@ package com.gs.api.controller.registration;
 
 import com.gs.api.controller.BaseController;
 import com.gs.api.domain.registration.Registration;
+import com.gs.api.domain.registration.RegistrationDetails;
 import com.gs.api.domain.registration.RegistrationRequest;
 import com.gs.api.domain.registration.RegistrationResponse;
 import com.gs.api.service.authentication.AuthenticationService;
@@ -16,6 +17,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 import java.util.List;
 
 @Configuration
@@ -59,6 +61,17 @@ public class RegistrationController extends BaseController {
                 " in session " + sessionId + ".");
 
         return registrationService.getRegistrationForSession(userId, sessionId);
+    }
+
+    @RequestMapping(value = "/users/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<RegistrationDetails> getRegistrationDetails(@PathVariable("id") String userId, HttpServletRequest request) throws Exception  {
+
+        logger.debug("Getting registrations for user with id {}", userId);
+
+        // verify that the user making the request is the authenticated user
+        authenticationService.verifyUser(request, userId);
+
+        return registrationService.getRegistrationDetails(userId);
     }
 
 }

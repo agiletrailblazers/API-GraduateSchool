@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gs.api.domain.payment.Payment;
 import com.gs.api.domain.payment.PaymentConfirmation;
 import com.gs.api.domain.registration.Registration;
+import com.gs.api.domain.registration.RegistrationDetails;
 import com.gs.api.domain.registration.RegistrationRequest;
 import com.gs.api.domain.registration.RegistrationResponse;
 import com.gs.api.exception.AuthenticationException;
@@ -30,10 +31,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -65,6 +63,11 @@ public class RegistrationControllerTest {
     private static final double PAYMENT_AMOUNT = 0.00;
     private static final String AUTHORIZATION_ID = "1234";
     private static final String MERCHANT_ID = "5678";
+
+    private static final Date START_DATE = new Date();
+    private static final Date END_DATE = new Date(START_DATE.getTime() + 1000);
+    private static final String LOCATION = "Washington, DC";
+    private static final String TYPE = "CLASSROOM";
 
     private MockMvc mockMvc;
 
@@ -272,6 +275,30 @@ public class RegistrationControllerTest {
         assertEquals("Wrong session id", SESSION_ID, createdRegistration.getSessionId());
         assertEquals("Wrong order number", ORDER_NUMBER, createdRegistration.getOrderNumber());
         assertEquals("Wrong registration id", REGISTRATION_ID, createdRegistration.getId());
+    }
+
+    @Test
+    public void testGetRegistrationDetails() throws Exception {
+        RegistrationDetails registrationDetails = new RegistrationDetails(
+                SESSION_ID,
+                START_DATE,
+                END_DATE,
+                LOCATION,
+                TYPE
+        );
+
+        List<RegistrationDetails> registrationDetailsList = Collections.singletonList(registrationDetails);
+
+        when(registrationService.getRegistrationDetails(eq(USER_ID))).thenReturn(registrationDetailsList);
+
+        mockMvc.perform(get("/registrations/users/" + USER_ID)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.[0].sessionId", is(SESSION_ID)))
+                .andExpect(jsonPath("$.[0].startDate", is(START_DATE.getTime())))
+                .andExpect(jsonPath("$.[0].endDate", is(END_DATE.getTime())))
+                .andExpect(jsonPath("$.[0].location", is(LOCATION)))
+                .andExpect(jsonPath("$.[0].type", is(TYPE)));
     }
 
 }
