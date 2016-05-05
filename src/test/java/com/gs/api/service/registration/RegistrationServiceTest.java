@@ -53,8 +53,11 @@ public class RegistrationServiceTest {
 
     private static final Date START_DATE = new Date();
     private static final Date END_DATE = new Date(START_DATE.getTime() + 1000);
-    private static final String LOCATION = "Washington, DC";
+    private static final String CITY = "Washington";
+    private static final String STATE = "DC";
     private static final String TYPE = "CLASSROOM";
+    private static final String COURSE_NO = "course1234";
+    private static final String COURSE_TITLE = "Introduction to Testing";
 
     //private List<Registration> registrations;
     private RegistrationRequest registrationRequest;
@@ -271,9 +274,12 @@ public class RegistrationServiceTest {
     public void testGetRegistrationDetails() throws Exception {
         RegistrationDetails registrationDetails = new RegistrationDetails(
                 SESSION_ID,
+                COURSE_NO,
+                COURSE_TITLE,
                 START_DATE,
                 END_DATE,
-                LOCATION,
+                CITY,
+                STATE,
                 TYPE
         );
 
@@ -283,10 +289,12 @@ public class RegistrationServiceTest {
 
         verify(registrationDao).getRegistrationDetails(eq(USER_ID));
 
-        assertEquals(SESSION_ID, createdRegistrationDetailsList.get(0).getSessionId());
+        assertEquals(SESSION_ID, createdRegistrationDetailsList.get(0).getSessionNo());
+        assertEquals(COURSE_NO, createdRegistrationDetailsList.get(0).getCourseNo());
+        assertEquals(COURSE_TITLE, createdRegistrationDetailsList.get(0).getCourseTitle());
         assertEquals(START_DATE, createdRegistrationDetailsList.get(0).getStartDate());
         assertEquals(END_DATE, createdRegistrationDetailsList.get(0).getEndDate());
-        assertEquals(LOCATION, createdRegistrationDetailsList.get(0).getLocation());
+        assertEquals(CITY + ", " + STATE, createdRegistrationDetailsList.get(0).getLocation());
         assertEquals(TYPE, createdRegistrationDetailsList.get(0).getType());
     }
 }

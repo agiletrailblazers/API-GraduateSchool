@@ -6,22 +6,37 @@ import java.util.Date;
  * Registration details object
  */
 public class RegistrationDetails {
-    private String sessionId;
+    private String sessionNo;
+    private String courseNo;
+    private String courseTitle;
     private Date startDate;
     private Date endDate;
-    private String location;
+    private String city;
+    private String state;
     private String type;
 
-    public RegistrationDetails(String sessionId, Date startDate, Date endDate, String location, String type){
-        this.sessionId = sessionId;
+    public RegistrationDetails(String sessionNo, String courseNo, String courseTitle, Date startDate, Date endDate, String city, String state, String type) {
+        this.sessionNo = sessionNo;
+        this.courseNo = courseNo;
+        this.courseTitle = courseTitle;
         this.startDate = startDate;
         this.endDate = endDate;
-        this.location = location;
+        this.city = city;
+        this.state = state;
         this.type = type;
     }
 
-    public String getSessionId() {
-        return sessionId;
+
+    public String getSessionNo() {
+        return sessionNo;
+    }
+
+    public String getCourseNo() {
+        return courseNo;
+    }
+
+    public String getCourseTitle() {
+        return courseTitle;
     }
 
     public Date getStartDate() {
@@ -32,11 +47,19 @@ public class RegistrationDetails {
         return endDate;
     }
 
-    public String getLocation() {
-        return location;
+    public String getCity() {
+        return city;
+    }
+
+    public String getState() {
+        return state;
     }
 
     public String getType() {
         return type;
+    }
+
+    public String getLocation(){
+        return city + ", " + state;
     }
 }

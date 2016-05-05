@@ -2,6 +2,7 @@ package com.gs.api.dao.registration;
 
 import com.gs.api.domain.course.CourseSession;
 import com.gs.api.domain.registration.Registration;
+import com.gs.api.domain.registration.RegistrationDetails;
 import com.gs.api.domain.registration.User;
 import com.gs.api.exception.NotFoundException;
 import org.junit.Before;
@@ -73,6 +74,8 @@ public class RegistrationDAOTest {
     private ArgumentCaptor<Object[]> getOrderNoCaptor;
     @Captor
     private ArgumentCaptor<Object[]> getRegistrationQueryParamsCaptor;
+    @Captor
+    private ArgumentCaptor<Object[]> getRegistrationsQueryParamsCaptor;
 
 
     @Value("${sql.registration.getOrderNo.query}")
@@ -106,6 +109,8 @@ public class RegistrationDAOTest {
     private String getPaymentSequenceQuery;
     @Value("${sql.registration.getExisting.query}")
     private String existingRegistrationQuery;
+    @Value("${sql.user.registrations}")
+    private String userRegistrationsQuery;
 
     private User loggedInUser;
 
@@ -125,6 +130,13 @@ public class RegistrationDAOTest {
     private static final String REGISTRATION_ID = "12345";
     private static final String ORDER_NUMBER = "23456";
     private RegistrationDAO.RegistrationRowMapper rowMapper;
+    private RegistrationDAO.RegistrationDetailsRowMapper registrationDetailsRowMapper;
+
+    private static final Date END_DATE = new Date(START_DATE.getTime() + 1000);
+    private static final String CITY = "Washington";
+    private static final String STATE = "DC";
+    private static final String TYPE = "CLASSROOM";
+    private static final String COURSE_TITLE = "Introduction to Testing";
 
     @Before
     public void setUp() throws Exception {
@@ -146,6 +158,7 @@ public class RegistrationDAOTest {
         student.setAccountId(STUDENT_ACCOUNT_ID);
 
         rowMapper = registrationDAO.new RegistrationRowMapper();
+        registrationDetailsRowMapper = registrationDAO.new RegistrationDetailsRowMapper();
 
     }
 
@@ -567,5 +580,108 @@ public class RegistrationDAOTest {
         assertEquals(ORDER_NUMBER, returnedRegistration.getOrderNumber());
         assertEquals(STUDENT_USER_ID, returnedRegistration.getStudentId());
         assertEquals(OFFERING_SESSION_ID, returnedRegistration.getSessionId());
+    }
+
+    @Test
+    public void testGetUserRegistrations() throws Exception{
+        Object[] expectedQueryParams = new Object[] { STUDENT_USER_ID };
+
+        List<RegistrationDetails> registrationDetailsList = new ArrayList<>();
+        RegistrationDetails registrationDetails = new RegistrationDetails(
+                OFFERING_SESSION_ID,
+                CLASS_NO,
+                COURSE_TITLE,
+                START_DATE,
+                END_DATE,
+                CITY,
+                STATE,
+                TYPE
+        );
+        RegistrationDetails registrationDetails2 = new RegistrationDetails(
+                OFFERING_SESSION_ID+"2",
+                CLASS_NO+"2",
+                COURSE_TITLE+"2",
+                START_DATE,
+                END_DATE,
+                CITY+"2",
+                STATE+"2",
+                TYPE+"2"
+        );
+
+        registrationDetailsList.add(registrationDetails);
+        registrationDetailsList.add(registrationDetails2);
+
+        when(jdbcTemplate.query(anyString(), any(Object[].class), any(RegistrationDAO.RegistrationDetailsRowMapper.class))).
+                thenReturn(registrationDetailsList);
+
+        List<RegistrationDetails> createdRegistrationDetailsList = registrationDAO.getRegistrationDetails(STUDENT_USER_ID);
+
+        verify(jdbcTemplate).query(eq(userRegistrationsQuery), getRegistrationsQueryParamsCaptor.capture(), any(RegistrationDAO.RegistrationDetailsRowMapper.class));
+        Object[] capturedQueryParams = getRegistrationsQueryParamsCaptor.getValue();
+        assertNotNull("Expected parameters", capturedQueryParams);
+        assertArrayEquals("wrong parameters", expectedQueryParams, capturedQueryParams);
+
+        assertNotNull("Expected registration details to be found", createdRegistrationDetailsList);
+
+        assertEquals(OFFERING_SESSION_ID, createdRegistrationDetailsList.get(0).getSessionNo());
+        assertEquals(CLASS_NO, createdRegistrationDetailsList.get(0).getCourseNo());
+        assertEquals(COURSE_TITLE, createdRegistrationDetailsList.get(0).getCourseTitle());
+        assertEquals(START_DATE, createdRegistrationDetailsList.get(0).getStartDate());
+        assertEquals(END_DATE, createdRegistrationDetailsList.get(0).getEndDate());
+        assertEquals(CITY + ", " + STATE, createdRegistrationDetailsList.get(0).getLocation());
+        assertEquals(TYPE, createdRegistrationDetailsList.get(0).getType());
+
+        assertEquals(OFFERING_SESSION_ID+"2", createdRegistrationDetailsList.get(1).getSessionNo());
+        assertEquals(CLASS_NO+"2", createdRegistrationDetailsList.get(1).getCourseNo());
+        assertEquals(COURSE_TITLE+"2", createdRegistrationDetailsList.get(1).getCourseTitle());
+        assertEquals(START_DATE, createdRegistrationDetailsList.get(1).getStartDate());
+        assertEquals(END_DATE, createdRegistrationDetailsList.get(1).getEndDate());
+        assertEquals(CITY + "2, " + STATE+"2", createdRegistrationDetailsList.get(1).getLocation());
+        assertEquals(TYPE+"2", createdRegistrationDetailsList.get(1).getType());
+    }
+
+    @Test
+    public void testGetUserRegistrations_No_Registrations() throws Exception{
+        Object[] expectedQueryParams = new Object[] { STUDENT_USER_ID };
+
+        List<RegistrationDetails> registrationDetailsList = new ArrayList<>();
+        when(jdbcTemplate.query(anyString(), any(Object[].class), any(RegistrationDAO.RegistrationDetailsRowMapper.class))).
+                thenReturn(registrationDetailsList);
+
+        List<RegistrationDetails> createdRegistrationDetailsList = registrationDAO.getRegistrationDetails(STUDENT_USER_ID);
+
+        verify(jdbcTemplate).query(eq(userRegistrationsQuery), getRegistrationsQueryParamsCaptor.capture(), any(RegistrationDAO.RegistrationDetailsRowMapper.class));
+        Object[] capturedQueryParams = getRegistrationsQueryParamsCaptor.getValue();
+        assertNotNull("Expected parameters", capturedQueryParams);
+        assertArrayEquals("wrong parameters", expectedQueryParams, capturedQueryParams);
+
+        assertNotNull("Expected empty registration details to be found", createdRegistrationDetailsList);
+
+        assertEquals(createdRegistrationDetailsList.size(), 0);
+    }
+
+    @Test
+    public void testRegistrationDetailsRowMapper() throws Exception {
+        ResultSet rs = mock(ResultSet.class);
+
+        when(rs.getString("session_no")).thenReturn(OFFERING_SESSION_ID);
+        when(rs.getString("course_no")).thenReturn(CLASS_NO);
+        when(rs.getString("title")).thenReturn(COURSE_TITLE);
+        when(rs.getDate("start_date")).thenReturn(new java.sql.Date(START_DATE.getTime()));
+        when(rs.getDate("end_date")).thenReturn(new java.sql.Date(END_DATE.getTime()));
+        when(rs.getString("city")).thenReturn(CITY);
+        when(rs.getString("state")).thenReturn(STATE);
+        when(rs.getString("type")).thenReturn(TYPE);
+
+        RegistrationDetails returnedRegistrationDetails = registrationDetailsRowMapper.mapRow(rs, 0);
+
+        assertNotNull(returnedRegistrationDetails);
+        assertEquals(OFFERING_SESSION_ID, returnedRegistrationDetails.getSessionNo());
+        assertEquals(CLASS_NO, returnedRegistrationDetails.getCourseNo());
+        assertEquals(COURSE_TITLE, returnedRegistrationDetails.getCourseTitle());
+        assertEquals(START_DATE, returnedRegistrationDetails.getStartDate());
+        assertEquals(END_DATE, returnedRegistrationDetails.getEndDate());
+        assertEquals(CITY + ", " + STATE, returnedRegistrationDetails.getLocation());
+        assertEquals(TYPE, returnedRegistrationDetails.getType());
     }
 }

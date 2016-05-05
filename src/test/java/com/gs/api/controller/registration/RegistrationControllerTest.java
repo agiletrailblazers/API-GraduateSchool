@@ -58,6 +58,8 @@ public class RegistrationControllerTest {
 
     private static final String USER_ID = "person654321";
     private static final String SESSION_ID = "session654321";
+    private static final String COURSE_NO = "course1234";
+    private static final String COURSE_TITLE = "Introduction to Testing";
     private static final String REGISTRATION_ID = "12345";
 
     private static final double PAYMENT_AMOUNT = 0.00;
@@ -66,7 +68,8 @@ public class RegistrationControllerTest {
 
     private static final Date START_DATE = new Date();
     private static final Date END_DATE = new Date(START_DATE.getTime() + 1000);
-    private static final String LOCATION = "Washington, DC";
+    private static final String CITY = "Washington";
+    private static final String STATE = "DC";
     private static final String TYPE = "CLASSROOM";
 
     private MockMvc mockMvc;
@@ -281,9 +284,12 @@ public class RegistrationControllerTest {
     public void testGetRegistrationDetails() throws Exception {
         RegistrationDetails registrationDetails = new RegistrationDetails(
                 SESSION_ID,
+                COURSE_NO,
+                COURSE_TITLE,
                 START_DATE,
                 END_DATE,
-                LOCATION,
+                CITY,
+                STATE,
                 TYPE
         );
 
@@ -294,10 +300,13 @@ public class RegistrationControllerTest {
         mockMvc.perform(get("/registrations/users/" + USER_ID)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.[0].sessionId", is(SESSION_ID)))
+                .andExpect(jsonPath("$.[0].sessionNo", is(SESSION_ID)))
+                .andExpect(jsonPath("$.[0].courseNo", is(COURSE_NO)))
+                .andExpect(jsonPath("$.[0].courseTitle", is(COURSE_TITLE)))
                 .andExpect(jsonPath("$.[0].startDate", is(START_DATE.getTime())))
                 .andExpect(jsonPath("$.[0].endDate", is(END_DATE.getTime())))
-                .andExpect(jsonPath("$.[0].location", is(LOCATION)))
+                .andExpect(jsonPath("$.[0].city", is(CITY)))
+                .andExpect(jsonPath("$.[0].state", is(STATE)))
                 .andExpect(jsonPath("$.[0].type", is(TYPE)));
     }
 

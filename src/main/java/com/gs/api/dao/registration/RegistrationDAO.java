@@ -21,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -75,6 +74,9 @@ public class RegistrationDAO {
 
     @Value("${sql.registration.getExisting.query}")
     private String existingRegistrationQuery;
+
+    @Value("${sql.user.registrations}")
+    private String userRegistrationsQuery;
 
     @Autowired
     public void setDataSource(DataSource dataSource) {
@@ -577,8 +579,39 @@ public class RegistrationDAO {
         }
     }
 
+    /**
+     * Get a list of RegistrationDetails objects from user ID
+     *
+     * @param userId - user ID of the student
+     * @return List of RegistrationDetails objects
+     * @throws Exception
+     */
     public List<RegistrationDetails> getRegistrationDetails(String userId) throws Exception {
-        return new ArrayList<RegistrationDetails>();
+        List<RegistrationDetails> registrationDetailsList = this.jdbcTemplate.query(userRegistrationsQuery,
+                new Object[] { userId},
+                new RegistrationDetailsRowMapper());
+
+        return registrationDetailsList;
+    }
+
+    protected final class RegistrationDetailsRowMapper implements RowMapper<RegistrationDetails> {
+        /**
+         * Map row for RegistrationDetails object from result set
+         */
+        public RegistrationDetails mapRow(ResultSet rs, int rowNum) throws SQLException {
+
+            RegistrationDetails registrationDetails = new RegistrationDetails(
+                    rs.getString("session_no"),
+                    rs.getString("course_no"),
+                    rs.getString("title"),
+                    rs.getDate("start_date"),
+                    rs.getDate("end_date"),
+                    rs.getString("city"),
+                    rs.getString("state"),
+                    rs.getString("type"));
+
+            return registrationDetails;
+        }
     }
 }
 
