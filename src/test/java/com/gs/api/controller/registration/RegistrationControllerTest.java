@@ -1,6 +1,7 @@
 package com.gs.api.controller.registration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gs.api.domain.Address;
 import com.gs.api.domain.payment.Payment;
 import com.gs.api.domain.payment.PaymentConfirmation;
 import com.gs.api.domain.registration.Registration;
@@ -14,6 +15,7 @@ import com.gs.api.exception.PaymentException;
 import com.gs.api.service.authentication.AuthenticationService;
 import com.gs.api.service.registration.RegistrationService;
 
+import jdk.nashorn.internal.parser.JSONParser;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -68,9 +70,14 @@ public class RegistrationControllerTest {
 
     private static final Date START_DATE = new Date();
     private static final Date END_DATE = new Date(START_DATE.getTime() + 1000);
+    private static final String TYPE = "CLASSROOM";
+    private static final String ADDRESS1 = "123 Main Street";
+    private static final String ADDRESS2 = "Suite 100";
     private static final String CITY = "Washington";
     private static final String STATE = "DC";
-    private static final String TYPE = "CLASSROOM";
+    private static final String ZIP = "12345";
+
+    private Address address;
 
     private MockMvc mockMvc;
 
@@ -94,6 +101,13 @@ public class RegistrationControllerTest {
     public void setUp() throws Exception {
         mockMvc = MockMvcBuilders.webAppContextSetup(applicationContext).build();
         MockitoAnnotations.initMocks(this);
+
+        address = new Address();
+        address.setAddress1(ADDRESS1);
+        address.setAddress2(ADDRESS2);
+        address.setCity(CITY);
+        address.setState(STATE);
+        address.setPostalCode(ZIP);
     }
 
     @Test
@@ -286,12 +300,14 @@ public class RegistrationControllerTest {
                 SESSION_ID,
                 COURSE_NO,
                 COURSE_TITLE,
-                START_DATE,
-                END_DATE,
-                CITY,
-                STATE,
+                START_DATE.getTime(),
+                END_DATE.getTime(),
+                address,
                 TYPE
         );
+
+        ObjectMapper mapper = new ObjectMapper();
+        String jsonInString = mapper.writeValueAsString(registrationDetails);
 
         List<RegistrationDetails> registrationDetailsList = Collections.singletonList(registrationDetails);
 
@@ -305,8 +321,11 @@ public class RegistrationControllerTest {
                 .andExpect(jsonPath("$.[0].courseTitle", is(COURSE_TITLE)))
                 .andExpect(jsonPath("$.[0].startDate", is(START_DATE.getTime())))
                 .andExpect(jsonPath("$.[0].endDate", is(END_DATE.getTime())))
-                .andExpect(jsonPath("$.[0].city", is(CITY)))
-                .andExpect(jsonPath("$.[0].state", is(STATE)))
+                .andExpect(jsonPath("$.[0].address.address1", is(ADDRESS1)))
+                .andExpect(jsonPath("$.[0].address.address2", is(ADDRESS2)))
+                .andExpect(jsonPath("$.[0].address.city", is(CITY)))
+                .andExpect(jsonPath("$.[0].address.state", is(STATE)))
+                .andExpect(jsonPath("$.[0].address.postalCode", is(ZIP)))
                 .andExpect(jsonPath("$.[0].type", is(TYPE)));
     }
 

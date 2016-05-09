@@ -1,5 +1,6 @@
 package com.gs.api.dao.registration;
 
+import com.gs.api.domain.Address;
 import com.gs.api.domain.course.CourseSession;
 import com.gs.api.domain.registration.Registration;
 import com.gs.api.domain.registration.RegistrationDetails;
@@ -599,15 +600,20 @@ public class RegistrationDAO {
          * Map row for RegistrationDetails object from result set
          */
         public RegistrationDetails mapRow(ResultSet rs, int rowNum) throws SQLException {
+            Address address = new Address();
+            address.setAddress1(rs.getString("addr1"));
+            address.setAddress2(rs.getString("addr2"));
+            address.setCity(rs.getString("city"));
+            address.setState(rs.getString("state"));
+            address.setPostalCode(rs.getString("zip"));
 
             RegistrationDetails registrationDetails = new RegistrationDetails(
                     rs.getString("session_no"),
                     rs.getString("course_no"),
                     rs.getString("title"),
-                    rs.getDate("start_date"),
-                    rs.getDate("end_date"),
-                    rs.getString("city"),
-                    rs.getString("state"),
+                    rs.getDate("start_date").getTime(),
+                    rs.getDate("end_date").getTime(),
+                    address,
                     rs.getString("type"));
 
             return registrationDetails;

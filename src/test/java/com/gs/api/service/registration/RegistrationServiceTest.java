@@ -3,6 +3,7 @@ package com.gs.api.service.registration;
 import com.gs.api.dao.CourseSessionDAO;
 import com.gs.api.dao.registration.RegistrationDAO;
 import com.gs.api.dao.registration.UserDAO;
+import com.gs.api.domain.Address;
 import com.gs.api.domain.Person;
 import com.gs.api.domain.course.CourseSession;
 import com.gs.api.domain.payment.Payment;
@@ -27,10 +28,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.*;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
@@ -53,11 +51,17 @@ public class RegistrationServiceTest {
 
     private static final Date START_DATE = new Date();
     private static final Date END_DATE = new Date(START_DATE.getTime() + 1000);
-    private static final String CITY = "Washington";
-    private static final String STATE = "DC";
     private static final String TYPE = "CLASSROOM";
     private static final String COURSE_NO = "course1234";
     private static final String COURSE_TITLE = "Introduction to Testing";
+
+    private static final String ADDRESS1 = "123 Main Street";
+    private static final String ADDRESS2 = "Suite 100";
+    private static final String CITY = "Washington";
+    private static final String STATE = "DC";
+    private static final String ZIP = "12345";
+
+    private Address address;
 
     //private List<Registration> registrations;
     private RegistrationRequest registrationRequest;
@@ -106,6 +110,13 @@ public class RegistrationServiceTest {
         registrationRequest = new RegistrationRequest(registrations, payments);
 
         userTimestamp = Long.toString(new Date().getTime());
+
+        address = new Address();
+        address.setAddress1(ADDRESS1);
+        address.setAddress2(ADDRESS2);
+        address.setCity(CITY);
+        address.setState(STATE);
+        address.setPostalCode(ZIP);
     }
 
     @Test
@@ -276,10 +287,9 @@ public class RegistrationServiceTest {
                 SESSION_ID,
                 COURSE_NO,
                 COURSE_TITLE,
-                START_DATE,
-                END_DATE,
-                CITY,
-                STATE,
+                START_DATE.getTime(),
+                END_DATE.getTime(),
+                address,
                 TYPE
         );
 
@@ -292,9 +302,9 @@ public class RegistrationServiceTest {
         assertEquals(SESSION_ID, createdRegistrationDetailsList.get(0).getSessionNo());
         assertEquals(COURSE_NO, createdRegistrationDetailsList.get(0).getCourseNo());
         assertEquals(COURSE_TITLE, createdRegistrationDetailsList.get(0).getCourseTitle());
-        assertEquals(START_DATE, createdRegistrationDetailsList.get(0).getStartDate());
-        assertEquals(END_DATE, createdRegistrationDetailsList.get(0).getEndDate());
-        assertEquals(CITY + ", " + STATE, createdRegistrationDetailsList.get(0).getLocation());
+        assertTrue(START_DATE.getTime() == createdRegistrationDetailsList.get(0).getStartDate());
+        assertTrue(END_DATE.getTime() == createdRegistrationDetailsList.get(0).getEndDate());
+        assertEquals(address, createdRegistrationDetailsList.get(0).getAddress());
         assertEquals(TYPE, createdRegistrationDetailsList.get(0).getType());
     }
 }

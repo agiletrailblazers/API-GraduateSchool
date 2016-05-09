@@ -1,5 +1,6 @@
 package com.gs.api.dao.registration;
 
+import com.gs.api.domain.Address;
 import com.gs.api.domain.course.CourseSession;
 import com.gs.api.domain.registration.Registration;
 import com.gs.api.domain.registration.RegistrationDetails;
@@ -133,10 +134,15 @@ public class RegistrationDAOTest {
     private RegistrationDAO.RegistrationDetailsRowMapper registrationDetailsRowMapper;
 
     private static final Date END_DATE = new Date(START_DATE.getTime() + 1000);
+    private static final String ADDRESS1 = "123 Main Street";
+    private static final String ADDRESS2 = "Suite 100";
     private static final String CITY = "Washington";
     private static final String STATE = "DC";
+    private static final String ZIP = "12345";
     private static final String TYPE = "CLASSROOM";
     private static final String COURSE_TITLE = "Introduction to Testing";
+
+    private Address address;
 
     @Before
     public void setUp() throws Exception {
@@ -160,6 +166,12 @@ public class RegistrationDAOTest {
         rowMapper = registrationDAO.new RegistrationRowMapper();
         registrationDetailsRowMapper = registrationDAO.new RegistrationDetailsRowMapper();
 
+        address = new Address();
+        address.setAddress1(ADDRESS1);
+        address.setAddress2(ADDRESS2);
+        address.setCity(CITY);
+        address.setState(STATE);
+        address.setPostalCode(ZIP);
     }
 
     @Test
@@ -591,20 +603,18 @@ public class RegistrationDAOTest {
                 OFFERING_SESSION_ID,
                 CLASS_NO,
                 COURSE_TITLE,
-                START_DATE,
-                END_DATE,
-                CITY,
-                STATE,
+                START_DATE.getTime(),
+                END_DATE.getTime(),
+                address,
                 TYPE
         );
         RegistrationDetails registrationDetails2 = new RegistrationDetails(
                 OFFERING_SESSION_ID+"2",
                 CLASS_NO+"2",
                 COURSE_TITLE+"2",
-                START_DATE,
-                END_DATE,
-                CITY+"2",
-                STATE+"2",
+                START_DATE.getTime(),
+                END_DATE.getTime(),
+                address,
                 TYPE+"2"
         );
 
@@ -626,17 +636,17 @@ public class RegistrationDAOTest {
         assertEquals(OFFERING_SESSION_ID, createdRegistrationDetailsList.get(0).getSessionNo());
         assertEquals(CLASS_NO, createdRegistrationDetailsList.get(0).getCourseNo());
         assertEquals(COURSE_TITLE, createdRegistrationDetailsList.get(0).getCourseTitle());
-        assertEquals(START_DATE, createdRegistrationDetailsList.get(0).getStartDate());
-        assertEquals(END_DATE, createdRegistrationDetailsList.get(0).getEndDate());
-        assertEquals(CITY + ", " + STATE, createdRegistrationDetailsList.get(0).getLocation());
+        assertTrue(START_DATE.getTime() == createdRegistrationDetailsList.get(0).getStartDate());
+        assertTrue(END_DATE.getTime() == createdRegistrationDetailsList.get(0).getEndDate());
+        assertEquals(address, createdRegistrationDetailsList.get(0).getAddress());
         assertEquals(TYPE, createdRegistrationDetailsList.get(0).getType());
 
         assertEquals(OFFERING_SESSION_ID+"2", createdRegistrationDetailsList.get(1).getSessionNo());
         assertEquals(CLASS_NO+"2", createdRegistrationDetailsList.get(1).getCourseNo());
         assertEquals(COURSE_TITLE+"2", createdRegistrationDetailsList.get(1).getCourseTitle());
-        assertEquals(START_DATE, createdRegistrationDetailsList.get(1).getStartDate());
-        assertEquals(END_DATE, createdRegistrationDetailsList.get(1).getEndDate());
-        assertEquals(CITY + "2, " + STATE+"2", createdRegistrationDetailsList.get(1).getLocation());
+        assertTrue(START_DATE.getTime() == createdRegistrationDetailsList.get(1).getStartDate());
+        assertTrue(END_DATE.getTime() == createdRegistrationDetailsList.get(1).getEndDate());
+        assertEquals(address, createdRegistrationDetailsList.get(1).getAddress());
         assertEquals(TYPE+"2", createdRegistrationDetailsList.get(1).getType());
     }
 
@@ -669,8 +679,11 @@ public class RegistrationDAOTest {
         when(rs.getString("title")).thenReturn(COURSE_TITLE);
         when(rs.getDate("start_date")).thenReturn(new java.sql.Date(START_DATE.getTime()));
         when(rs.getDate("end_date")).thenReturn(new java.sql.Date(END_DATE.getTime()));
+        when(rs.getString("addr1")).thenReturn(ADDRESS1);
+        when(rs.getString("addr2")).thenReturn(ADDRESS2);
         when(rs.getString("city")).thenReturn(CITY);
         when(rs.getString("state")).thenReturn(STATE);
+        when(rs.getString("zip")).thenReturn(ZIP);
         when(rs.getString("type")).thenReturn(TYPE);
 
         RegistrationDetails returnedRegistrationDetails = registrationDetailsRowMapper.mapRow(rs, 0);
@@ -679,9 +692,13 @@ public class RegistrationDAOTest {
         assertEquals(OFFERING_SESSION_ID, returnedRegistrationDetails.getSessionNo());
         assertEquals(CLASS_NO, returnedRegistrationDetails.getCourseNo());
         assertEquals(COURSE_TITLE, returnedRegistrationDetails.getCourseTitle());
-        assertEquals(START_DATE, returnedRegistrationDetails.getStartDate());
-        assertEquals(END_DATE, returnedRegistrationDetails.getEndDate());
-        assertEquals(CITY + ", " + STATE, returnedRegistrationDetails.getLocation());
+        assertTrue(START_DATE.getTime() == returnedRegistrationDetails.getStartDate());
+        assertTrue(END_DATE.getTime() == returnedRegistrationDetails.getEndDate());
+        assertEquals(ADDRESS1, returnedRegistrationDetails.getAddress().getAddress1());
+        assertEquals(ADDRESS2, returnedRegistrationDetails.getAddress().getAddress2());
+        assertEquals(CITY, returnedRegistrationDetails.getAddress().getCity());
+        assertEquals(STATE, returnedRegistrationDetails.getAddress().getState());
+        assertEquals(ZIP, returnedRegistrationDetails.getAddress().getPostalCode());
         assertEquals(TYPE, returnedRegistrationDetails.getType());
     }
 }
