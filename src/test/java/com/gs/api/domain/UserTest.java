@@ -1,7 +1,8 @@
-package com.gs.api.domain.registration;
+package com.gs.api.domain;
 
 import com.gs.api.domain.Address;
 import com.gs.api.domain.Person;
+import com.gs.api.domain.User;
 import com.gs.api.helper.ValidationHelper;
 
 import org.apache.commons.lang.RandomStringUtils;

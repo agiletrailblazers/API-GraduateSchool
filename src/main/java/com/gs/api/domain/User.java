@@ -1,4 +1,4 @@
-package com.gs.api.domain.registration;
+package com.gs.api.domain;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -46,6 +46,8 @@ public class User {
     @NotNull(message = "Required field")
     @Valid
     private Person person;
+
+    private String accountNumber;
 
     public User() { }
 
@@ -141,5 +143,13 @@ public class User {
 
     public void setTimestamp(String timestamp) {
         this.timestamp = timestamp;
+    }
+
+    public String getAccountNumber() {
+        return accountNumber;
+    }
+
+    public void setAccountNumber(String accountNumber) {
+        this.accountNumber = accountNumber;
     }
 }

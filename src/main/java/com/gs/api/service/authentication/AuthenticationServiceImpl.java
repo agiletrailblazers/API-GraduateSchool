@@ -1,10 +1,10 @@
 package com.gs.api.service.authentication;
 
-import com.gs.api.dao.registration.UserDAO;
+import com.gs.api.dao.UserDAO;
 import com.gs.api.domain.authentication.*;
-import com.gs.api.domain.registration.User;
+import com.gs.api.domain.User;
 import com.gs.api.exception.AuthenticationException;
-import com.gs.api.service.registration.UserService;
+import com.gs.api.service.UserService;
 import org.apache.commons.lang3.StringUtils;
 import org.jasypt.encryption.pbe.PBEStringCleanablePasswordEncryptor;
 import org.slf4j.Logger;

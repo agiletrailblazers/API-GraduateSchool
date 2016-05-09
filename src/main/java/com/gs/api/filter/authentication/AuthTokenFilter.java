@@ -44,17 +44,18 @@ public class AuthTokenFilter implements Filter {
         try {
             // if the requested URI IS NOT on the "no token required" list then it must be verified for either guest or authenticated access
             String requestedURI = httpRequest.getRequestURI();
+            String requestedMethod = httpRequest.getMethod();
             logger.debug("Applying auth token filter for URI {}", requestedURI);
 
             if (!ArrayUtils.contains(noTokenRequiredList, requestedURI)) {
 
                 if (isGuestTokenRequired(requestedURI)) {
-                    logger.debug("URI {} requires a guest token", requestedURI);
+                    logger.debug("{} to URI {} requires a guest token", requestedMethod, requestedURI);
                     authenticationService.validateGuestAccess(httpRequest);
                 }
                 else {
                     // any URI not specifically listed on the guest token required list must have an authenticated token
-                    logger.debug("URI {} requires an authenticated token", requestedURI);
+                    logger.debug("{} to URI {} requires an authenticated token", requestedMethod, requestedURI);
 
                     if (requestedURI.equals(renewalURI)) {
                         authenticationService.validateAuthenticatedAccess(httpRequest, false);

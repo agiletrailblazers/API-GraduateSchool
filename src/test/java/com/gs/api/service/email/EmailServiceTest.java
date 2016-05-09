@@ -1,7 +1,7 @@
 package com.gs.api.service.email;
 
 import com.gs.api.dao.CourseSessionDAO;
-import com.gs.api.dao.registration.UserDAO;
+import com.gs.api.dao.UserDAO;
 import com.gs.api.domain.Person;
 import com.gs.api.domain.course.CourseSession;
 import com.gs.api.domain.course.Location;
@@ -9,7 +9,7 @@ import com.gs.api.domain.payment.Payment;
 import com.gs.api.domain.payment.PaymentConfirmation;
 import com.gs.api.domain.registration.Registration;
 import com.gs.api.domain.registration.RegistrationResponse;
-import com.gs.api.domain.registration.User;
+import com.gs.api.domain.User;
 
 import org.apache.velocity.app.VelocityEngine;
 import org.junit.Before;

@@ -1,7 +1,7 @@
 package com.gs.api.service.email;
 
 import com.gs.api.domain.registration.RegistrationResponse;
-import com.gs.api.domain.registration.User;
+import com.gs.api.domain.User;
 
 public interface EmailService {
      /**

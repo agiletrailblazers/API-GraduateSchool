@@ -1,8 +1,8 @@
-package com.gs.api.dao.registration;
+package com.gs.api.dao;
 
 import com.gs.api.domain.Address;
 import com.gs.api.domain.Person;
-import com.gs.api.domain.registration.User;
+import com.gs.api.domain.User;
 import com.gs.api.exception.AuthenticationException;
 import com.gs.api.exception.DuplicateUserException;
 import org.hamcrest.Matchers;
@@ -75,6 +75,8 @@ public class UserDAOTest {
     @Value("${sql.user.username.query}")
     private String sqlForUserByUsername;
 
+    @Value("${sql.user.updateUser.procedure}")
+    private String updateUserStoredProcedureName;
     @Value("${sql.user.personInsert.procedure}")
     private String insertUserStoredProcedureName;
     @Value("${sql.user.profileInsert.procedure}")
@@ -141,6 +143,9 @@ public class UserDAOTest {
 
     @Mock
     private SimpleJdbcCall listEntryActor;
+
+    @Mock
+    private SimpleJdbcCall updateUserActor;
 
     @Mock
     private SimpleJdbcCall deleteUserActor;
@@ -362,6 +367,60 @@ public class UserDAOTest {
             userDAO.createUser(user);
             assertTrue(false); //Should never reach this line
         } catch (IllegalArgumentException iE) {
+            assertSame(illegalArgumentException, iE);
+        }
+    }
+
+    @Test
+    public void testUpdateUser() throws Exception {
+
+        HashMap<String, Object> sqlResult = new HashMap<>();
+        doReturn(sqlResult).when(updateUserActor).execute(any(SqlParameterSource.class));
+
+        when(jdbcTemplate.queryForObject(anyString(), any(Object[].class), any(UserDAO.UserRowMapper.class))).
+                thenReturn(user);
+
+        userDAO.updateUser(user);
+
+        verify(updateUserActor).execute(insertUserCaptor.capture());
+        SqlParameterSource userParameters = insertUserCaptor.getValue();
+        assertEquals(user.getId(), userParameters.getValue("xid"));
+        assertEquals(user.getUsername(), userParameters.getValue("xusername"));
+        assertEquals(null, userParameters.getValue("xpassword"));
+        assertEquals(user.getTimezoneId(), userParameters.getValue("xtimezone_id"));
+        assertEquals(TIMEZONE_ID, userParameters.getValue("xtimezone_id"));
+
+        Person userPerson = user.getPerson();
+        assertEquals(userPerson.getFirstName(), userParameters.getValue("xfname"));
+        assertEquals(userPerson.getMiddleName(), userParameters.getValue("xmname"));
+        assertEquals(userPerson.getLastName(), userParameters.getValue("xlname"));
+        assertEquals(userPerson.getVeteran(), userParameters.getValue("xcustom9"));
+        assertEquals(VETERAN_STATUS, userParameters.getValue("xcustom9"));
+        assertEquals(userPerson.getPrimaryPhone(), userParameters.getValue("xhomephone"));
+        assertEquals(userPerson.getEmailAddress(), userParameters.getValue("xemail"));
+
+        Address personPrimaryAddress = userPerson.getPrimaryAddress();
+        assertEquals(personPrimaryAddress.getAddress1(), userParameters.getValue("xaddr3"));
+        assertEquals(personPrimaryAddress.getAddress2(), userParameters.getValue("xaddr1"));
+        assertEquals(personPrimaryAddress.getAddress3(), userParameters.getValue("xaddr2"));
+        assertEquals(personPrimaryAddress.getCity(), userParameters.getValue("xcity"));
+        assertEquals(personPrimaryAddress.getState(), userParameters.getValue("xstate"));
+        assertEquals(personPrimaryAddress.getPostalCode(), userParameters.getValue("xzip"));
+    }
+
+    @Test
+    public void testFailToUpdateUser() throws Exception {
+        when(jdbcTemplate.queryForObject(anyString(), any(Object[].class), any(UserDAO.UserRowMapper.class))).
+                thenReturn(user);
+
+        final IllegalArgumentException illegalArgumentException = new IllegalArgumentException("BAD SQL");
+        when(updateUserActor.execute(any(SqlParameterSource.class))).thenThrow(illegalArgumentException);
+
+        try {
+            userDAO.updateUser(user);
+            assertTrue(false); //Should never reach this line
+        }
+        catch (IllegalArgumentException iE) {
             assertSame(illegalArgumentException, iE);
         }
     }

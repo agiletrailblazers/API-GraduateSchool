@@ -48,6 +48,8 @@ public class Person {
     @Pattern(regexp = "[0-9]{8}", message = "Date of Birth is not in yyyyMMdd format")
     private String dateOfBirth;
 
+    private String personNumber;
+
     public String getFirstName() {
         return firstName;
     }
@@ -127,4 +129,13 @@ public class Person {
     public void setDateOfBirth(String dateOfBirth) {
         this.dateOfBirth = dateOfBirth;
     }
+
+    public String getPersonNumber() {
+        return personNumber;
+    }
+
+    public void setPersonNumber(String personNumber) {
+        this.personNumber = personNumber;
+    }
+
 }

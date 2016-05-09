@@ -1,8 +1,8 @@
-package com.gs.api.service.registration;
+package com.gs.api.service;
 
 import com.gs.api.domain.PasswordChangeAuthCredentials;
 import com.gs.api.domain.authentication.AuthCredentials;
-import com.gs.api.domain.registration.User;
+import com.gs.api.domain.User;
 
 public interface UserService {
 
@@ -21,6 +21,8 @@ public interface UserService {
      * @throws Exception error deleting the user.
      */
     void deleteUser(final String userId) throws Exception;
+
+    void updateUser(final User user) throws Exception;
 
     /**
      * Get a user using the supplied credentials.
@@ -50,5 +52,4 @@ public interface UserService {
      * @throws Exception
      */
     void changePassword(final PasswordChangeAuthCredentials passwordChangeAuthCredentials, final String authUserID) throws Exception;
-
 }

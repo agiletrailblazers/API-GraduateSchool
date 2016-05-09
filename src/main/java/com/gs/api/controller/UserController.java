@@ -1,11 +1,10 @@
-package com.gs.api.controller.registration;
+package com.gs.api.controller;
 
-import com.gs.api.controller.BaseController;
 import com.gs.api.domain.PasswordChangeAuthCredentials;
 import com.gs.api.domain.authentication.AuthCredentials;
-import com.gs.api.domain.registration.User;
+import com.gs.api.domain.User;
 import com.gs.api.service.authentication.AuthenticationService;
-import com.gs.api.service.registration.UserService;
+import com.gs.api.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +44,20 @@ public class UserController extends BaseController {
 
         // create the user
         userService.createUser(user);
+
+        return user;
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @RequestMapping(value = "/{id}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    public User updateUser(@PathVariable("id") String id, @RequestBody @Valid User user, HttpServletRequest request) throws Exception  {
+
+        logger.debug("User Update {}", id);
+
+        // verify that the user making the request is the authenticated user
+        authenticationService.verifyUser(request, id);
+
+        userService.updateUser(user);
 
         return user;
     }
@@ -91,4 +104,5 @@ public class UserController extends BaseController {
 
         userService.changePassword(passwordChangeAuthCredentials, id);
     }
+
 }

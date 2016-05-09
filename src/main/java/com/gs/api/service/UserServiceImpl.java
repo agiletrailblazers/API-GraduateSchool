@@ -1,9 +1,9 @@
-package com.gs.api.service.registration;
+package com.gs.api.service;
 
-import com.gs.api.dao.registration.UserDAO;
+import com.gs.api.dao.UserDAO;
 import com.gs.api.domain.PasswordChangeAuthCredentials;
 import com.gs.api.domain.authentication.AuthCredentials;
-import com.gs.api.domain.registration.User;
+import com.gs.api.domain.User;
 import com.gs.api.exception.NotFoundException;
 import com.gs.api.service.email.EmailService;
 import org.apache.commons.lang.RandomStringUtils;
@@ -43,6 +43,13 @@ public class UserServiceImpl implements UserService {
             logger.error("User {} created but failed to send new user email", userId, e);
         }
         logger.debug("User creation email for user " + user.getId() + " asynchronously sending, returning to normal flow");
+    }
+
+    @Override
+    public void updateUser(User user) throws Exception {
+        logger.info("Updating user: {}", user.getId());
+
+        userDao.updateUser(user);
     }
 
     @Override

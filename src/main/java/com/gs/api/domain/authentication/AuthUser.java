@@ -3,7 +3,7 @@ package com.gs.api.domain.authentication;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.gs.api.domain.registration.User;
+import com.gs.api.domain.User;
 
 @JsonInclude(Include.ALWAYS)
 public class AuthUser {
