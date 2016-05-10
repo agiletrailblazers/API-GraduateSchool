@@ -571,6 +571,7 @@ public class UserDAO {
 
             Person person = new Person();
             person.setFirstName(rs.getString("FNAME"));
+            person.setMiddleName(rs.getString("MNAME"));
             person.setLastName(rs.getString("LNAME"));
             person.setEmailAddress(rs.getString("EMAIL"));
             person.setPrimaryPhone(rs.getString("HOMEPHONE"));

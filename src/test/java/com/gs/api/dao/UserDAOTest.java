@@ -118,6 +118,8 @@ public class UserDAOTest {
     private static final String SPLIT = "domin000000000000001";
     private static final String CURRENCY_ID = "crncy000000000000167";
     private static final String USER_TIMESTAMP = "12345678987654";
+    private static final String ACCOUNT_NO = "111";
+    private static final String PERSON_NO = "123";
 
     private User user;
 
@@ -471,10 +473,13 @@ public class UserDAOTest {
         when(rs.getString("SPLIT")).thenReturn(SPLIT);
         when(rs.getString("CURRENCY_ID")).thenReturn("abc1234");
         when(rs.getString("FNAME")).thenReturn(FIRST_NAME);
+        when(rs.getString("MNAME")).thenReturn(MIDDLE_NAME);
         when(rs.getString("LNAME")).thenReturn(LAST_NAME);
         when(rs.getString("EMAIL")).thenReturn(EMAIL_ADDRESS);
         when(rs.getString("HOMEPHONE")).thenReturn(PHONE);
         when(rs.getString("WORKPHONE")).thenReturn("123456");
+        when(rs.getString("ACCOUNT_NO")).thenReturn(ACCOUNT_NO);
+        when(rs.getString("PERSON_NO")).thenReturn(PERSON_NO);
 
         when(rs.getDate("DATE_OF_BIRTH")).thenReturn(null);
         when(rs.getString("VETERAN")).thenReturn("N");
@@ -496,12 +501,15 @@ public class UserDAOTest {
         assertEquals(SPLIT, returnedUser.getSplit());
         assertEquals("abc1234", returnedUser.getCurrencyId());
         assertEquals(FIRST_NAME, returnedUser.getPerson().getFirstName());
+        assertEquals(MIDDLE_NAME, returnedUser.getPerson().getMiddleName());
         assertEquals(LAST_NAME, returnedUser.getPerson().getLastName());
         assertEquals(EMAIL_ADDRESS, returnedUser.getPerson().getEmailAddress());
         assertEquals(PHONE, returnedUser.getPerson().getPrimaryPhone());
         assertEquals("123456", returnedUser.getPerson().getSecondaryPhone());
         assertNull(returnedUser.getPerson().getDateOfBirth());
         assertEquals(false, returnedUser.getPerson().getVeteran());
+        assertEquals(PERSON_NO, returnedUser.getPerson().getPersonNumber());
+        assertEquals(ACCOUNT_NO, returnedUser.getAccountNumber());
 
         Address returnedAddress = returnedUser.getPerson().getPrimaryAddress();
         assertEquals(ADDRESS_1,returnedAddress.getAddress1());
