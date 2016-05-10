@@ -366,12 +366,12 @@
 			"tests": "tests[\"Status code is 200\"] = responseCode.code === 200;",
 			"currentHelper": "normal",
 			"helperAttributes": {},
-			"time": 1462826898610,
+			"time": 1462902140936,
 			"name": "Update Postman User",
 			"description": "",
 			"collectionId": "003a7d86-2c2f-0205-b5d3-331fb40ea708",
 			"responses": [],
-			"rawModeData": "{\n    \"id\"    :   \"{{authentication.user_id}}\",\n    \"username\" : \"postman@atb.com\",\n    \"password\" : \"test1234\",\n    \"lastFourSSN\" : \"3333\",\n    \"timezoneId\" : \"tzone000000000000012\",\n    \"person\" : {\n        \"firstName\" : \"Posterman\",\n        \"lastName\" : \"Posterman\",\n        \"emailAddress\" : \"postman@atb.com\",\n        \"primaryPhone\" : \"5555555555\",\n        \"dateOfBirth\" : \"19500404\",\n        \"primaryAddress\" : {\n            \"address1\" : \"2000 Hillcrest Ave\",\n            \"city\" : \"Parkville\",\n            \"state\" : \"MD\",\n            \"postalCode\" : \"21234\"\n        }\n    }\n}"
+			"rawModeData": "{\n    \"id\"    :   \"{{authentication.user_id}}\",\n    \"username\" : \"postman@atb.com\",\n    \"password\" : \"test1234\",\n    \"lastFourSSN\" : \"3333\",\n    \"timezoneId\" : \"tzone000000000000012\",\n    \"accountNumber\" : \"0021\",\n    \"person\" : {\n        \"firstName\" : \"Posterman\",\n        \"lastName\" : \"Posterman\",\n        \"emailAddress\" : \"postman@atb.com\",\n        \"primaryPhone\" : \"5555555555\",\n        \"dateOfBirth\" : \"19500404\",\n        \"personNumber\" : \"0123\",\n        \"primaryAddress\" : {\n            \"address1\" : \"2000 Hamilton Ave\",\n            \"city\" : \"Parkville\",\n            \"state\" : \"MD\",\n            \"postalCode\" : \"21234\"\n        }\n    }\n}"
 		},
 		{
 			"id": "5e29cf56-8aaf-43a4-ace3-5f7e258e64d6",
