@@ -1,6 +1,7 @@
 package com.gs.api.service.registration;
 
 import com.gs.api.domain.registration.Registration;
+import com.gs.api.domain.registration.RegistrationDetails;
 import com.gs.api.domain.registration.RegistrationRequest;
 import com.gs.api.domain.registration.RegistrationResponse;
 import com.gs.api.exception.PaymentException;
@@ -28,5 +29,14 @@ public interface RegistrationService {
      * @throws Exception
      */
     List<Registration> getRegistrationForSession(final String userId, final String sessionId) throws Exception;
+
+    /**
+     * Get a list of the RegistrationDetails object for a specified user
+     *
+     * @param userId - user ID of the student
+     * @return list of RegistrationDetails object
+     * @throws Exception
+     */
+    List<RegistrationDetails> getRegistrationDetails(final String userId) throws Exception;
 
 }

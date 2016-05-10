@@ -3,6 +3,7 @@ package com.gs.api.service.registration;
 import com.gs.api.dao.CourseSessionDAO;
 import com.gs.api.dao.registration.RegistrationDAO;
 import com.gs.api.dao.registration.UserDAO;
+import com.gs.api.domain.Address;
 import com.gs.api.domain.Person;
 import com.gs.api.domain.course.CourseSession;
 import com.gs.api.domain.payment.Payment;
@@ -11,6 +12,7 @@ import com.gs.api.domain.registration.Registration;
 import com.gs.api.domain.registration.RegistrationRequest;
 import com.gs.api.domain.registration.RegistrationResponse;
 import com.gs.api.domain.registration.User;
+import com.gs.api.domain.registration.RegistrationDetails;
 import com.gs.api.exception.PaymentAcceptedException;
 import com.gs.api.exception.PaymentException;
 import com.gs.api.service.email.EmailService;
@@ -32,11 +34,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.fail;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
@@ -56,6 +60,20 @@ public class RegistrationServiceTest {
 
     private static final String REGISTRATION_ID = "12345";
     public static final String ORDER_NUMBER = "23456";
+
+    private static final Date START_DATE = new Date();
+    private static final Date END_DATE = new Date(START_DATE.getTime() + 1000);
+    private static final String TYPE = "CLASSROOM";
+    private static final String COURSE_NO = "course1234";
+    private static final String COURSE_TITLE = "Introduction to Testing";
+
+    private static final String ADDRESS1 = "123 Main Street";
+    private static final String ADDRESS2 = "Suite 100";
+    private static final String CITY = "Washington";
+    private static final String STATE = "DC";
+    private static final String ZIP = "12345";
+
+    private Address address;
 
     //private List<Registration> registrations;
     private RegistrationRequest registrationRequest;
@@ -104,6 +122,13 @@ public class RegistrationServiceTest {
         registrationRequest = new RegistrationRequest(registrations, payments);
 
         userTimestamp = Long.toString(new Date().getTime());
+
+        address = new Address();
+        address.setAddress1(ADDRESS1);
+        address.setAddress2(ADDRESS2);
+        address.setCity(CITY);
+        address.setState(STATE);
+        address.setPostalCode(ZIP);
     }
 
     @Test
@@ -266,5 +291,32 @@ public class RegistrationServiceTest {
         assertEquals(SESSION_ID, createdRegistration.get(0).getSessionId());
         assertEquals(ORDER_NUMBER, createdRegistration.get(0).getOrderNumber());
         assertEquals(REGISTRATION_ID, createdRegistration.get(0).getId());
+    }
+
+    @Test
+    public void testGetRegistrationDetails() throws Exception {
+        RegistrationDetails registrationDetails = new RegistrationDetails(
+                SESSION_ID,
+                COURSE_NO,
+                COURSE_TITLE,
+                START_DATE.getTime(),
+                END_DATE.getTime(),
+                address,
+                TYPE
+        );
+
+        when(registrationDao.getRegistrationDetails(USER_ID)).thenReturn(Collections.singletonList(registrationDetails));
+
+        List<RegistrationDetails> createdRegistrationDetailsList = registrationService.getRegistrationDetails(USER_ID);
+
+        verify(registrationDao).getRegistrationDetails(eq(USER_ID));
+
+        assertEquals(SESSION_ID, createdRegistrationDetailsList.get(0).getSessionNo());
+        assertEquals(COURSE_NO, createdRegistrationDetailsList.get(0).getCourseNo());
+        assertEquals(COURSE_TITLE, createdRegistrationDetailsList.get(0).getCourseTitle());
+        assertTrue(START_DATE.getTime() == createdRegistrationDetailsList.get(0).getStartDate());
+        assertTrue(END_DATE.getTime() == createdRegistrationDetailsList.get(0).getEndDate());
+        assertEquals(address, createdRegistrationDetailsList.get(0).getAddress());
+        assertEquals(TYPE, createdRegistrationDetailsList.get(0).getType());
     }
 }

@@ -11,6 +11,7 @@ import com.gs.api.domain.registration.Registration;
 import com.gs.api.domain.registration.RegistrationRequest;
 import com.gs.api.domain.registration.RegistrationResponse;
 import com.gs.api.domain.registration.User;
+import com.gs.api.domain.registration.RegistrationDetails;
 import com.gs.api.exception.PaymentAcceptedException;
 import com.gs.api.exception.PaymentException;
 import com.gs.api.service.email.EmailService;
@@ -114,5 +115,11 @@ public class RegistrationServiceImpl implements RegistrationService {
     public List<Registration> getRegistrationForSession(final String userId, final String sessionId) throws Exception{
         logger.debug("Getting Registration for student");
         return registrationDao.getRegistration(userId, sessionId);
+    }
+
+    @Override
+    public List<RegistrationDetails> getRegistrationDetails(final String userId) throws Exception{
+        logger.debug("Getting registration details for student {}", userId);
+        return registrationDao.getRegistrationDetails(userId);
     }
 }

@@ -1,7 +1,9 @@
 package com.gs.api.dao.registration;
 
+import com.gs.api.domain.Address;
 import com.gs.api.domain.course.CourseSession;
 import com.gs.api.domain.registration.Registration;
+import com.gs.api.domain.registration.RegistrationDetails;
 import com.gs.api.domain.registration.User;
 import com.gs.api.exception.NotFoundException;
 
@@ -73,6 +75,9 @@ public class RegistrationDAO {
 
     @Value("${sql.registration.getExisting.query}")
     private String existingRegistrationQuery;
+
+    @Value("${sql.user.registrations}")
+    private String userRegistrationsQuery;
 
     @Autowired
     public void setDataSource(DataSource dataSource) {
@@ -572,6 +577,46 @@ public class RegistrationDAO {
             registration.setSessionId(rs.getString("session_id"));
 
             return registration;
+        }
+    }
+
+    /**
+     * Get a list of RegistrationDetails objects from user ID
+     *
+     * @param userId - user ID of the student
+     * @return List of RegistrationDetails objects
+     * @throws Exception
+     */
+    public List<RegistrationDetails> getRegistrationDetails(String userId) throws Exception {
+        List<RegistrationDetails> registrationDetailsList = this.jdbcTemplate.query(userRegistrationsQuery,
+                new Object[] { userId},
+                new RegistrationDetailsRowMapper());
+
+        return registrationDetailsList;
+    }
+
+    protected final class RegistrationDetailsRowMapper implements RowMapper<RegistrationDetails> {
+        /**
+         * Map row for RegistrationDetails object from result set
+         */
+        public RegistrationDetails mapRow(ResultSet rs, int rowNum) throws SQLException {
+            Address address = new Address();
+            address.setAddress1(rs.getString("addr1"));
+            address.setAddress2(rs.getString("addr2"));
+            address.setCity(rs.getString("city"));
+            address.setState(rs.getString("state"));
+            address.setPostalCode(rs.getString("zip"));
+
+            RegistrationDetails registrationDetails = new RegistrationDetails(
+                    rs.getString("session_no"),
+                    rs.getString("course_no"),
+                    rs.getString("title"),
+                    rs.getDate("start_date").getTime(),
+                    rs.getDate("end_date").getTime(),
+                    address,
+                    rs.getString("type"));
+
+            return registrationDetails;
         }
     }
 }
