@@ -212,9 +212,6 @@ public class UserDAO {
         logger.debug("Updating user info for user {}", user.getId());
         Person person = user.getPerson();
 
-        // Procedure requires all parameters, so get values from DB for fields not able to be updated on front end
-        User userInDb = getUser(user.getId());
-
         //Format address to match saba fields
         Address sabaFormattedAddress = mapAddressToSabaFormat(person.getPrimaryAddress());
 
@@ -255,9 +252,9 @@ public class UserDAO {
                 .addValue("xcustom9", person.getVeteran(), OracleTypes.VARCHAR) //this will always be null but may be implemented later
                 .addValue("xworkphone", person.getSecondaryPhone(), OracleTypes.VARCHAR) //this will always be null but may be implemented later
                 // Fields from DB that never change
-                .addValue("xss_no", userInDb.getLastFourSSN(), OracleTypes.VARCHAR)
-                .addValue("xperson_no", userInDb.getPerson().getPersonNumber(), OracleTypes.VARCHAR)
-                .addValue("xaccount_no", userInDb.getAccountNumber(), OracleTypes.VARCHAR)
+                .addValue("xss_no", user.getLastFourSSN(), OracleTypes.VARCHAR)
+                .addValue("xperson_no", person.getPersonNumber(), OracleTypes.VARCHAR)
+                .addValue("xaccount_no", user.getAccountNumber(), OracleTypes.VARCHAR)
                 //Hardcoded values till we figure out something better
                 .addValue("xgender", GENDER, OracleTypes.FIXED_CHAR)
                 .addValue("xcorres_pref1", CORRES_PREF1, OracleTypes.FIXED_CHAR)

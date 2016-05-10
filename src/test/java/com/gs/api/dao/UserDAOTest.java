@@ -377,9 +377,6 @@ public class UserDAOTest {
         HashMap<String, Object> sqlResult = new HashMap<>();
         doReturn(sqlResult).when(updateUserActor).execute(any(SqlParameterSource.class));
 
-        when(jdbcTemplate.queryForObject(anyString(), any(Object[].class), any(UserDAO.UserRowMapper.class))).
-                thenReturn(user);
-
         userDAO.updateUser(user);
 
         verify(updateUserActor).execute(insertUserCaptor.capture());
@@ -410,9 +407,6 @@ public class UserDAOTest {
 
     @Test
     public void testFailToUpdateUser() throws Exception {
-        when(jdbcTemplate.queryForObject(anyString(), any(Object[].class), any(UserDAO.UserRowMapper.class))).
-                thenReturn(user);
-
         final IllegalArgumentException illegalArgumentException = new IllegalArgumentException("BAD SQL");
         when(updateUserActor.execute(any(SqlParameterSource.class))).thenThrow(illegalArgumentException);
 
