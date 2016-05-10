@@ -15,7 +15,6 @@ import com.gs.api.exception.PaymentException;
 import com.gs.api.service.authentication.AuthenticationService;
 import com.gs.api.service.registration.RegistrationService;
 
-import jdk.nashorn.internal.parser.JSONParser;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
