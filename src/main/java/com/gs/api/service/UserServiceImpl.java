@@ -4,6 +4,7 @@ import com.gs.api.dao.UserDAO;
 import com.gs.api.domain.PasswordChangeAuthCredentials;
 import com.gs.api.domain.authentication.AuthCredentials;
 import com.gs.api.domain.User;
+import com.gs.api.domain.BaseUser;
 import com.gs.api.exception.NotFoundException;
 import com.gs.api.service.email.EmailService;
 import org.apache.commons.lang.RandomStringUtils;
@@ -46,7 +47,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void updateUser(User user) throws Exception {
+    public void updateUser(BaseUser user) throws Exception {
         logger.info("Updating user: {}", user.getId());
 
         userDao.updateUser(user);

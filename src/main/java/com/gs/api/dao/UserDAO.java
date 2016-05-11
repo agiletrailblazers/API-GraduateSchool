@@ -3,6 +3,7 @@ package com.gs.api.dao;
 import com.gs.api.domain.Address;
 import com.gs.api.domain.Person;
 import com.gs.api.domain.User;
+import com.gs.api.domain.BaseUser;
 import com.gs.api.exception.AuthenticationException;
 import com.gs.api.exception.DuplicateUserException;
 import com.gs.api.exception.ReusedPasswordException;
@@ -208,7 +209,7 @@ public class UserDAO {
         changePassword(userId, userId, currentPassword, newPassword);
     }
 
-    public User updateUser(User user)  throws Exception {
+    public BaseUser updateUser(BaseUser user)  throws Exception {
         logger.debug("Updating user info for user {}", user.getId());
         Person person = user.getPerson();
 

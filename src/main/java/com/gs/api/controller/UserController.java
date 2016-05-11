@@ -1,5 +1,6 @@
 package com.gs.api.controller;
 
+import com.gs.api.domain.BaseUser;
 import com.gs.api.domain.PasswordChangeAuthCredentials;
 import com.gs.api.domain.authentication.AuthCredentials;
 import com.gs.api.domain.User;
@@ -50,7 +51,7 @@ public class UserController extends BaseController {
 
     @ResponseStatus(HttpStatus.OK)
     @RequestMapping(value = "/{id}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public User updateUser(@PathVariable("id") String id, @RequestBody @Valid User user, HttpServletRequest request) throws Exception  {
+    public BaseUser updateUser(@PathVariable("id") String id, @RequestBody @Valid BaseUser user, HttpServletRequest request) throws Exception  {
 
         logger.debug("User Update {}", id);
 

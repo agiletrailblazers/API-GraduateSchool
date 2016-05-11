@@ -1,11 +1,8 @@
 package com.gs.api.service;
 
 import com.gs.api.dao.UserDAO;
-import com.gs.api.domain.Address;
-import com.gs.api.domain.PasswordChangeAuthCredentials;
-import com.gs.api.domain.Person;
+import com.gs.api.domain.*;
 import com.gs.api.domain.authentication.AuthCredentials;
-import com.gs.api.domain.User;
 import com.gs.api.exception.NotFoundException;
 import com.gs.api.service.UserServiceImpl;
 import com.gs.api.service.email.EmailService;
@@ -114,12 +111,13 @@ public class UserServiceTest {
 
     @Test
     public void testUpdateUser() throws Exception {
+        BaseUser baseUser = new BaseUser(user.getId(),user.getUsername(),user.getLastFourSSN(),user.getPerson(),user.getTimezoneId(),user.getAccountId(),
+                user.getSplit(), user.getCurrencyId(), user.getTimestamp());
+        when(userDao.updateUser(baseUser)).thenReturn(baseUser);
 
-        when(userDao.updateUser(user)).thenReturn(user);
+        userService.updateUser(baseUser);
 
-        userService.updateUser(user);
-
-        verify(userDao).updateUser(user);
+        verify(userDao).updateUser(baseUser);
     }
 
     @Test

@@ -3,6 +3,7 @@ package com.gs.api.service;
 import com.gs.api.domain.PasswordChangeAuthCredentials;
 import com.gs.api.domain.authentication.AuthCredentials;
 import com.gs.api.domain.User;
+import com.gs.api.domain.BaseUser;
 
 public interface UserService {
 
@@ -22,7 +23,12 @@ public interface UserService {
      */
     void deleteUser(final String userId) throws Exception;
 
-    void updateUser(final User user) throws Exception;
+    /**
+     * Updates the user in the database
+     * @param user the updated user info
+     * @throws Exception error updating the user
+     */
+    void updateUser(final BaseUser user) throws Exception;
 
     /**
      * Get a user using the supplied credentials.

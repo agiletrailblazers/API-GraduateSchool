@@ -2,11 +2,8 @@ package com.gs.api.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gs.api.controller.UserController;
-import com.gs.api.domain.Address;
-import com.gs.api.domain.PasswordChangeAuthCredentials;
-import com.gs.api.domain.Person;
+import com.gs.api.domain.*;
 import com.gs.api.domain.authentication.AuthCredentials;
-import com.gs.api.domain.User;
 import com.gs.api.exception.AuthenticationException;
 import com.gs.api.exception.NotFoundException;
 import com.gs.api.exception.ReusedPasswordException;
@@ -74,6 +71,9 @@ public class UserControllerTest {
     private ArgumentCaptor<User> capturedUser;
 
     @Captor
+    private ArgumentCaptor<BaseUser> capturedBaseUser;
+
+    @Captor
     private ArgumentCaptor<AuthCredentials> capturedAuthCredentials;
 
     @Captor
@@ -128,10 +128,8 @@ public class UserControllerTest {
 
     @Test
     public void testUpdateUser() throws Exception {
-
-
         String id = "persn0001234";
-        User user = createValidTestUser();
+        BaseUser user = createValidTestBaseUser();
         user.setId(id);
 
         String jsonModel = new ObjectMapper().writeValueAsString(user);
@@ -142,15 +140,14 @@ public class UserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.username").value(is(USER_NAME)));
 
-        verify(userService).updateUser(capturedUser.capture());
-        assertEquals(USER_NAME, capturedUser.getValue().getUsername());
+        verify(userService).updateUser(capturedBaseUser.capture());
+        assertEquals(USER_NAME, capturedBaseUser.getValue().getUsername());
     }
 
     @Test
     public void testUpdateUser_validationError() throws Exception {
-
         String id = "persn0001234";
-        User user = createValidTestUser();
+        BaseUser user = createValidTestBaseUser();
         user.setId(id);
         // null out a required field
         user.setUsername(null);
@@ -308,6 +305,31 @@ public class UserControllerTest {
         user.setUsername(USER_NAME);
         user.setPassword("password");
         user.setLastFourSSN("5555");
+        user.setTimezoneId("timezone1234");
+
+        Person person = new Person();
+        person.setFirstName("Joe");
+        person.setLastName("Tester");
+        person.setEmailAddress("joe.tester@test.com");
+        person.setDateOfBirth("19550505");
+        person.setPrimaryPhone("5555555555");
+
+
+        Address address = new Address();
+        address.setAddress1("55 Test Street");
+        address.setCity("Testingville");
+        address.setState("TT");
+        address.setPostalCode("55555");
+        person.setPrimaryAddress(address);
+
+        user.setPerson(person);
+
+        return user;
+    }
+
+    private BaseUser createValidTestBaseUser() {
+        BaseUser user = new BaseUser();
+        user.setUsername(USER_NAME);
         user.setTimezoneId("timezone1234");
 
         Person person = new Person();
