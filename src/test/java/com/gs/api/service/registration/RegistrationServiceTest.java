@@ -139,9 +139,9 @@ public class RegistrationServiceTest {
         registration2.setSessionId(SESSION_ID);
         registrationRequest.getRegistrations().add(registration2);
 
-        User user = new User(USER_ID, "user1", "", "1234", new Person(), "", "", "", "", userTimestamp);
-        User student1 = new User(STUDENT_ID_1, "student1", "", "1234", new Person(), "", "", "", "", userTimestamp);
-        User student2 = new User(STUDENT_ID_2, "student2", "", "1234", new Person(), "", "", "", "", userTimestamp);
+        User user = new User(USER_ID, "user1", "", "1234", new Person(), "", "","", "", "", userTimestamp);
+        User student1 = new User(STUDENT_ID_1, "student1", "", "1234", new Person(), "","", "", "", "", userTimestamp);
+        User student2 = new User(STUDENT_ID_2, "student2", "", "1234", new Person(), "","", "", "", "", userTimestamp);
 
         CourseSession session = new CourseSession();
         session.setClassNumber(SESSION_ID);
@@ -218,7 +218,7 @@ public class RegistrationServiceTest {
         thrown.expect(PaymentAcceptedException.class);
         thrown.expectMessage(RegistrationServiceImpl.REGISTRATION_FAILURE_AFTER_SUCCESSFUL_PAYMENT_MSG);
 
-        User user = new User(USER_ID, "user1", "", "1234", new Person(), "", "", "", "", userTimestamp);
+        User user = new User(USER_ID, "user1", "", "1234", new Person(), "", "", "", "", "", userTimestamp);
 
         when(userDao.getUser(USER_ID)).thenReturn(user);
         when(userDao.getUser(STUDENT_ID_1)).thenReturn(null);
@@ -232,8 +232,8 @@ public class RegistrationServiceTest {
         thrown.expect(PaymentAcceptedException.class);
         thrown.expectMessage(RegistrationServiceImpl.REGISTRATION_FAILURE_AFTER_SUCCESSFUL_PAYMENT_MSG);
 
-        User user = new User(USER_ID, "user1", "", "1234", new Person(), "", "", "", "", userTimestamp);
-        User student1 = new User(STUDENT_ID_1, "student1", "", "1234", new Person(), "", "", "", "", userTimestamp);
+        User user = new User(USER_ID, "user1", "", "1234", new Person(), "", "", "", "", "", userTimestamp);
+        User student1 = new User(STUDENT_ID_1, "student1", "", "1234", new Person(), "", "", "", "", "", userTimestamp);
 
         when(userDao.getUser(USER_ID)).thenReturn(user);
         when(userDao.getUser(STUDENT_ID_1)).thenReturn(student1);
@@ -246,8 +246,8 @@ public class RegistrationServiceTest {
     @Test
     public void testRegisterSucceedsEmailFails() throws Exception {
         Exception expectedException = new Exception("Mail fail");
-        User user = new User(USER_ID, "user1", "", "1234", new Person(), "", "", "", "", userTimestamp);
-        User student1 = new User(STUDENT_ID_1, "student1", "", "1234", new Person(), "", "", "", "", userTimestamp);
+        User user = new User(USER_ID, "user1", "", "1234", new Person(), "", "", "", "", "", userTimestamp);
+        User student1 = new User(STUDENT_ID_1, "student1", "", "1234", new Person(), "", "", "", "", "", userTimestamp);
         CourseSession session = new CourseSession();
         session.setClassNumber(SESSION_ID);
 

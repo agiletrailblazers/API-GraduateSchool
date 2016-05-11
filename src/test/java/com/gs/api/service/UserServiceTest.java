@@ -112,7 +112,7 @@ public class UserServiceTest {
     @Test
     public void testUpdateUser() throws Exception {
         BaseUser baseUser = new BaseUser(user.getId(),user.getUsername(),user.getLastFourSSN(),user.getPerson(),user.getTimezoneId(),user.getAccountId(),
-                user.getSplit(), user.getCurrencyId(), user.getTimestamp());
+                user.getAccountNumber(), user.getSplit(), user.getCurrencyId(), user.getTimestamp());
         when(userDao.updateUser(baseUser)).thenReturn(baseUser);
 
         userService.updateUser(baseUser);

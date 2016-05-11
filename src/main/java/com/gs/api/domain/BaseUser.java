@@ -42,7 +42,7 @@ public class BaseUser {
 
     public BaseUser() { }
 
-    public BaseUser(String id, String username, String lastFourSSN, Person person, String timezoneId, String accountId,
+    public BaseUser(String id, String username, String lastFourSSN, Person person, String timezoneId, String accountId, String accountNo,
                     String split, String currencyId, String timestamp) {
         this.id = id;
         this.username = username;
@@ -50,18 +50,20 @@ public class BaseUser {
         this.person = person;
         this.timezoneId = timezoneId;
         this.accountId = accountId;
+        this.accountNumber = accountNo;
         this.split = split;
         this.currencyId = currencyId;
         this.timestamp = timestamp;
     }
 
-    public BaseUser(String id, String username, Person person, String timezoneId, String accountId,
+    public BaseUser(String id, String username, Person person, String timezoneId, String accountId, String accountNo,
                     String split, String currencyId, String timestamp) {
         this.id = id;
         this.username = username;
         this.person = person;
         this.timezoneId = timezoneId;
         this.accountId = accountId;
+        this.accountNumber = accountNo;
         this.split = split;
         this.currencyId = currencyId;
         this.timestamp = timestamp;

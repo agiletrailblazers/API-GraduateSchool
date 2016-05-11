@@ -27,28 +27,12 @@ public class User extends BaseUser {
 
     public User() { }
 
-    public User(String id, String username, String password, String lastFourSSN, Person person, String timezoneId, String accountId,
+    public User(String id, String username, String password, String lastFourSSN, Person person, String timezoneId, String accountId, String accountNumber,
                 String split, String currencyId, String timestamp) {
-        super(id, username, person, timezoneId, accountId,
+        super(id, username, person, timezoneId, accountId, accountNumber,
                 split, currencyId, timestamp);
         this.password = password;
         this.lastFourSSN = lastFourSSN;
-    }
-
-    public String getId() {
-        return super.getId();
-    }
-
-    public void setId(String id) {
-        super.setId(id);
-    }
-
-    public String getUsername() {
-        return super.getUsername();
-    }
-
-    public void setUsername(String username) {
-        super.setUsername(username);
     }
 
     public String getPassword() {
@@ -65,61 +49,5 @@ public class User extends BaseUser {
 
     public void setLastFourSSN(String lastFourSSN) {
         this.lastFourSSN = lastFourSSN;
-    }
-
-    public Person getPerson() {
-        return super.getPerson();
-    }
-
-    public void setPerson(Person person) {
-        super.setPerson(person);
-    }
-
-    public String getTimezoneId() {
-        return super.getTimezoneId();
-    }
-
-    public void setTimezoneId(String timezoneId) {
-        super.setTimezoneId(timezoneId);
-    }
-
-    public String getAccountId() {
-        return super.getAccountId();
-    }
-
-    public void setAccountId(String accountId) {
-        super.setAccountId(accountId);
-    }
-
-    public String getCurrencyId() {
-        return super.getCurrencyId();
-    }
-
-    public void setCurrencyId(String currencyId) {
-        super.setCurrencyId(currencyId);
-    }
-
-    public String getSplit() {
-        return super.getSplit();
-    }
-
-    public void setSplit(String split) {
-        super.setSplit(split);
-    }
-
-    public String getTimestamp() {
-        return super.getTimestamp();
-    }
-
-    public void setTimestamp(String timestamp) {
-        super.setTimestamp(timestamp);
-    }
-
-    public String getAccountNumber() {
-        return super.getAccountNumber();
-    }
-
-    public void setAccountNumber(String accountNumber) {
-        super.setAccountNumber(accountNumber);
     }
 }

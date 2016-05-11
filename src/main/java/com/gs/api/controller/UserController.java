@@ -59,8 +59,8 @@ public class UserController extends BaseController {
         authenticationService.verifyUser(request, id);
 
         userService.updateUser(user);
-
-        return user;
+        //TODO after update do a getUser and return
+        return userService.getUser(user.getId());
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)

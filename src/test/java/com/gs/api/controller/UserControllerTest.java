@@ -128,11 +128,16 @@ public class UserControllerTest {
 
     @Test
     public void testUpdateUser() throws Exception {
+        User user = createValidTestUser();
         String id = "persn0001234";
-        BaseUser user = createValidTestBaseUser();
         user.setId(id);
 
-        String jsonModel = new ObjectMapper().writeValueAsString(user);
+        when(userService.getUser(id)).thenReturn(user);
+
+        BaseUser baseUser = new BaseUser(user.getId(),user.getUsername(),user.getLastFourSSN(),user.getPerson(),user.getTimezoneId(),user.getAccountId(),
+                user.getAccountNumber(), user.getSplit(), user.getCurrencyId(), user.getTimestamp());
+
+        String jsonModel = new ObjectMapper().writeValueAsString(baseUser);
 
         mockMvc.perform(post("/users/" + id)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -141,18 +146,22 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.username").value(is(USER_NAME)));
 
         verify(userService).updateUser(capturedBaseUser.capture());
+        verify(userService).getUser(id);
         assertEquals(USER_NAME, capturedBaseUser.getValue().getUsername());
+        assertEquals("Ensure getUser returns same user", USER_NAME, user.getUsername());
     }
 
     @Test
     public void testUpdateUser_validationError() throws Exception {
+        User user = createValidTestUser();
         String id = "persn0001234";
-        BaseUser user = createValidTestBaseUser();
         user.setId(id);
         // null out a required field
         user.setUsername(null);
+        BaseUser baseUser = new BaseUser(user.getId(),user.getUsername(),user.getLastFourSSN(),user.getPerson(),user.getTimezoneId(),user.getAccountId(),
+                user.getAccountNumber(), user.getSplit(), user.getCurrencyId(), user.getTimestamp());
 
-        String jsonModel = new ObjectMapper().writeValueAsString(user);
+        String jsonModel = new ObjectMapper().writeValueAsString(baseUser);
 
         mockMvc.perform(post("/users/" + id)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -305,31 +314,6 @@ public class UserControllerTest {
         user.setUsername(USER_NAME);
         user.setPassword("password");
         user.setLastFourSSN("5555");
-        user.setTimezoneId("timezone1234");
-
-        Person person = new Person();
-        person.setFirstName("Joe");
-        person.setLastName("Tester");
-        person.setEmailAddress("joe.tester@test.com");
-        person.setDateOfBirth("19550505");
-        person.setPrimaryPhone("5555555555");
-
-
-        Address address = new Address();
-        address.setAddress1("55 Test Street");
-        address.setCity("Testingville");
-        address.setState("TT");
-        address.setPostalCode("55555");
-        person.setPrimaryAddress(address);
-
-        user.setPerson(person);
-
-        return user;
-    }
-
-    private BaseUser createValidTestBaseUser() {
-        BaseUser user = new BaseUser();
-        user.setUsername(USER_NAME);
         user.setTimezoneId("timezone1234");
 
         Person person = new Person();
