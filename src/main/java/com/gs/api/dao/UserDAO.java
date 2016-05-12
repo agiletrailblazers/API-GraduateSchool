@@ -1,13 +1,15 @@
 package com.gs.api.dao;
 
 import com.gs.api.domain.Address;
+import com.gs.api.domain.BaseUser;
 import com.gs.api.domain.Person;
 import com.gs.api.domain.User;
-import com.gs.api.domain.BaseUser;
 import com.gs.api.exception.AuthenticationException;
 import com.gs.api.exception.DuplicateUserException;
 import com.gs.api.exception.ReusedPasswordException;
+
 import oracle.jdbc.OracleTypes;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,12 +24,13 @@ import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
+
+import javax.sql.DataSource;
 
 @Repository
 public class UserDAO {
@@ -221,7 +224,7 @@ public class UserDAO {
         long millis = currentDate.getTime();
 
         //Convert dates to sql dates
-        SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
+        SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy");
         Date parsed = format.parse(person.getDateOfBirth());
         java.sql.Date sqlDateOfBirth = new java.sql.Date(parsed.getTime());
         logger.debug("dob is {} sqlDate dob is {}", person.getDateOfBirth(), sqlDateOfBirth);
@@ -345,7 +348,7 @@ public class UserDAO {
         String personId = "persn" + this.jdbcTemplate.queryForObject(getPersIdSequenceQuery, String.class);
 
         //Convert dates to sql dates
-        SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
+        SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy");
         Date parsed = format.parse(person.getDateOfBirth());
         java.sql.Date sqlDateOfBirth = new java.sql.Date(parsed.getTime());
         logger.debug("dob is {} sqlDate dob is {}", person.getDateOfBirth(), sqlDateOfBirth);
@@ -579,7 +582,9 @@ public class UserDAO {
             person.setSecondaryPhone(rs.getString("WORKPHONE"));
             person.setPersonNumber(rs.getString("PERSON_NO"));
             if (rs.getDate("DATE_OF_BIRTH") != null) {
-                person.setDateOfBirth(rs.getDate("DATE_OF_BIRTH").toString());
+                SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy");
+                Date dob = new Date(rs.getDate("DATE_OF_BIRTH").getTime());
+                person.setDateOfBirth(format.format(dob));
             }
             String veteranStatus = rs.getString("VETERAN");
             if (veteranStatus != null) {

@@ -320,7 +320,7 @@ public class UserControllerTest {
         person.setFirstName("Joe");
         person.setLastName("Tester");
         person.setEmailAddress("joe.tester@test.com");
-        person.setDateOfBirth("19550505");
+        person.setDateOfBirth("05/05/1955");
         person.setPrimaryPhone("5555555555");
 
 

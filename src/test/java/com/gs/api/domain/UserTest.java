@@ -1,8 +1,5 @@
 package com.gs.api.domain;
 
-import com.gs.api.domain.Address;
-import com.gs.api.domain.Person;
-import com.gs.api.domain.User;
 import com.gs.api.helper.ValidationHelper;
 
 import org.apache.commons.lang.RandomStringUtils;
@@ -60,7 +57,7 @@ public class UserTest {
         validPerson.setPrimaryAddress(validAddress);
         validPerson.setSecondaryAddress(validAddress);
         validPerson.setVeteran(false);
-        validPerson.setDateOfBirth("20160322");
+        validPerson.setDateOfBirth("3/22/2016");
     }
 
     @Test

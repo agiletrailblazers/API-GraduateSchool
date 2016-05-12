@@ -5,8 +5,8 @@ import com.gs.api.domain.Person;
 import com.gs.api.domain.User;
 import com.gs.api.exception.AuthenticationException;
 import com.gs.api.exception.DuplicateUserException;
-import org.hamcrest.Matchers;
 import com.gs.api.exception.ReusedPasswordException;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -27,8 +27,8 @@ import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.ClassUtils;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -37,24 +37,22 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.mock;
-
-import java.lang.annotation.Annotation;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -111,7 +109,7 @@ public class UserDAOTest {
     private static final String PHONE = "555-555-5555";
     private static final String PASSWORD = "test1234";
     private static final String NEW_PASSWORD = "newtest1234";
-    private static final String DOB = "19550505";
+    private static final String DOB = "05/05/1955";
     private static final String LAST_FOUR_SSN = "5555";
     private static final String TIMEZONE_ID = "testId";
     private static final Boolean VETERAN_STATUS = true;
@@ -552,14 +550,14 @@ public class UserDAOTest {
         when(rs.getString("USER_ID")).thenReturn(USER_ID);
         when(rs.getString("TIME_STAMP")).thenReturn(USER_TIMESTAMP);
         //Convert dates to sql dates
-        SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
-        Date parsed = format.parse("20110210");
+        SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy");
+        Date parsed = format.parse("02/10/2011");
         java.sql.Date sqlDateOfBirth = new java.sql.Date(parsed.getTime());
         when(rs.getDate("DATE_OF_BIRTH")).thenReturn(sqlDateOfBirth);
         User user = userRowMapper.mapRow(rs, 0);
         assertNotNull(user);
         assertEquals(USER_ID, user.getId());
-        assertEquals(sqlDateOfBirth.toString(), user.getPerson().getDateOfBirth());
+        assertEquals("02/10/2011", user.getPerson().getDateOfBirth());
     }
 
     @Test
