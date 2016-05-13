@@ -1,18 +1,15 @@
-package com.gs.api.controller.registration;
+package com.gs.api.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gs.api.domain.Address;
-import com.gs.api.domain.PasswordChangeAuthCredentials;
-import com.gs.api.domain.Person;
+import com.gs.api.controller.UserController;
+import com.gs.api.domain.*;
 import com.gs.api.domain.authentication.AuthCredentials;
-import com.gs.api.domain.registration.User;
 import com.gs.api.exception.AuthenticationException;
 import com.gs.api.exception.NotFoundException;
 import com.gs.api.exception.ReusedPasswordException;
 import com.gs.api.service.authentication.AuthenticationService;
-import com.gs.api.service.registration.UserService;
+import com.gs.api.service.UserService;
 
-import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -74,6 +71,9 @@ public class UserControllerTest {
     private ArgumentCaptor<User> capturedUser;
 
     @Captor
+    private ArgumentCaptor<BaseUser> capturedBaseUser;
+
+    @Captor
     private ArgumentCaptor<AuthCredentials> capturedAuthCredentials;
 
     @Captor
@@ -125,6 +125,54 @@ public class UserControllerTest {
 
         verifyZeroInteractions(userService);
      }
+
+    @Test
+    public void testUpdateUser() throws Exception {
+        User user = createValidTestUser();
+        String id = "persn0001234";
+        user.setId(id);
+
+        when(userService.getUser(id)).thenReturn(user);
+
+        BaseUser baseUser = new BaseUser(user.getId(),user.getUsername(),user.getLastFourSSN(),user.getPerson(),user.getTimezoneId(),user.getAccountId(),
+                user.getAccountNumber(), user.getSplit(), user.getCurrencyId(), user.getTimestamp());
+
+        String jsonModel = new ObjectMapper().writeValueAsString(baseUser);
+
+        mockMvc.perform(post("/users/" + id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonModel))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.username").value(is(USER_NAME)));
+
+        verify(userService).updateUser(capturedBaseUser.capture());
+        verify(userService).getUser(id);
+        assertEquals(USER_NAME, capturedBaseUser.getValue().getUsername());
+        assertEquals("Ensure getUser returns same user", USER_NAME, user.getUsername());
+    }
+
+    @Test
+    public void testUpdateUser_validationError() throws Exception {
+        User user = createValidTestUser();
+        String id = "persn0001234";
+        user.setId(id);
+        // null out a required field
+        user.setUsername(null);
+        BaseUser baseUser = new BaseUser(user.getId(),user.getUsername(),user.getLastFourSSN(),user.getPerson(),user.getTimezoneId(),user.getAccountId(),
+                user.getAccountNumber(), user.getSplit(), user.getCurrencyId(), user.getTimestamp());
+
+        String jsonModel = new ObjectMapper().writeValueAsString(baseUser);
+
+        mockMvc.perform(post("/users/" + id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonModel))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.validationErrors").exists())
+                .andExpect(jsonPath("$.validationErrors[0].fieldName").value(is("username")))
+                .andExpect(jsonPath("$.validationErrors[0].errorMessage").value(is("Required field")));
+
+        verifyZeroInteractions(userService);
+    }
 
     @Test
     public void testDeleteUser() throws Exception {
@@ -227,22 +275,6 @@ public class UserControllerTest {
         assertEquals("Wrong new password", passwordChangeAuthCredentials.getNewPassword(), capturedPWChangeCredentials.getValue().getNewPassword());
     }
 
-    /*@Test
-    public void testChangePassword_noSuchUser() throws Exception {
-
-        PasswordChangeAuthCredentials passwordChangeAuthCredentials = new PasswordChangeAuthCredentials("dummyUsername", "dummyOriginalPwd", "dummyNewPassword");
-        String jsonModel = new ObjectMapper().writeValueAsString(passwordChangeAuthCredentials);
-
-        doThrow(new NotFoundException("no such test user")).when(userService).changePassword(isA(PasswordChangeAuthCredentials.class), isA(String.class));
-
-        mockMvc.perform(post("/users/" + USER_ID + "/password")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(jsonModel))
-                .andExpect(status().isNotFound());
-
-        verify(userService).changePassword(isA(PasswordChangeAuthCredentials.class), isA(String.class));
-    }*/
-
     @Test
     public void testChangePassword_reUsedPassword() throws Exception {
 
@@ -288,7 +320,7 @@ public class UserControllerTest {
         person.setFirstName("Joe");
         person.setLastName("Tester");
         person.setEmailAddress("joe.tester@test.com");
-        person.setDateOfBirth("19550505");
+        person.setDateOfBirth("05/05/1955");
         person.setPrimaryPhone("5555555555");
 
 

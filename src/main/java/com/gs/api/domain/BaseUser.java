@@ -1,18 +1,17 @@
-package com.gs.api.domain.registration;
-
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.gs.api.domain.Person;
-
-import org.hibernate.validator.constraints.Email;
+package com.gs.api.domain;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
+import org.hibernate.validator.constraints.Email;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
 @JsonInclude(Include.ALWAYS)
-public class User {
+public class BaseUser {
 
     private String id;
 
@@ -21,14 +20,6 @@ public class User {
     @Email(message = "Improperly formatted email address")
     private String username;
 
-    @NotNull(message = "Required field")
-    @Size(min = 5, max = 1020, message="Length must be between 5 and 1020 characters")
-    // TODO is there a pattern for allowed characters?
-    private String password;
-
-    @NotNull(message = "Required field")
-    @Size(min = 4, max = 4, message = "Length must be 4 characters")
-    @Pattern(regexp = "[0-9]*", message = "Contains non-numeric characters")
     private String lastFourSSN;
 
     @NotNull(message = "Required field")
@@ -47,17 +38,32 @@ public class User {
     @Valid
     private Person person;
 
-    public User() { }
+    private String accountNumber;
 
-    public User(String id, String username, String password, String lastFourSSN, Person person, String timezoneId, String accountId,
-                String split, String currencyId, String timestamp) {
+    public BaseUser() { }
+
+    public BaseUser(String id, String username, String lastFourSSN, Person person, String timezoneId, String accountId, String accountNo,
+                    String split, String currencyId, String timestamp) {
         this.id = id;
         this.username = username;
-        this.password = password;
         this.lastFourSSN = lastFourSSN;
         this.person = person;
         this.timezoneId = timezoneId;
         this.accountId = accountId;
+        this.accountNumber = accountNo;
+        this.split = split;
+        this.currencyId = currencyId;
+        this.timestamp = timestamp;
+    }
+
+    public BaseUser(String id, String username, Person person, String timezoneId, String accountId, String accountNo,
+                    String split, String currencyId, String timestamp) {
+        this.id = id;
+        this.username = username;
+        this.person = person;
+        this.timezoneId = timezoneId;
+        this.accountId = accountId;
+        this.accountNumber = accountNo;
         this.split = split;
         this.currencyId = currencyId;
         this.timestamp = timestamp;
@@ -77,14 +83,6 @@ public class User {
 
     public void setUsername(String username) {
         this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
     }
 
     public String getLastFourSSN() {
@@ -141,5 +139,13 @@ public class User {
 
     public void setTimestamp(String timestamp) {
         this.timestamp = timestamp;
+    }
+
+    public String getAccountNumber() {
+        return accountNumber;
+    }
+
+    public void setAccountNumber(String accountNumber) {
+        this.accountNumber = accountNumber;
     }
 }

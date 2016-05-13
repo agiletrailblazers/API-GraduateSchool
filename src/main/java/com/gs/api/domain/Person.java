@@ -45,8 +45,10 @@ public class Person {
     private Boolean veteran;
 
     @NotNull(message = "Required field")
-    @Pattern(regexp = "[0-9]{8}", message = "Date of Birth is not in yyyyMMdd format")
+    @Pattern(regexp = "^(0?[1-9]|1[0-2])/(0?[1-9]|1\\d|2\\d|3[01])/(19|20)\\d{2}$", message = "Date of Birth is not in MM/dd/yyyy format")
     private String dateOfBirth;
+
+    private String personNumber;
 
     public String getFirstName() {
         return firstName;
@@ -127,4 +129,13 @@ public class Person {
     public void setDateOfBirth(String dateOfBirth) {
         this.dateOfBirth = dateOfBirth;
     }
+
+    public String getPersonNumber() {
+        return personNumber;
+    }
+
+    public void setPersonNumber(String personNumber) {
+        this.personNumber = personNumber;
+    }
+
 }

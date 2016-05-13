@@ -4,7 +4,7 @@ import com.gs.api.domain.Address;
 import com.gs.api.domain.course.CourseSession;
 import com.gs.api.domain.registration.Registration;
 import com.gs.api.domain.registration.RegistrationDetails;
-import com.gs.api.domain.registration.User;
+import com.gs.api.domain.User;
 import com.gs.api.exception.NotFoundException;
 
 import oracle.jdbc.OracleTypes;

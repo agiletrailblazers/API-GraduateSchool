@@ -1,17 +1,21 @@
 package com.gs.api.domain;
 
 import com.gs.api.helper.ValidationHelper;
+
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.Validator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
-import static org.junit.Assert.*;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validator;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class PersonTest {
     public static final String FIRST_NAME = "FirstName";
@@ -20,7 +24,7 @@ public class PersonTest {
     public static final String EMAIL_ADDRESS = "person@test.com";
     public static final String PRIMARY_PHONE = "1234567890";
     public static final String SECONDARY_PHONE = "0987654321";
-    public static final String DATE_OF_BIRTH = "20160322";
+    public static final String DATE_OF_BIRTH = "3/22/1950";
     public static final String FIRST_NAME_TEXT = "firstName";
     public static final String LAST_NAME_TEXT = "lastName";
     public static final String EMAIL_ADDRESS_TEXT = "emailAddress";
@@ -30,6 +34,7 @@ public class PersonTest {
     public static final String MIDDLE_NAME_TEXT = "middleName";
     public static final String SECONDARY_PHONE_TEXT = "secondaryPhone";
     public static final String SECONDARY_ADDRESS_TEXT = "secondaryAddress";
+    static final String DATE_OF_BIRTH_MSG = "Date of Birth is not in MM/dd/yyyy format";
     private Validator validator = ValidationHelper.getValidator();
 
     private static Address validAddress;
@@ -185,19 +190,34 @@ public class PersonTest {
         invalidPerson.setPrimaryPhone(PRIMARY_PHONE);
         invalidPerson.setPrimaryAddress(validAddress);
 
-        invalidPerson.setDateOfBirth("2016010");
+        invalidPerson.setDateOfBirth("19501223");
         HashMap<String, List<ConstraintViolation<Object>>> violations =  ValidationHelper.convertConstraintViolationsToHashMap(validator.validate(invalidPerson));
         assertNotNull(violations.get(DATE_OF_BIRTH_TEXT));
-        assertTrue(ValidationHelper.getMessagesFromList(violations.get(DATE_OF_BIRTH_TEXT)).contains("Date of Birth is not in yyyyMMdd format"));
+        assertTrue(ValidationHelper.getMessagesFromList(violations.get(DATE_OF_BIRTH_TEXT)).contains(DATE_OF_BIRTH_MSG));
+
+        invalidPerson.setDateOfBirth("1//1950");
+        violations =  ValidationHelper.convertConstraintViolationsToHashMap(validator.validate(invalidPerson));
+        assertNotNull(violations.get(DATE_OF_BIRTH_TEXT));
+        assertTrue(ValidationHelper.getMessagesFromList(violations.get(DATE_OF_BIRTH_TEXT)).contains(DATE_OF_BIRTH_MSG));
+
+        invalidPerson.setDateOfBirth("1/3/50");
+        violations =  ValidationHelper.convertConstraintViolationsToHashMap(validator.validate(invalidPerson));
+        assertNotNull(violations.get(DATE_OF_BIRTH_TEXT));
+        assertTrue(ValidationHelper.getMessagesFromList(violations.get(DATE_OF_BIRTH_TEXT)).contains(DATE_OF_BIRTH_MSG));
+
+        invalidPerson.setDateOfBirth("1-3-1950");
+        violations =  ValidationHelper.convertConstraintViolationsToHashMap(validator.validate(invalidPerson));
+        assertNotNull(violations.get(DATE_OF_BIRTH_TEXT));
+        assertTrue(ValidationHelper.getMessagesFromList(violations.get(DATE_OF_BIRTH_TEXT)).contains(DATE_OF_BIRTH_MSG));
 
         invalidPerson.setDateOfBirth("Jan 1 2016");
         violations =  ValidationHelper.convertConstraintViolationsToHashMap(validator.validate(invalidPerson));
         assertNotNull(violations.get(DATE_OF_BIRTH_TEXT));
-        assertTrue(ValidationHelper.getMessagesFromList(violations.get(DATE_OF_BIRTH_TEXT)).contains("Date of Birth is not in yyyyMMdd format"));
+        assertTrue(ValidationHelper.getMessagesFromList(violations.get(DATE_OF_BIRTH_TEXT)).contains(DATE_OF_BIRTH_MSG));
 
         invalidPerson.setDateOfBirth("201601011030");
         violations =  ValidationHelper.convertConstraintViolationsToHashMap(validator.validate(invalidPerson));
         assertNotNull(violations.get(DATE_OF_BIRTH_TEXT));
-        assertTrue(ValidationHelper.getMessagesFromList(violations.get(DATE_OF_BIRTH_TEXT)).contains("Date of Birth is not in yyyyMMdd format"));
+        assertTrue(ValidationHelper.getMessagesFromList(violations.get(DATE_OF_BIRTH_TEXT)).contains(DATE_OF_BIRTH_MSG));
     }
 }

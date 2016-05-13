@@ -32,6 +32,7 @@ public class AuthTokenFilterTest {
     private static final String PATH_REQUIRES_AUTHENTICATED_ACCESS = "/path/requires/authenticated/access";
     private static final String PATH_NO_TIME_CHECK = "/PATH/DOES/NOT/REQUIRE/TIMECHECK";
     private static final String PATH_DOES_NOT_REQUIRE_TOKEN = "/path/does/not/require/token";
+    private static final String FAKE_REQUEST_OPERATION = "fakeRequestOperation";
     private static final String[] ALLOWED_URI = new String[] {PATH_DOES_NOT_REQUIRE_TOKEN};
     private static final String[] AUTHENTICATION_WHITELIST = new String[] {PATH_REQUIRES_GUEST_ACCESS, PATH_WITH_REGEX_REQUIRES_GUEST_ACCESS, PATH_WITH_REGEX_AT_END_REQUIRES_GUEST_ACCESS};
 
@@ -61,10 +62,12 @@ public class AuthTokenFilterTest {
     public void testDoFilter_uriTokenNotRequired() throws Exception {
 
         when(request.getRequestURI()).thenReturn(PATH_DOES_NOT_REQUIRE_TOKEN);
+        when(request.getMethod()).thenReturn(FAKE_REQUEST_OPERATION);
 
         filter.doFilter(request, response, filterChain);
 
         verify(request).getRequestURI();
+        verify(request).getMethod();
         verifyNoMoreInteractions(request);
         verifyZeroInteractions(authenticationService);
         verify(filterChain).doFilter(request, response);

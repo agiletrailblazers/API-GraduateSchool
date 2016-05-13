@@ -1,12 +1,12 @@
-package com.gs.api.dao.registration;
+package com.gs.api.dao;
 
 import com.gs.api.domain.Address;
 import com.gs.api.domain.Person;
-import com.gs.api.domain.registration.User;
+import com.gs.api.domain.User;
 import com.gs.api.exception.AuthenticationException;
 import com.gs.api.exception.DuplicateUserException;
-import org.hamcrest.Matchers;
 import com.gs.api.exception.ReusedPasswordException;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -27,8 +27,8 @@ import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.ClassUtils;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -37,24 +37,22 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.mock;
-
-import java.lang.annotation.Annotation;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -75,6 +73,8 @@ public class UserDAOTest {
     @Value("${sql.user.username.query}")
     private String sqlForUserByUsername;
 
+    @Value("${sql.user.updateUser.procedure}")
+    private String updateUserStoredProcedureName;
     @Value("${sql.user.personInsert.procedure}")
     private String insertUserStoredProcedureName;
     @Value("${sql.user.profileInsert.procedure}")
@@ -109,13 +109,15 @@ public class UserDAOTest {
     private static final String PHONE = "555-555-5555";
     private static final String PASSWORD = "test1234";
     private static final String NEW_PASSWORD = "newtest1234";
-    private static final String DOB = "19550505";
+    private static final String DOB = "05/05/1955";
     private static final String LAST_FOUR_SSN = "5555";
     private static final String TIMEZONE_ID = "testId";
     private static final Boolean VETERAN_STATUS = true;
     private static final String SPLIT = "domin000000000000001";
     private static final String CURRENCY_ID = "crncy000000000000167";
     private static final String USER_TIMESTAMP = "12345678987654";
+    private static final String ACCOUNT_NO = "111";
+    private static final String PERSON_NO = "123";
 
     private User user;
 
@@ -141,6 +143,9 @@ public class UserDAOTest {
 
     @Mock
     private SimpleJdbcCall listEntryActor;
+
+    @Mock
+    private SimpleJdbcCall updateUserActor;
 
     @Mock
     private SimpleJdbcCall deleteUserActor;
@@ -367,6 +372,54 @@ public class UserDAOTest {
     }
 
     @Test
+    public void testUpdateUser() throws Exception {
+
+        HashMap<String, Object> sqlResult = new HashMap<>();
+        doReturn(sqlResult).when(updateUserActor).execute(any(SqlParameterSource.class));
+
+        userDAO.updateUser(user);
+
+        verify(updateUserActor).execute(insertUserCaptor.capture());
+        SqlParameterSource userParameters = insertUserCaptor.getValue();
+        assertEquals(user.getId(), userParameters.getValue("xid"));
+        assertEquals(user.getUsername(), userParameters.getValue("xusername"));
+        assertEquals(null, userParameters.getValue("xpassword"));
+        assertEquals(user.getTimezoneId(), userParameters.getValue("xtimezone_id"));
+        assertEquals(TIMEZONE_ID, userParameters.getValue("xtimezone_id"));
+
+        Person userPerson = user.getPerson();
+        assertEquals(userPerson.getFirstName(), userParameters.getValue("xfname"));
+        assertEquals(userPerson.getMiddleName(), userParameters.getValue("xmname"));
+        assertEquals(userPerson.getLastName(), userParameters.getValue("xlname"));
+        assertEquals(userPerson.getVeteran(), userParameters.getValue("xcustom9"));
+        assertEquals(VETERAN_STATUS, userParameters.getValue("xcustom9"));
+        assertEquals(userPerson.getPrimaryPhone(), userParameters.getValue("xhomephone"));
+        assertEquals(userPerson.getEmailAddress(), userParameters.getValue("xemail"));
+
+        Address personPrimaryAddress = userPerson.getPrimaryAddress();
+        assertEquals(personPrimaryAddress.getAddress1(), userParameters.getValue("xaddr3"));
+        assertEquals(personPrimaryAddress.getAddress2(), userParameters.getValue("xaddr1"));
+        assertEquals(personPrimaryAddress.getAddress3(), userParameters.getValue("xaddr2"));
+        assertEquals(personPrimaryAddress.getCity(), userParameters.getValue("xcity"));
+        assertEquals(personPrimaryAddress.getState(), userParameters.getValue("xstate"));
+        assertEquals(personPrimaryAddress.getPostalCode(), userParameters.getValue("xzip"));
+    }
+
+    @Test
+    public void testFailToUpdateUser() throws Exception {
+        final IllegalArgumentException illegalArgumentException = new IllegalArgumentException("BAD SQL");
+        when(updateUserActor.execute(any(SqlParameterSource.class))).thenThrow(illegalArgumentException);
+
+        try {
+            userDAO.updateUser(user);
+            assertTrue(false); //Should never reach this line
+        }
+        catch (IllegalArgumentException iE) {
+            assertSame(illegalArgumentException, iE);
+        }
+    }
+
+    @Test
     public void testDeleteUser() throws Exception {
         HashMap<String, Object> sqlResult = new HashMap<>();
         String userId = "persn1234";
@@ -418,10 +471,13 @@ public class UserDAOTest {
         when(rs.getString("SPLIT")).thenReturn(SPLIT);
         when(rs.getString("CURRENCY_ID")).thenReturn("abc1234");
         when(rs.getString("FNAME")).thenReturn(FIRST_NAME);
+        when(rs.getString("MNAME")).thenReturn(MIDDLE_NAME);
         when(rs.getString("LNAME")).thenReturn(LAST_NAME);
         when(rs.getString("EMAIL")).thenReturn(EMAIL_ADDRESS);
         when(rs.getString("HOMEPHONE")).thenReturn(PHONE);
         when(rs.getString("WORKPHONE")).thenReturn("123456");
+        when(rs.getString("ACCOUNT_NO")).thenReturn(ACCOUNT_NO);
+        when(rs.getString("PERSON_NO")).thenReturn(PERSON_NO);
 
         when(rs.getDate("DATE_OF_BIRTH")).thenReturn(null);
         when(rs.getString("VETERAN")).thenReturn("N");
@@ -443,12 +499,15 @@ public class UserDAOTest {
         assertEquals(SPLIT, returnedUser.getSplit());
         assertEquals("abc1234", returnedUser.getCurrencyId());
         assertEquals(FIRST_NAME, returnedUser.getPerson().getFirstName());
+        assertEquals(MIDDLE_NAME, returnedUser.getPerson().getMiddleName());
         assertEquals(LAST_NAME, returnedUser.getPerson().getLastName());
         assertEquals(EMAIL_ADDRESS, returnedUser.getPerson().getEmailAddress());
         assertEquals(PHONE, returnedUser.getPerson().getPrimaryPhone());
         assertEquals("123456", returnedUser.getPerson().getSecondaryPhone());
         assertNull(returnedUser.getPerson().getDateOfBirth());
         assertEquals(false, returnedUser.getPerson().getVeteran());
+        assertEquals(PERSON_NO, returnedUser.getPerson().getPersonNumber());
+        assertEquals(ACCOUNT_NO, returnedUser.getAccountNumber());
 
         Address returnedAddress = returnedUser.getPerson().getPrimaryAddress();
         assertEquals(ADDRESS_1,returnedAddress.getAddress1());
@@ -491,14 +550,14 @@ public class UserDAOTest {
         when(rs.getString("USER_ID")).thenReturn(USER_ID);
         when(rs.getString("TIME_STAMP")).thenReturn(USER_TIMESTAMP);
         //Convert dates to sql dates
-        SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
-        Date parsed = format.parse("20110210");
+        SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy");
+        Date parsed = format.parse("02/10/2011");
         java.sql.Date sqlDateOfBirth = new java.sql.Date(parsed.getTime());
         when(rs.getDate("DATE_OF_BIRTH")).thenReturn(sqlDateOfBirth);
         User user = userRowMapper.mapRow(rs, 0);
         assertNotNull(user);
         assertEquals(USER_ID, user.getId());
-        assertEquals(sqlDateOfBirth.toString(), user.getPerson().getDateOfBirth());
+        assertEquals("02/10/2011", user.getPerson().getDateOfBirth());
     }
 
     @Test

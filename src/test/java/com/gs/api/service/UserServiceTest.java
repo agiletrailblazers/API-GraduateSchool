@@ -1,12 +1,10 @@
-package com.gs.api.service.registration;
+package com.gs.api.service;
 
-import com.gs.api.dao.registration.UserDAO;
-import com.gs.api.domain.Address;
-import com.gs.api.domain.PasswordChangeAuthCredentials;
-import com.gs.api.domain.Person;
+import com.gs.api.dao.UserDAO;
+import com.gs.api.domain.*;
 import com.gs.api.domain.authentication.AuthCredentials;
-import com.gs.api.domain.registration.User;
 import com.gs.api.exception.NotFoundException;
+import com.gs.api.service.UserServiceImpl;
 import com.gs.api.service.email.EmailService;
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.Before;
@@ -109,6 +107,17 @@ public class UserServiceTest {
 
         assertEquals("ID not set on user", USER_ID, user.getId());
         assertEquals("Encrypted password not set on user", PASSWORD_ENCRYPTED, user.getPassword());
+    }
+
+    @Test
+    public void testUpdateUser() throws Exception {
+        BaseUser baseUser = new BaseUser(user.getId(),user.getUsername(),user.getLastFourSSN(),user.getPerson(),user.getTimezoneId(),user.getAccountId(),
+                user.getAccountNumber(), user.getSplit(), user.getCurrencyId(), user.getTimestamp());
+        when(userDao.updateUser(baseUser)).thenReturn(baseUser);
+
+        userService.updateUser(baseUser);
+
+        verify(userDao).updateUser(baseUser);
     }
 
     @Test

@@ -1,12 +1,15 @@
-package com.gs.api.dao.registration;
+package com.gs.api.dao;
 
 import com.gs.api.domain.Address;
+import com.gs.api.domain.BaseUser;
 import com.gs.api.domain.Person;
-import com.gs.api.domain.registration.User;
+import com.gs.api.domain.User;
 import com.gs.api.exception.AuthenticationException;
 import com.gs.api.exception.DuplicateUserException;
 import com.gs.api.exception.ReusedPasswordException;
+
 import oracle.jdbc.OracleTypes;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,12 +24,13 @@ import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
+
+import javax.sql.DataSource;
 
 @Repository
 public class UserDAO {
@@ -41,6 +45,11 @@ public class UserDAO {
     static final String DOMAIN_ID_CPRIV_ID_LIST_ID = "listl000000000001004"; // Concat of two security tables ids [domin000000000000001][cpriv000000000000117]
     static final String LOCALE_ID = "local000000000000001"; //Some SP automatically generate this but person_ins does not so it must be specified
     static final String ENTRY_TYPE_ID = "ppetp000000000000018"; //This is a guess, it may be a different lookup but all active rows have this
+    static final String GENDER = "2"; // Saba doesn't seem to actually display gender, it defaults all users to '2'
+    static final String CORRES_PREF1 = "1"; //These three values are concatenated with 0s to make the Flags value
+    static final String CORRES_PREF2 = "0"; //These three values are concatenated with 0s to make the Flags value
+    static final String CORRES_PREF3 = "0"; //These three values are concatenated with 0s to make the Flags value
+    static final String USER_CUSTOM2 = "false"; //We are unsure what this represents
 
     private JdbcTemplate jdbcTemplate;
 
@@ -48,6 +57,7 @@ public class UserDAO {
     private SimpleJdbcCall profileInsertActor;
     private SimpleJdbcCall listEntryActor;
     private SimpleJdbcCall deleteUserActor;
+    private SimpleJdbcCall updateUserActor;
     private SimpleJdbcCall changePasswordActor;
 
     @Value("${sql.user.personInsert.procedure}")
@@ -58,6 +68,8 @@ public class UserDAO {
     private String insertfgtListEntryStoredProcedureName;
     @Value("${sql.user.deleteUser.procedure}")
     private String deleteUserStoredProcedureName;
+    @Value("${sql.user.updateUser.procedure}")
+    private String updateUserStoredProcedureName;
 
     @Value("${sql.user.personId.sequence}")
     private String getPersIdSequenceQuery;
@@ -94,6 +106,7 @@ public class UserDAO {
         this.profileInsertActor = new SimpleJdbcCall(this.jdbcTemplate).withProcedureName(insertProfileStoredProcedureName);
         this.listEntryActor = new SimpleJdbcCall(this.jdbcTemplate).withProcedureName(insertfgtListEntryStoredProcedureName);
         this.deleteUserActor = new SimpleJdbcCall(this.jdbcTemplate).withProcedureName(deleteUserStoredProcedureName);
+        this.updateUserActor = new SimpleJdbcCall(this.jdbcTemplate).withProcedureName(updateUserStoredProcedureName);
         this.changePasswordActor = new SimpleJdbcCall(this.jdbcTemplate).withProcedureName(changePasswordStoredProcedureName);
     }
 
@@ -199,6 +212,100 @@ public class UserDAO {
         changePassword(userId, userId, currentPassword, newPassword);
     }
 
+    public BaseUser updateUser(BaseUser user)  throws Exception {
+        logger.debug("Updating user info for user {}", user.getId());
+        Person person = user.getPerson();
+
+        //Format address to match saba fields
+        Address sabaFormattedAddress = mapAddressToSabaFormat(person.getPrimaryAddress());
+
+        //Setup audit data
+        Date currentDate = new Date();
+        long millis = currentDate.getTime();
+
+        //Convert dates to sql dates
+        SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy");
+        Date parsed = format.parse(person.getDateOfBirth());
+        java.sql.Date sqlDateOfBirth = new java.sql.Date(parsed.getTime());
+        logger.debug("dob is {} sqlDate dob is {}", person.getDateOfBirth(), sqlDateOfBirth);
+
+        MapSqlParameterSource in = new MapSqlParameterSource()
+                // ID
+                .addValue("xid", user.getId(), OracleTypes.CHAR)
+                //Fields which can be updated
+                .addValue("xfname", person.getFirstName(), OracleTypes.VARCHAR)
+                .addValue("xmname", person.getMiddleName(), OracleTypes.VARCHAR)
+                .addValue("xlname", person.getLastName(), OracleTypes.VARCHAR)
+                .addValue("xdate_of_birth", sqlDateOfBirth, OracleTypes.DATE)
+                .addValue("xaddr1", sabaFormattedAddress.getAddress1(), OracleTypes.VARCHAR)
+                .addValue("xaddr2", sabaFormattedAddress.getAddress2(), OracleTypes.VARCHAR)
+                .addValue("xaddr3", sabaFormattedAddress.getAddress3(), OracleTypes.VARCHAR)
+                .addValue("xcity", sabaFormattedAddress.getCity(), OracleTypes.VARCHAR)
+                .addValue("xstate", sabaFormattedAddress.getState(), OracleTypes.VARCHAR)
+                .addValue("xzip", sabaFormattedAddress.getPostalCode(), OracleTypes.VARCHAR)
+                .addValue("xhomephone", person.getPrimaryPhone(), OracleTypes.VARCHAR)
+                .addValue("xtimezone_id", user.getTimezoneId(), OracleTypes.FIXED_CHAR)
+                .addValue("xupdated_on", currentDate, OracleTypes.DATE)
+                .addValue("xupdated_by", SABA_GUEST, OracleTypes.VARCHAR)
+                .addValue("xcreated_on", currentDate, OracleTypes.DATE)
+                .addValue("xcreated_by", SABA_GUEST, OracleTypes.VARCHAR)
+                .addValue("xnewts", millis, OracleTypes.VARCHAR)
+                //Fields which cannot be updated
+                .addValue("xusername", user.getUsername(), OracleTypes.VARCHAR)
+                .addValue("xemail", person.getEmailAddress(), OracleTypes.VARCHAR)
+                .addValue("xcustom9", person.getVeteran(), OracleTypes.VARCHAR) //this will always be null but may be implemented later
+                .addValue("xworkphone", person.getSecondaryPhone(), OracleTypes.VARCHAR) //this will always be null but may be implemented later
+                // Fields from DB that never change
+                .addValue("xss_no", user.getLastFourSSN(), OracleTypes.VARCHAR)
+                .addValue("xperson_no", person.getPersonNumber(), OracleTypes.VARCHAR)
+                .addValue("xaccount_no", user.getAccountNumber(), OracleTypes.VARCHAR)
+                //Hardcoded values till we figure out something better
+                .addValue("xgender", GENDER, OracleTypes.FIXED_CHAR)
+                .addValue("xcorres_pref1", CORRES_PREF1, OracleTypes.FIXED_CHAR)
+                .addValue("xcorres_pref2", CORRES_PREF2, OracleTypes.FIXED_CHAR)
+                .addValue("xcorres_pref3", CORRES_PREF3, OracleTypes.FIXED_CHAR)
+                .addValue("xsplit", SPLIT_ID, OracleTypes.VARCHAR)
+                .addValue("xhome_domain", HOME_DOMAIN_ID, OracleTypes.FIXED_CHAR)
+                .addValue("xcurrency_id", CURRENCY_ID, OracleTypes.FIXED_CHAR)
+                .addValue("xcustom2", USER_CUSTOM2, OracleTypes.VARCHAR)
+                .addValue("xlocale_id", LOCALE_ID, OracleTypes.FIXED_CHAR)
+                //Null values must be inserted for all other parameters
+                .addValue("xpassword", null, OracleTypes.VARCHAR) //Password will not be reset during update
+                .addValue("xpassword_changed", null, OracleTypes.FIXED_CHAR)
+                .addValue("xcompany_id", null, OracleTypes.FIXED_CHAR)
+                .addValue("xcountry", null, OracleTypes.VARCHAR)
+                .addValue("xcustom0", null, OracleTypes.VARCHAR)
+                .addValue("xcustom1", null, OracleTypes.VARCHAR)
+                .addValue("xcustom3", null, OracleTypes.VARCHAR)
+                .addValue("xcustom4", null, OracleTypes.VARCHAR)
+                .addValue("xcustom5", null, OracleTypes.VARCHAR)
+                .addValue("xcustom6", null, OracleTypes.VARCHAR)
+                .addValue("xcustom7", null, OracleTypes.VARCHAR)
+                .addValue("xcustom8", null, OracleTypes.VARCHAR)
+                .addValue("xdes_jbtyp_id", null, OracleTypes.FIXED_CHAR)
+                .addValue("xethnicity", null, OracleTypes.VARCHAR)
+                .addValue("xfax", null, OracleTypes.VARCHAR)
+                .addValue("xjob_title", null, OracleTypes.VARCHAR)
+                .addValue("xjobtype_id", null, OracleTypes.FIXED_CHAR)
+                .addValue("xlocation_id", null, OracleTypes.FIXED_CHAR)
+                .addValue("xmanager_id", null, OracleTypes.FIXED_CHAR)
+                .addValue("xperson_type", null, OracleTypes.VARCHAR)
+                .addValue("xreligion", null, OracleTypes.VARCHAR)
+                .addValue("xsecret_answer", null, OracleTypes.VARCHAR)
+                .addValue("xsecret_question", null, OracleTypes.VARCHAR)
+                .addValue("xstarted_on", null, OracleTypes.DATE)
+                .addValue("xstatus", null, OracleTypes.VARCHAR)
+                .addValue("xsuffix", null, OracleTypes.VARCHAR)
+                .addValue("xterminated_on", null, OracleTypes.DATE)
+                .addValue("xtitle", null, OracleTypes.VARCHAR)
+                .addValue("xts", null, OracleTypes.VARCHAR);
+
+        logger.debug("Updating user {}. Executing stored procedure: {}", user.getId(), insertUserStoredProcedureName);
+        executeUserStoredProcedure(in, updateUserActor);
+
+        return user;
+    }
+
     /**
      * Executes all procedures to insert a new user into the database
      * @param user the user information for the user to be created.
@@ -241,7 +348,7 @@ public class UserDAO {
         String personId = "persn" + this.jdbcTemplate.queryForObject(getPersIdSequenceQuery, String.class);
 
         //Convert dates to sql dates
-        SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
+        SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy");
         Date parsed = format.parse(person.getDateOfBirth());
         java.sql.Date sqlDateOfBirth = new java.sql.Date(parsed.getTime());
         logger.debug("dob is {} sqlDate dob is {}", person.getDateOfBirth(), sqlDateOfBirth);
@@ -253,9 +360,8 @@ public class UserDAO {
                 .addValue("xmname", person.getMiddleName(), OracleTypes.VARCHAR)
                 .addValue("xlname", person.getLastName(), OracleTypes.VARCHAR)
                 .addValue("xemail", person.getEmailAddress(), OracleTypes.VARCHAR)
-                .addValue("xcustom2", "false", OracleTypes.VARCHAR) //We are unsure what this represents
                 .addValue("xdate_of_birth", sqlDateOfBirth, OracleTypes.DATE)
-                .addValue("xcustom9", person.getVeteran(), OracleTypes.VARCHAR)
+                .addValue("xcustom9", person.getVeteran(), OracleTypes.VARCHAR) //this will always be null but may be implemented later
                 .addValue("xaddr1", sabaFormattedAddress.getAddress1(), OracleTypes.VARCHAR)
                 .addValue("xaddr2", sabaFormattedAddress.getAddress2(), OracleTypes.VARCHAR)
                 .addValue("xaddr3", sabaFormattedAddress.getAddress3(), OracleTypes.VARCHAR)
@@ -263,7 +369,8 @@ public class UserDAO {
                 .addValue("xstate", sabaFormattedAddress.getState(), OracleTypes.VARCHAR)
                 .addValue("xzip", sabaFormattedAddress.getPostalCode(), OracleTypes.VARCHAR)
                 .addValue("xhomephone", person.getPrimaryPhone(), OracleTypes.VARCHAR)
-                .addValue("xworkphone", person.getSecondaryPhone(), OracleTypes.VARCHAR)
+                .addValue("xworkphone", person.getSecondaryPhone(), OracleTypes.VARCHAR) //this will always be null but may be implemented later
+                .addValue("xss_no", user.getLastFourSSN(), OracleTypes.VARCHAR)
                 .addValue("xpassword", user.getPassword(), OracleTypes.VARCHAR)
                 .addValue("xtimezone_id", user.getTimezoneId(), OracleTypes.FIXED_CHAR)
                 .addValue("xcreated_on", currentDate, OracleTypes.DATE)
@@ -272,13 +379,15 @@ public class UserDAO {
                 .addValue("xupdated_by", SABA_GUEST, OracleTypes.VARCHAR)
                 .addValue("xnewts", millis, OracleTypes.VARCHAR)
                 //Hardcoded values till we figure out something better
-                .addValue("xgender", "2", OracleTypes.FIXED_CHAR)
-                .addValue("xcorres_pref1", "1", OracleTypes.FIXED_CHAR)
-                .addValue("xcorres_pref2", "0", OracleTypes.FIXED_CHAR)
-                .addValue("xcorres_pref3", "0", OracleTypes.FIXED_CHAR)
+                .addValue("xgender", GENDER, OracleTypes.FIXED_CHAR)
+                .addValue("xcorres_pref1", CORRES_PREF1, OracleTypes.FIXED_CHAR)
+                .addValue("xcorres_pref2", CORRES_PREF2, OracleTypes.FIXED_CHAR)
+                .addValue("xcorres_pref3", CORRES_PREF3, OracleTypes.FIXED_CHAR)
                 .addValue("xsplit", SPLIT_ID, OracleTypes.VARCHAR)
                 .addValue("xhome_domain", HOME_DOMAIN_ID, OracleTypes.FIXED_CHAR)
                 .addValue("xcurrency_id", CURRENCY_ID, OracleTypes.FIXED_CHAR)
+                .addValue("xcustom2", USER_CUSTOM2, OracleTypes.VARCHAR)
+                .addValue("xlocale_id", LOCALE_ID, OracleTypes.FIXED_CHAR)
                 //Null values must be inserted for all other parameters
                 .addValue("xaccount_no", null, OracleTypes.VARCHAR)
                 .addValue("xcompany_id", null, OracleTypes.FIXED_CHAR)
@@ -296,7 +405,6 @@ public class UserDAO {
                 .addValue("xfax", null, OracleTypes.VARCHAR)
                 .addValue("xjob_title", null, OracleTypes.VARCHAR)
                 .addValue("xjobtype_id", null, OracleTypes.FIXED_CHAR)
-                .addValue("xlocale_id", null, OracleTypes.FIXED_CHAR)
                 .addValue("xlocation_id", null, OracleTypes.FIXED_CHAR)
                 .addValue("xmanager_id", null, OracleTypes.FIXED_CHAR)
                 .addValue("xpassword_changed", null, OracleTypes.FIXED_CHAR)
@@ -305,7 +413,6 @@ public class UserDAO {
                 .addValue("xreligion", null, OracleTypes.VARCHAR)
                 .addValue("xsecret_answer", null, OracleTypes.VARCHAR)
                 .addValue("xsecret_question", null, OracleTypes.VARCHAR)
-                .addValue("xss_no", null, OracleTypes.VARCHAR)
                 .addValue("xstarted_on", null, OracleTypes.DATE)
                 .addValue("xstatus", null, OracleTypes.VARCHAR)
                 .addValue("xsuffix", null, OracleTypes.VARCHAR)
@@ -464,15 +571,20 @@ public class UserDAO {
             user.setSplit(rs.getString("SPLIT"));
             user.setCurrencyId(rs.getString("CURRENCY_ID"));
             user.setTimestamp(rs.getString("TIME_STAMP"));
+            user.setAccountNumber(rs.getString("ACCOUNT_NO"));
 
             Person person = new Person();
             person.setFirstName(rs.getString("FNAME"));
+            person.setMiddleName(rs.getString("MNAME"));
             person.setLastName(rs.getString("LNAME"));
             person.setEmailAddress(rs.getString("EMAIL"));
             person.setPrimaryPhone(rs.getString("HOMEPHONE"));
             person.setSecondaryPhone(rs.getString("WORKPHONE"));
+            person.setPersonNumber(rs.getString("PERSON_NO"));
             if (rs.getDate("DATE_OF_BIRTH") != null) {
-                person.setDateOfBirth(rs.getDate("DATE_OF_BIRTH").toString());
+                SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy");
+                Date dob = new Date(rs.getDate("DATE_OF_BIRTH").getTime());
+                person.setDateOfBirth(format.format(dob));
             }
             String veteranStatus = rs.getString("VETERAN");
             if (veteranStatus != null) {

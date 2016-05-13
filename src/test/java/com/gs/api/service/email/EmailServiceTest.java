@@ -1,7 +1,7 @@
 package com.gs.api.service.email;
 
 import com.gs.api.dao.CourseSessionDAO;
-import com.gs.api.dao.registration.UserDAO;
+import com.gs.api.dao.UserDAO;
 import com.gs.api.domain.Person;
 import com.gs.api.domain.course.CourseSession;
 import com.gs.api.domain.course.Location;
@@ -9,7 +9,7 @@ import com.gs.api.domain.payment.Payment;
 import com.gs.api.domain.payment.PaymentConfirmation;
 import com.gs.api.domain.registration.Registration;
 import com.gs.api.domain.registration.RegistrationResponse;
-import com.gs.api.domain.registration.User;
+import com.gs.api.domain.User;
 
 import org.apache.velocity.app.VelocityEngine;
 import org.junit.Before;
@@ -174,7 +174,7 @@ public class EmailServiceTest {
         expectedStudentPerson.setFirstName("Tom");
         expectedStudentPerson.setLastName("Tester");
         expectedStudentPerson.setEmailAddress("test@test.com");
-        expectedStudent = new User(STUDENT_ID,"test@test.com","","", expectedStudentPerson, "", "", "", "", "");
+        expectedStudent = new User(STUDENT_ID,"test@test.com","","", expectedStudentPerson, "", "", "", "", "", "");
     }
 
     @Test
@@ -447,7 +447,7 @@ public class EmailServiceTest {
         studentPerson.setFirstName("Jane");
         studentPerson.setLastName("Tester");
         studentPerson.setEmailAddress("jane@test.com");
-        User secondStudent = new User(STUDENT_ID,"jane@test.com","","", studentPerson, "", "", "", "", "");
+        User secondStudent = new User(STUDENT_ID,"jane@test.com","","", studentPerson, "", "", "", "", "", "");
 
         PaymentConfirmation secondPaymentConf = new PaymentConfirmation(new Payment(SESSION_TUITION, "authId2", "ref2"), "sale2");
         registrationResponse.getPaymentConfirmations().add(secondPaymentConf);
@@ -502,7 +502,7 @@ public class EmailServiceTest {
         person.setFirstName("Tom");
         person.setLastName("Tester");
         person.setEmailAddress("test@test.com");
-        User student = new User(STUDENT_ID,"test@test.com","","", person, "", "", "", "", "");
+        User student = new User(STUDENT_ID,"test@test.com","","", person, "", "", "", "", "", "");
 
         when(VelocityEngineUtils.mergeTemplateIntoString(
                 any(VelocityEngine.class), Mockito.anyString(), Mockito.anyString(), Mockito.any(Map.class)))
@@ -548,7 +548,7 @@ public class EmailServiceTest {
         person.setFirstName("Tom");
         person.setLastName("Tester");
         person.setEmailAddress("bademail");
-        User student = new User(STUDENT_ID,"bademail","","", person, "", "", "", "", "");
+        User student = new User(STUDENT_ID,"bademail","","", person, "", "", "", "", "", "");
 
         when(VelocityEngineUtils.mergeTemplateIntoString(
                 any(VelocityEngine.class), Mockito.anyString(), Mockito.anyString(), Mockito.any(Map.class)))
@@ -579,7 +579,7 @@ public class EmailServiceTest {
         person.setFirstName("Tom");
         person.setLastName("Tester");
         person.setEmailAddress("test@test.com");
-        User student = new User(STUDENT_ID,"test@test.com","","", person, "", "", "", "", "");
+        User student = new User(STUDENT_ID,"test@test.com","","", person, "", "", "", "", "", "");
 
         when(VelocityEngineUtils.mergeTemplateIntoString(
                 any(VelocityEngine.class), Mockito.anyString(), Mockito.anyString(), Mockito.any(Map.class)))
@@ -630,7 +630,7 @@ public class EmailServiceTest {
         person.setFirstName("Tom");
         person.setLastName("Tester");
         person.setEmailAddress("test@test.com");
-        User student = new User(STUDENT_ID,"test@test.com","","", person, "", "", "", "", "");
+        User student = new User(STUDENT_ID,"test@test.com","","", person, "", "", "", "", "", "");
 
         when(VelocityEngineUtils.mergeTemplateIntoString(
                 any(VelocityEngine.class), Mockito.anyString(), Mockito.anyString(), Mockito.any(Map.class)))

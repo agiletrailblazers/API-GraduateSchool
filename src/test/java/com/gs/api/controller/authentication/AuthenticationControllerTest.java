@@ -2,7 +2,7 @@ package com.gs.api.controller.authentication;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gs.api.domain.authentication.*;
-import com.gs.api.domain.registration.User;
+import com.gs.api.domain.User;
 import com.gs.api.exception.AuthenticationException;
 import com.gs.api.service.authentication.AuthenticationService;
 import org.junit.Before;

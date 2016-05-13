@@ -1,7 +1,5 @@
-package com.gs.api.domain.registration;
+package com.gs.api.domain;
 
-import com.gs.api.domain.Address;
-import com.gs.api.domain.Person;
 import com.gs.api.helper.ValidationHelper;
 
 import org.apache.commons.lang.RandomStringUtils;
@@ -33,6 +31,7 @@ public class UserTest {
     public static final String CURRENCY_ID_TEXT = "currencyId";
     public static final String SPLIT_TEXT = "split";
     public static final String TIMESTAMP_TEXT = "timestamp";
+    public static final String ACCOUNT_NUMBER = "12345";
     private Validator validator = ValidationHelper.getValidator();
 
     private static Address validAddress;
@@ -58,12 +57,13 @@ public class UserTest {
         validPerson.setPrimaryAddress(validAddress);
         validPerson.setSecondaryAddress(validAddress);
         validPerson.setVeteran(false);
-        validPerson.setDateOfBirth("20160322");
+        validPerson.setDateOfBirth("3/22/2016");
     }
 
     @Test
     public void testValidUser(){
-        User validUser = new User(null, validPerson.getEmailAddress(), PASSWORD, LAST_FOUR_SSN, validPerson, TIMEZONE_ID, null, null, null, null);
+        User validUser = new User(null, validPerson.getEmailAddress(), PASSWORD, LAST_FOUR_SSN, validPerson, TIMEZONE_ID,
+                ACCOUNT_ID_TEXT, ACCOUNT_NUMBER, null, null, null);
 
         Set<ConstraintViolation<User>> violations = this.validator.validate(validUser);
 
@@ -98,7 +98,7 @@ public class UserTest {
 
     @Test
     public void testInvalidInfoEmptyStrings(){
-        User invalidUser = new User("", "", "", "", validPerson, "", "", "", "", "");
+        User invalidUser = new User("", "", "", "", validPerson, "", "", "", "", "", "");
 
         HashMap<String, List<ConstraintViolation<Object>>> violations =  ValidationHelper.convertConstraintViolationsToHashMap(validator.validate(invalidUser));
 
@@ -133,6 +133,7 @@ public class UserTest {
                                     null,
                                     null,
                                     null,
+                                    null,
                                     null);
 
         HashMap<String, List<ConstraintViolation<Object>>> violations =  ValidationHelper.convertConstraintViolationsToHashMap(validator.validate(invalidUser));
@@ -164,6 +165,7 @@ public class UserTest {
                                     "ABCD",
                                     validPerson,
                                     "123--has-symbols",
+                                    null,
                                     null,
                                     null,
                                     null,
