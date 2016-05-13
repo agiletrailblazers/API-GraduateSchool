@@ -59,7 +59,7 @@ public class UserController extends BaseController {
         authenticationService.verifyUser(request, id);
 
         userService.updateUser(user);
-        //TODO after update do a getUser and return
+        
         return userService.getUser(user.getId());
     }
 
