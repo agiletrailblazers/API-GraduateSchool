@@ -1,0 +1,70 @@
+0 info it worked if it ends with ok
+1 verbose cli [ '/usr/local/bin/node',
+1 verbose cli   '/usr/local/bin/npm',
+1 verbose cli   'show',
+1 verbose cli   'newman',
+1 verbose cli   'version' ]
+2 info using npm@2.14.7
+3 info using node@v4.2.1
+4 silly mapToRegistry name newman
+5 silly mapToRegistry using default registry
+6 silly mapToRegistry registry https://registry.npmjs.org/
+7 silly mapToRegistry uri https://registry.npmjs.org/newman
+8 verbose request uri https://registry.npmjs.org/newman
+9 verbose request no auth needed
+10 info attempt registry request try #1 at 4:15:13 PM
+11 verbose request id d649390acbd04fe3
+12 verbose etag "E9J0SP46C7NUL3Q1NLBAC8QVB"
+13 http request GET https://registry.npmjs.org/newman
+14 http 200 https://registry.npmjs.org/newman
+15 verbose headers { server: 'CouchDB/1.5.0 (Erlang OTP/R16B03)',
+15 verbose headers   etag: '"8Z3U8O82EXK0HMBYXQ9GJPXC7"',
+15 verbose headers   'content-type': 'application/json',
+15 verbose headers   'content-encoding': 'gzip',
+15 verbose headers   'cache-control': 'max-age=300',
+15 verbose headers   'content-length': '17587',
+15 verbose headers   'accept-ranges': 'bytes',
+15 verbose headers   date: 'Wed, 18 May 2016 20:15:13 GMT',
+15 verbose headers   via: '1.1 varnish',
+15 verbose headers   age: '0',
+15 verbose headers   connection: 'keep-alive',
+15 verbose headers   'x-served-by': 'cache-atl6244-ATL',
+15 verbose headers   'x-cache': 'HIT',
+15 verbose headers   'x-cache-hits': '1',
+15 verbose headers   'x-timer': 'S1463602513.368837,VS0,VE32',
+15 verbose headers   vary: 'Accept-Encoding' }
+16 silly get cb [ 200,
+16 silly get   { server: 'CouchDB/1.5.0 (Erlang OTP/R16B03)',
+16 silly get     etag: '"8Z3U8O82EXK0HMBYXQ9GJPXC7"',
+16 silly get     'content-type': 'application/json',
+16 silly get     'content-encoding': 'gzip',
+16 silly get     'cache-control': 'max-age=300',
+16 silly get     'content-length': '17587',
+16 silly get     'accept-ranges': 'bytes',
+16 silly get     date: 'Wed, 18 May 2016 20:15:13 GMT',
+16 silly get     via: '1.1 varnish',
+16 silly get     age: '0',
+16 silly get     connection: 'keep-alive',
+16 silly get     'x-served-by': 'cache-atl6244-ATL',
+16 silly get     'x-cache': 'HIT',
+16 silly get     'x-cache-hits': '1',
+16 silly get     'x-timer': 'S1463602513.368837,VS0,VE32',
+16 silly get     vary: 'Accept-Encoding' } ]
+17 verbose get saving newman to /Users/Ifti/.npm/registry.npmjs.org/newman/.cache.json
+18 verbose exit [ 0, true ]
+19 verbose stack Error: write EPIPE
+19 verbose stack     at Object.exports._errnoException (util.js:874:11)
+19 verbose stack     at exports._exceptionWithHostPort (util.js:897:20)
+19 verbose stack     at WriteWrap.afterWrite (net.js:763:14)
+20 verbose cwd /Users/Ifti/gitDev/API-GraduateSchool/src/doc
+21 error Darwin 15.0.0
+22 error argv "/usr/local/bin/node" "/usr/local/bin/npm" "show" "newman" "version"
+23 error node v4.2.1
+24 error npm  v2.14.7
+25 error code EPIPE
+26 error errno EPIPE
+27 error syscall write
+28 error write EPIPE
+29 error If you need help, you may report this error at:
+29 error     <https://github.com/npm/npm/issues>
+30 verbose exit [ 1, true ]
