@@ -216,6 +216,13 @@ public class UserDAO {
         logger.debug("Updating user info for user {}", user.getId());
         Person person = user.getPerson();
 
+        User existingUser = getUserByUsername(user.getPerson().getEmailAddress());
+        if (existingUser != null) {
+            String errorString = "User with email"+ user.getUsername() + " already exists";
+            logger.debug(errorString);
+            throw new DuplicateUserException(errorString);
+        }
+
         //Format address to match saba fields
         Address sabaFormattedAddress = mapAddressToSabaFormat(person.getPrimaryAddress());
 
