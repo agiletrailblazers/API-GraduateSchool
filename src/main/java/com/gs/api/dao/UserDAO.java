@@ -217,7 +217,7 @@ public class UserDAO {
         Person person = user.getPerson();
 
         User existingUser = getUserByUsername(user.getPerson().getEmailAddress());
-        if (existingUser != null) {
+        if (existingUser != null && !existingUser.getId().equals(user.getId())) {
             String errorString = "User with email"+ user.getUsername() + " already exists";
             logger.debug(errorString);
             throw new DuplicateUserException(errorString);
