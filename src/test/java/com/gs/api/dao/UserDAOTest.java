@@ -420,6 +420,50 @@ public class UserDAOTest {
     }
 
     @Test
+    public void testFailToUpdateUserDueToDuplicateUser() throws Exception {
+        User differentUserSameEmail;
+        differentUserSameEmail = new User();
+        differentUserSameEmail.setId("prsnSomethingElse");
+        differentUserSameEmail.setUsername(USERNAME);
+        differentUserSameEmail.setPassword(PASSWORD);
+        differentUserSameEmail.setTimezoneId(TIMEZONE_ID);
+        differentUserSameEmail.setLastFourSSN(LAST_FOUR_SSN);
+        differentUserSameEmail.setSplit(SPLIT);
+        differentUserSameEmail.setCurrencyId(CURRENCY_ID);
+        differentUserSameEmail.setTimestamp(USER_TIMESTAMP);
+
+        Person differentPerson = new Person();
+        differentPerson.setFirstName(FIRST_NAME);
+        differentPerson.setMiddleName(MIDDLE_NAME);
+        differentPerson.setLastName(LAST_NAME);
+        differentPerson.setEmailAddress(EMAIL_ADDRESS);
+        differentPerson.setPrimaryPhone(PHONE);
+        differentPerson.setVeteran(VETERAN_STATUS);
+        differentPerson.setDateOfBirth(DOB);
+
+        Address address = new Address();
+        address.setAddress1(ADDRESS_1);
+        address.setAddress2(ADDRESS_2);
+        address.setAddress3(ADDRESS_3);
+        address.setCity(ADDRESS_CITY);
+        address.setState(ADDRESS_STATE);
+        address.setPostalCode(ADDRESS_ZIP);
+        differentPerson.setPrimaryAddress(address);
+
+        differentUserSameEmail.setPerson(differentPerson);
+
+        when(jdbcTemplate.queryForObject(anyString(), any(Object[].class), any(UserDAO.UserRowMapper.class))).
+                thenReturn(differentUserSameEmail);
+
+        try{
+            userDAO.updateUser(user);
+            assertTrue(false);
+        } catch (Exception e){
+            assertSame(e.getClass().getTypeName(), DuplicateUserException.class.getTypeName());
+        }
+    }
+
+    @Test
     public void testDeleteUser() throws Exception {
         HashMap<String, Object> sqlResult = new HashMap<>();
         String userId = "persn1234";
