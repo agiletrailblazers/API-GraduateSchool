@@ -45,14 +45,18 @@
 				"7d328b65-a5d7-32bb-1bfa-6f616960a5e4",
 				"a5a160ae-4c55-251f-8252-7572c6d61443",
 				"e686d5bd-c4a1-bdfb-79f2-c640d10c51b2",
+				"5be67f6b-1b42-e56a-970b-27d711f06016",
+				"16cc9ad3-3eef-8f4a-df1c-ad7336cb3cf2",
 				"19d004b2-b796-e7be-ba25-59a762f86f3a",
 				"769de6a9-733f-fe87-67b6-9a3a3d744a46",
 				"eef9c7e8-976e-5c43-2073-7ccc7095405b",
+				"39c5f6e9-de02-34c9-e172-19817974eedc",
+				"ba9fcbbc-261f-135f-574f-23466419e272",
 				"66b0581f-7392-acfa-cf37-43386b12003a",
 				"6d2c04fc-2a51-562d-60fa-1f2180dc8f18"
 			],
 			"owner": "329957",
-			"collectionId": "eb625399-b084-ec03-4d86-9a2f3022c318"
+			"collectionId": "1a2f526a-6cc0-512c-06d3-b6ff5d728554"
 		}
 	],
 	"timestamp": 1436731751085,
@@ -157,6 +161,26 @@
 			"responses": []
 		},
 		{
+			"id": "16cc9ad3-3eef-8f4a-df1c-ad7336cb3cf2",
+			"headers": "Authorization: {{authentication.duplicateUser.guest_token}}\nContent-Type: application/json\n",
+			"url": "http://{{url}}:{{port}}/api/users",
+			"preRequestScript": "",
+			"pathVariables": {},
+			"method": "POST",
+			"data": [],
+			"dataMode": "raw",
+			"version": 2,
+			"tests": "tests[\"Status code is 201\"] = responseCode.code === 201;\n\nvar data = JSON.parse(responseBody);\npostman.setGlobalVariable(\"authentication.duplicate.user_id\", data.id);",
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"time": 1464888191608,
+			"name": "Create Postman User For Duplicate Email",
+			"description": "Create the postman user for the authentication tests",
+			"collectionId": "1a2f526a-6cc0-512c-06d3-b6ff5d728554",
+			"responses": [],
+			"rawModeData": "{\n    \"username\" : \"postmanDuplicate@atb.com\",\n    \"password\" : \"test1234\",\n    \"lastFourSSN\" : \"4444\",\n    \"timezoneId\" : \"tzone000000000000012\",\n    \"person\" : {\n        \"firstName\" : \"Postman\",\n        \"lastName\" : \"Postman\",\n        \"emailAddress\" : \"postmanDuplicate@atb.com\",\n        \"primaryPhone\" : \"5555555555\",\n        \"dateOfBirth\" : \"04/04/1950\",\n        \"primaryAddress\" : {\n            \"address1\" : \"42 Woodland Drive\",\n            \"city\" : \"East Windsor\",\n            \"state\" : \"NJ\",\n            \"postalCode\" : \"08520\"\n        }\n    }\n}"
+		},
+		{
 			"id": "171d168d-44f2-d230-8397-0eb5f3fa3577",
 			"headers": "Authorization: {{auth_token}}\n",
 			"url": "http://{{url}}:{{port}}/api/courses?search=government",
@@ -187,12 +211,12 @@
 			"tests": "tests[\"Status code is 409\"] = responseCode.code === 409;",
 			"currentHelper": "normal",
 			"helperAttributes": {},
-			"time": 1464718024309,
+			"time": 1464888807937,
 			"name": "Update Postman User Duplicate Email",
 			"description": "",
 			"collectionId": "1a2f526a-6cc0-512c-06d3-b6ff5d728554",
 			"responses": [],
-			"rawModeData": "{\n    \"id\"    :   \"{{authentication.user_id}}\",\n    \"username\" : \"test@test.com\",\n    \"lastFourSSN\" : \"4444\",\n    \"timezoneId\" : \"tzone000000000000012\",\n    \"accountNumber\" : \"0021\",\n    \"person\" : {\n        \"firstName\" : \"Posterman\",\n        \"lastName\" : \"Posterman\",\n        \"emailAddress\" : \"test@test.com\",\n        \"primaryPhone\" : \"5555555555\",\n        \"dateOfBirth\" : \"04/04/1950\",\n        \"personNumber\" : \"0123\",\n        \"primaryAddress\" : {\n            \"address1\" : \"2000 Hamilton Ave\",\n            \"city\" : \"Parkville\",\n            \"state\" : \"MD\",\n            \"postalCode\" : \"21234\"\n        }\n    }\n}"
+			"rawModeData": "{\n    \"id\"    :   \"{{authentication.user_id}}\",\n    \"username\" : \"postmanDuplicate@atb.com\",\n    \"lastFourSSN\" : \"4444\",\n    \"timezoneId\" : \"tzone000000000000012\",\n    \"accountNumber\" : \"0021\",\n    \"person\" : {\n        \"firstName\" : \"Posterman\",\n        \"lastName\" : \"Posterman\",\n        \"emailAddress\" : \"postmanDuplicate@atb.com\",\n        \"primaryPhone\" : \"5555555555\",\n        \"dateOfBirth\" : \"04/04/1950\",\n        \"personNumber\" : \"0123\",\n        \"primaryAddress\" : {\n            \"address1\" : \"2000 Hamilton Ave\",\n            \"city\" : \"Parkville\",\n            \"state\" : \"MD\",\n            \"postalCode\" : \"21234\"\n        }\n    }\n}"
 		},
 		{
 			"id": "1efc4cb7-0928-f44b-7cbe-d0d9358f56e7",
@@ -253,6 +277,26 @@
 			"responses": [],
 			"rawModeData": "{\n    \"person\" : {\n        \"firstName\" : \"Postman\",\n        \"lastName\" : \"Postman\",\n        \"emailAddress\" : \"postman@atb.com\",\n        \"primaryPhone\" : \"5555555555\",\n        \"dateOfBirth\" : \"04/04/1950\",\n        \"primaryAddress\" : {\n            \"address1\" : \"42 Woodland Drive\",\n            \"city\" : \"East Windsor\",\n            \"state\" : \"NJ\",\n            \"postalCode\" : \"08520\"\n        }\n    }\n}",
 			"folder": "0c245096-a7cb-b165-058f-ae406107caf2"
+		},
+		{
+			"id": "39c5f6e9-de02-34c9-e172-19817974eedc",
+			"headers": "Authorization: {{authentication.guest_token}}\nContent-Type: application/json\n",
+			"url": "http://{{url}}:{{port}}/api/authentication",
+			"preRequestScript": "",
+			"pathVariables": {},
+			"method": "POST",
+			"data": [],
+			"dataMode": "raw",
+			"version": 2,
+			"tests": "tests[\"Verify successful authentication\"] = responseCode.code === 200;\n\nvar data = JSON.parse(responseBody);\n\ntests[\"Verify correct user\"] = data.user.id === postman.getGlobalVariable(\"authentication.duplicate.user_id\");\ntests[\"Verify renewal token created\"] = data.renewalToken.token;\n\npostman.setGlobalVariable(\"authentication.duplicate.authenticated_token\", data.authToken.token);\npostman.setGlobalVariable(\"authentication.duplicate.renewal_token\", data.renewalToken.token);",
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"time": 1464888731059,
+			"name": "Postman User Authentication Should Succeed Duplicate User",
+			"description": "Verify that the postman user can login",
+			"collectionId": "1a2f526a-6cc0-512c-06d3-b6ff5d728554",
+			"responses": [],
+			"rawModeData": "{\n\"username\" : \"postmanDuplicate@atb.com\",\n\"password\" : \"test1234\"\n}"
 		},
 		{
 			"id": "3d7ee5b7-cf8c-b55a-c1c5-528a689b6b4f",
@@ -328,6 +372,25 @@
 			"time": 1455831887742,
 			"name": "Site - Search",
 			"description": "Search the site by a keyword",
+			"collectionId": "1a2f526a-6cc0-512c-06d3-b6ff5d728554",
+			"responses": []
+		},
+		{
+			"id": "5be67f6b-1b42-e56a-970b-27d711f06016",
+			"headers": "",
+			"url": "http://{{url}}:{{port}}/api/tokens",
+			"preRequestScript": "",
+			"pathVariables": {},
+			"method": "GET",
+			"data": [],
+			"dataMode": "params",
+			"version": 2,
+			"tests": "tests[\"Status code is 200\"] = responseCode.code === 200;\n\nvar data = JSON.parse(responseBody);\npostman.setGlobalVariable(\"authentication.duplicateUser.guest_token\", data.token);",
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"time": 1464888144260,
+			"name": "Get Guest Token for Duplicate User",
+			"description": "Get a guest token to be used for the authentication test collection",
 			"collectionId": "1a2f526a-6cc0-512c-06d3-b6ff5d728554",
 			"responses": []
 		},
@@ -649,6 +712,26 @@
 			"description": "Get course categories with a list o subjects in each category",
 			"collectionId": "1a2f526a-6cc0-512c-06d3-b6ff5d728554",
 			"responses": []
+		},
+		{
+			"id": "ba9fcbbc-261f-135f-574f-23466419e272",
+			"headers": "Authorization: {{authentication.duplicate.authenticated_token}}\nContent-Type: application/json\n",
+			"url": "http://{{url}}:{{port}}/api/users/{{authentication.duplicate.user_id}}",
+			"preRequestScript": "",
+			"pathVariables": {},
+			"method": "DELETE",
+			"data": [],
+			"dataMode": "raw",
+			"version": 2,
+			"tests": "tests[\"Status code is 204\"] = responseCode.code === 204;\n",
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"time": 1464888727430,
+			"name": "Delete Postman User Duplicate",
+			"description": "Delete the postman user",
+			"collectionId": "1a2f526a-6cc0-512c-06d3-b6ff5d728554",
+			"responses": [],
+			"rawModeData": ""
 		},
 		{
 			"id": "bcf55ce9-d61a-34bb-0541-16704592d6e8",
