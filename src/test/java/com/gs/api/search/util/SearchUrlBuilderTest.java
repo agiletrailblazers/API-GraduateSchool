@@ -58,12 +58,12 @@ public class SearchUrlBuilderTest {
     @Test
     public void buildSiteSearchString() {
         //single term
-        final String SINGLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:9090/solr/nutch-core/select?q=(title:(*governnment*)) AND (content:(*governnment*))&start=0&rows=100&wt=json";
+        final String SINGLE_TERM_RESULT = "fakeSolr/solr/nutch-core/select?q=(title:(*governnment*)) AND (content:(*governnment*))&start=0&rows=100&wt=json";
         String endpoint = searchServiceHelper.build(siteSearchSolrQuery,"governnment", 1, 100,new String[0]);
         assertEquals(SINGLE_TERM_RESULT, endpoint);
 
         //two terms
-        final String DOUBLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:9090/solr/nutch-core/select?q=(title:(*governnment*)) AND (content:(*governnment*))&start=0&rows=100&wt=json";
+        final String DOUBLE_TERM_RESULT = "fakeSolr/solr/nutch-core/select?q=(title:(*governnment*)) AND (content:(*governnment*))&start=0&rows=100&wt=json";
         endpoint = searchServiceHelper.build(siteSearchSolrQuery,"governnment",1, 100,new String[0]);
         assertEquals(DOUBLE_TERM_RESULT, endpoint);
     }
@@ -72,13 +72,13 @@ public class SearchUrlBuilderTest {
     public void buildCourseSearchString() {
 
         //single term
-        final String SINGLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:9090/solr/courses/select?q=(course_name:(\"fraud\"))^100 OR (course_name:(*fraud*))^9 OR (course_id:(*fraud*))^9 OR (course_code:(*fraud*))^6 OR (course_description:(*fraud*))^0.00001 OR (course_abstract:(*fraud*))^0.00001 OR (course_prerequisites:(*fraud*))^0.00001&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true&group=true&group.field=course_id&group.facet=true&group.ngroups=true&group.format=simple&facet=true&facet.field={facet-exclude}city_state&facet.field=status&facet.field={facet-exclude}category_subject&sort={sort}&f.category_subject.facet.sort=index&facet.field={facet-exclude}delivery_method&f.delivery_method.facet.sort=index";
+        final String SINGLE_TERM_RESULT = "fakeSolr/solr/courses/select?q=(course_name:(\"fraud\"))^100 OR (course_name:(*fraud*))^9 OR (course_id:(*fraud*))^9 OR (course_code:(*fraud*))^6 OR (course_description:(*fraud*))^0.00001 OR (course_abstract:(*fraud*))^0.00001 OR (course_prerequisites:(*fraud*))^0.00001&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true&group=true&group.field=course_id&group.facet=true&group.ngroups=true&group.format=simple&facet=true&facet.field={facet-exclude}city_state&facet.field=status&facet.field={facet-exclude}category_subject&sort={sort}&f.category_subject.facet.sort=index&facet.field={facet-exclude}delivery_method&f.delivery_method.facet.sort=index";
 
         String endpoint = searchServiceHelper.build(courseSearchSolrQuery,"fraud", 1, 100,new String[0]);
         assertEquals(SINGLE_TERM_RESULT, endpoint);
 
         //two terms
-        final String DOUBLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:9090/solr/courses/select?q=(course_name:(\"Project Management\"))^100 OR (course_name:(*Project Management*))^9 OR (course_id:(*Project Management*))^9 OR (course_code:(*Project Management*))^6 OR (course_description:(*Project Management*))^0.00001 OR (course_abstract:(*Project Management*))^0.00001 OR (course_prerequisites:(*Project Management*))^0.00001&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true&group=true&group.field=course_id&group.facet=true&group.ngroups=true&group.format=simple&facet=true&facet.field={facet-exclude}city_state&facet.field=status&facet.field={facet-exclude}category_subject&sort={sort}&f.category_subject.facet.sort=index&facet.field={facet-exclude}delivery_method&f.delivery_method.facet.sort=index";
+        final String DOUBLE_TERM_RESULT = "fakeSolr/solr/courses/select?q=(course_name:(\"Project Management\"))^100 OR (course_name:(*Project Management*))^9 OR (course_id:(*Project Management*))^9 OR (course_code:(*Project Management*))^6 OR (course_description:(*Project Management*))^0.00001 OR (course_abstract:(*Project Management*))^0.00001 OR (course_prerequisites:(*Project Management*))^0.00001&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true&group=true&group.field=course_id&group.facet=true&group.ngroups=true&group.format=simple&facet=true&facet.field={facet-exclude}city_state&facet.field=status&facet.field={facet-exclude}category_subject&sort={sort}&f.category_subject.facet.sort=index&facet.field={facet-exclude}delivery_method&f.delivery_method.facet.sort=index";
         endpoint = searchServiceHelper.build(courseSearchSolrQuery,"Project Management",1, 100,new String[0]);
         assertEquals(DOUBLE_TERM_RESULT, endpoint);
     }
@@ -87,13 +87,13 @@ public class SearchUrlBuilderTest {
     public void buildSearchStringWithFacetParam() {
 
         //single term
-        final String SINGLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:9090/solr/courses/select?q=(course_name:(\"fraud\"))^100 OR (course_name:(*fraud*))^9 OR (course_id:(*fraud*))^9 OR (course_code:(*fraud*))^6 OR (course_description:(*fraud*))^0.00001 OR (course_abstract:(*fraud*))^0.00001 OR (course_prerequisites:(*fraud*))^0.00001&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true&fq=city_state:\"Washington\"&group=true&group.field=course_id&group.facet=true&group.ngroups=true&group.format=simple&facet=true&facet.field={facet-exclude}city_state&facet.field=status&facet.field={facet-exclude}category_subject&sort={sort}&f.category_subject.facet.sort=index&facet.field={facet-exclude}delivery_method&f.delivery_method.facet.sort=index";
+        final String SINGLE_TERM_RESULT = "fakeSolr/solr/courses/select?q=(course_name:(\"fraud\"))^100 OR (course_name:(*fraud*))^9 OR (course_id:(*fraud*))^9 OR (course_code:(*fraud*))^6 OR (course_description:(*fraud*))^0.00001 OR (course_abstract:(*fraud*))^0.00001 OR (course_prerequisites:(*fraud*))^0.00001&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true&fq=city_state:\"Washington\"&group=true&group.field=course_id&group.facet=true&group.ngroups=true&group.format=simple&facet=true&facet.field={facet-exclude}city_state&facet.field=status&facet.field={facet-exclude}category_subject&sort={sort}&f.category_subject.facet.sort=index&facet.field={facet-exclude}delivery_method&f.delivery_method.facet.sort=index";
         String[] facetParam = {"city_state:Washington"};
         String endpoint = searchServiceHelper.build(courseSearchSolrQuery,"fraud", 1, 100, facetParam);
         assertEquals(SINGLE_TERM_RESULT, endpoint);
 
         //two terms
-        final String DOUBLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:9090/solr/courses/select?q=(course_name:(\"Project Management\"))^100 OR (course_name:(*Project Management*))^9 OR (course_id:(*Project Management*))^9 OR (course_code:(*Project Management*))^6 OR (course_description:(*Project Management*))^0.00001 OR (course_abstract:(*Project Management*))^0.00001 OR (course_prerequisites:(*Project Management*))^0.00001&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true&fq=city_state:\"Washington\"&fq=status:\"S\"&group=true&group.field=course_id&group.facet=true&group.ngroups=true&group.format=simple&facet=true&facet.field={facet-exclude}city_state&facet.field=status&facet.field={facet-exclude}category_subject&sort={sort}&f.category_subject.facet.sort=index&facet.field={facet-exclude}delivery_method&f.delivery_method.facet.sort=index";
+        final String DOUBLE_TERM_RESULT = "fakeSolr/solr/courses/select?q=(course_name:(\"Project Management\"))^100 OR (course_name:(*Project Management*))^9 OR (course_id:(*Project Management*))^9 OR (course_code:(*Project Management*))^6 OR (course_description:(*Project Management*))^0.00001 OR (course_abstract:(*Project Management*))^0.00001 OR (course_prerequisites:(*Project Management*))^0.00001&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true&fq=city_state:\"Washington\"&fq=status:\"S\"&group=true&group.field=course_id&group.facet=true&group.ngroups=true&group.format=simple&facet=true&facet.field={facet-exclude}city_state&facet.field=status&facet.field={facet-exclude}category_subject&sort={sort}&f.category_subject.facet.sort=index&facet.field={facet-exclude}delivery_method&f.delivery_method.facet.sort=index";
         String[] facetParams = {"city_state:Washington","status:S"};
         endpoint = searchServiceHelper.build(courseSearchSolrQuery,"Project Management",1, 100,facetParams);
         assertEquals(DOUBLE_TERM_RESULT, endpoint);
@@ -108,12 +108,12 @@ public class SearchUrlBuilderTest {
     @Test
     public void buildSiteSearchString_CurrentPage_EqualstoZero() {
         //single term
-        final String SINGLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:9090/solr/nutch-core/select?q=(title:(*governnment*)) AND (content:(*governnment*))&start=0&rows=100&wt=json";
+        final String SINGLE_TERM_RESULT = "fakeSolr/solr/nutch-core/select?q=(title:(*governnment*)) AND (content:(*governnment*))&start=0&rows=100&wt=json";
         String endpoint = searchServiceHelper.build(siteSearchSolrQuery, "governnment", 0, 100, new String[0]);
         assertEquals(SINGLE_TERM_RESULT, endpoint);
 
         //two terms
-        final String DOUBLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:9090/solr/nutch-core/select?q=(title:(*governnment*)) AND (content:(*governnment*))&start=0&rows=100&wt=json";
+        final String DOUBLE_TERM_RESULT = "fakeSolr/solr/nutch-core/select?q=(title:(*governnment*)) AND (content:(*governnment*))&start=0&rows=100&wt=json";
         endpoint = searchServiceHelper.build(siteSearchSolrQuery, "governnment", 0, 100, new String[0]);
         assertEquals(DOUBLE_TERM_RESULT, endpoint);
     }
@@ -122,13 +122,13 @@ public class SearchUrlBuilderTest {
     public void buildCourseSearchString_CurrentPage_EqualstoZero() {
 
         //single term
-        final String SINGLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:9090/solr/courses/select?q=(course_name:(\"fraud\"))^100 OR (course_name:(*fraud*))^9 OR (course_id:(*fraud*))^9 OR (course_code:(*fraud*))^6 OR (course_description:(*fraud*))^0.00001 OR (course_abstract:(*fraud*))^0.00001 OR (course_prerequisites:(*fraud*))^0.00001&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true&group=true&group.field=course_id&group.facet=true&group.ngroups=true&group.format=simple&facet=true&facet.field={facet-exclude}city_state&facet.field=status&facet.field={facet-exclude}category_subject&sort={sort}&f.category_subject.facet.sort=index&facet.field={facet-exclude}delivery_method&f.delivery_method.facet.sort=index";
+        final String SINGLE_TERM_RESULT = "fakeSolr/solr/courses/select?q=(course_name:(\"fraud\"))^100 OR (course_name:(*fraud*))^9 OR (course_id:(*fraud*))^9 OR (course_code:(*fraud*))^6 OR (course_description:(*fraud*))^0.00001 OR (course_abstract:(*fraud*))^0.00001 OR (course_prerequisites:(*fraud*))^0.00001&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true&group=true&group.field=course_id&group.facet=true&group.ngroups=true&group.format=simple&facet=true&facet.field={facet-exclude}city_state&facet.field=status&facet.field={facet-exclude}category_subject&sort={sort}&f.category_subject.facet.sort=index&facet.field={facet-exclude}delivery_method&f.delivery_method.facet.sort=index";
 
         String endpoint = searchServiceHelper.build(courseSearchSolrQuery, "fraud", 0, 100, new String[0]);
         assertEquals(SINGLE_TERM_RESULT, endpoint);
 
         //two terms
-        final String DOUBLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:9090/solr/courses/select?q=(course_name:(\"Project Management\"))^100 OR (course_name:(*Project Management*))^9 OR (course_id:(*Project Management*))^9 OR (course_code:(*Project Management*))^6 OR (course_description:(*Project Management*))^0.00001 OR (course_abstract:(*Project Management*))^0.00001 OR (course_prerequisites:(*Project Management*))^0.00001&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true&group=true&group.field=course_id&group.facet=true&group.ngroups=true&group.format=simple&facet=true&facet.field={facet-exclude}city_state&facet.field=status&facet.field={facet-exclude}category_subject&sort={sort}&f.category_subject.facet.sort=index&facet.field={facet-exclude}delivery_method&f.delivery_method.facet.sort=index";
+        final String DOUBLE_TERM_RESULT = "fakeSolr/solr/courses/select?q=(course_name:(\"Project Management\"))^100 OR (course_name:(*Project Management*))^9 OR (course_id:(*Project Management*))^9 OR (course_code:(*Project Management*))^6 OR (course_description:(*Project Management*))^0.00001 OR (course_abstract:(*Project Management*))^0.00001 OR (course_prerequisites:(*Project Management*))^0.00001&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true&group=true&group.field=course_id&group.facet=true&group.ngroups=true&group.format=simple&facet=true&facet.field={facet-exclude}city_state&facet.field=status&facet.field={facet-exclude}category_subject&sort={sort}&f.category_subject.facet.sort=index&facet.field={facet-exclude}delivery_method&f.delivery_method.facet.sort=index";
         endpoint = searchServiceHelper.build(courseSearchSolrQuery, "Project Management", 0, 100, new String[0]);
         assertEquals(DOUBLE_TERM_RESULT, endpoint);
     }
@@ -136,12 +136,12 @@ public class SearchUrlBuilderTest {
     @Test
     public void buildSiteSearchString_CurrentPage_NegativeNumber() {
         //single term
-        final String SINGLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:9090/solr/nutch-core/select?q=(title:(*governnment*)) AND (content:(*governnment*))&start=0&rows=100&wt=json";
+        final String SINGLE_TERM_RESULT = "fakeSolr/solr/nutch-core/select?q=(title:(*governnment*)) AND (content:(*governnment*))&start=0&rows=100&wt=json";
         String endpoint = searchServiceHelper.build(siteSearchSolrQuery, "governnment", -1, 100, new String[0]);
         assertEquals(SINGLE_TERM_RESULT, endpoint);
 
         //two terms
-        final String DOUBLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:9090/solr/nutch-core/select?q=(title:(*governnment*)) AND (content:(*governnment*))&start=0&rows=100&wt=json";
+        final String DOUBLE_TERM_RESULT = "fakeSolr/solr/nutch-core/select?q=(title:(*governnment*)) AND (content:(*governnment*))&start=0&rows=100&wt=json";
         endpoint = searchServiceHelper.build(siteSearchSolrQuery, "governnment", -1, 100, new String[0]);
         assertEquals(DOUBLE_TERM_RESULT, endpoint);
     }
@@ -150,13 +150,13 @@ public class SearchUrlBuilderTest {
     public void buildCourseSearchString_CurrentPage_NegativeNumber() {
 
         //single term
-        final String SINGLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:9090/solr/courses/select?q=(course_name:(\"fraud\"))^100 OR (course_name:(*fraud*))^9 OR (course_id:(*fraud*))^9 OR (course_code:(*fraud*))^6 OR (course_description:(*fraud*))^0.00001 OR (course_abstract:(*fraud*))^0.00001 OR (course_prerequisites:(*fraud*))^0.00001&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true&group=true&group.field=course_id&group.facet=true&group.ngroups=true&group.format=simple&facet=true&facet.field={facet-exclude}city_state&facet.field=status&facet.field={facet-exclude}category_subject&sort={sort}&f.category_subject.facet.sort=index&facet.field={facet-exclude}delivery_method&f.delivery_method.facet.sort=index";
+        final String SINGLE_TERM_RESULT = "fakeSolr/solr/courses/select?q=(course_name:(\"fraud\"))^100 OR (course_name:(*fraud*))^9 OR (course_id:(*fraud*))^9 OR (course_code:(*fraud*))^6 OR (course_description:(*fraud*))^0.00001 OR (course_abstract:(*fraud*))^0.00001 OR (course_prerequisites:(*fraud*))^0.00001&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true&group=true&group.field=course_id&group.facet=true&group.ngroups=true&group.format=simple&facet=true&facet.field={facet-exclude}city_state&facet.field=status&facet.field={facet-exclude}category_subject&sort={sort}&f.category_subject.facet.sort=index&facet.field={facet-exclude}delivery_method&f.delivery_method.facet.sort=index";
 
         String endpoint = searchServiceHelper.build(courseSearchSolrQuery, "fraud", -1, 100, new String[0]);
         assertEquals(SINGLE_TERM_RESULT, endpoint);
 
         //two terms
-        final String DOUBLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:9090/solr/courses/select?q=(course_name:(\"Project Management\"))^100 OR (course_name:(*Project Management*))^9 OR (course_id:(*Project Management*))^9 OR (course_code:(*Project Management*))^6 OR (course_description:(*Project Management*))^0.00001 OR (course_abstract:(*Project Management*))^0.00001 OR (course_prerequisites:(*Project Management*))^0.00001&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true&group=true&group.field=course_id&group.facet=true&group.ngroups=true&group.format=simple&facet=true&facet.field={facet-exclude}city_state&facet.field=status&facet.field={facet-exclude}category_subject&sort={sort}&f.category_subject.facet.sort=index&facet.field={facet-exclude}delivery_method&f.delivery_method.facet.sort=index";
+        final String DOUBLE_TERM_RESULT = "fakeSolr/solr/courses/select?q=(course_name:(\"Project Management\"))^100 OR (course_name:(*Project Management*))^9 OR (course_id:(*Project Management*))^9 OR (course_code:(*Project Management*))^6 OR (course_description:(*Project Management*))^0.00001 OR (course_abstract:(*Project Management*))^0.00001 OR (course_prerequisites:(*Project Management*))^0.00001&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true&group=true&group.field=course_id&group.facet=true&group.ngroups=true&group.format=simple&facet=true&facet.field={facet-exclude}city_state&facet.field=status&facet.field={facet-exclude}category_subject&sort={sort}&f.category_subject.facet.sort=index&facet.field={facet-exclude}delivery_method&f.delivery_method.facet.sort=index";
         endpoint = searchServiceHelper.build(courseSearchSolrQuery, "Project Management", -1, 100, new String[0]);
         assertEquals(DOUBLE_TERM_RESULT, endpoint);
     }
@@ -165,17 +165,17 @@ public class SearchUrlBuilderTest {
     public void buildSearchStringWithCategorySubjectFacetParam() {
 
         //single term
-        final String SINGLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:9090/solr/courses/select?q=(course_name:(\"fraud\"))^100 OR (course_name:(*fraud*))^9 OR (course_id:(*fraud*))^9 OR (course_code:(*fraud*))^6 OR (course_description:(*fraud*))^0.00001 OR (course_abstract:(*fraud*))^0.00001 OR (course_prerequisites:(*fraud*))^0.00001&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true&fq=category_subject:\"Accounting, Budgetingand Financial Management/Financial Management\"&group=true&group.field=course_id&group.facet=true&group.ngroups=true&group.format=simple&facet=true&facet.field={facet-exclude}city_state&facet.field=status&facet.field={facet-exclude}category_subject&sort={sort}&f.category_subject.facet.sort=index&facet.field={facet-exclude}delivery_method&f.delivery_method.facet.sort=index";
+        final String SINGLE_TERM_RESULT = "fakeSolr/solr/courses/select?q=(course_name:(\"fraud\"))^100 OR (course_name:(*fraud*))^9 OR (course_id:(*fraud*))^9 OR (course_code:(*fraud*))^6 OR (course_description:(*fraud*))^0.00001 OR (course_abstract:(*fraud*))^0.00001 OR (course_prerequisites:(*fraud*))^0.00001&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true&fq=category_subject:\"Accounting, Budgetingand Financial Management/Financial Management\"&group=true&group.field=course_id&group.facet=true&group.ngroups=true&group.format=simple&facet=true&facet.field={facet-exclude}city_state&facet.field=status&facet.field={facet-exclude}category_subject&sort={sort}&f.category_subject.facet.sort=index&facet.field={facet-exclude}delivery_method&f.delivery_method.facet.sort=index";
         String[] facetParam = {"category_subject:Accounting, Budgetingand Financial Management/Financial Management"};
         String endpoint = searchServiceHelper.build(courseSearchSolrQuery,"fraud", 1, 100, facetParam);
         assertEquals(SINGLE_TERM_RESULT, endpoint);
 
-        final String DOUBLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:9090/solr/courses/select?q=(course_name:(\"fraud\"))^100 OR (course_name:(*fraud*))^9 OR (course_id:(*fraud*))^9 OR (course_code:(*fraud*))^6 OR (course_description:(*fraud*))^0.00001 OR (course_abstract:(*fraud*))^0.00001 OR (course_prerequisites:(*fraud*))^0.00001&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true&fq=city_state:\"Washington\"&fq=category_subject:\"Accounting, Budgetingand Financial Management/Financial Management\"&group=true&group.field=course_id&group.facet=true&group.ngroups=true&group.format=simple&facet=true&facet.field={facet-exclude}city_state&facet.field=status&facet.field={facet-exclude}category_subject&sort={sort}&f.category_subject.facet.sort=index&facet.field={facet-exclude}delivery_method&f.delivery_method.facet.sort=index";
+        final String DOUBLE_TERM_RESULT = "fakeSolr/solr/courses/select?q=(course_name:(\"fraud\"))^100 OR (course_name:(*fraud*))^9 OR (course_id:(*fraud*))^9 OR (course_code:(*fraud*))^6 OR (course_description:(*fraud*))^0.00001 OR (course_abstract:(*fraud*))^0.00001 OR (course_prerequisites:(*fraud*))^0.00001&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true&fq=city_state:\"Washington\"&fq=category_subject:\"Accounting, Budgetingand Financial Management/Financial Management\"&group=true&group.field=course_id&group.facet=true&group.ngroups=true&group.format=simple&facet=true&facet.field={facet-exclude}city_state&facet.field=status&facet.field={facet-exclude}category_subject&sort={sort}&f.category_subject.facet.sort=index&facet.field={facet-exclude}delivery_method&f.delivery_method.facet.sort=index";
         String[] facetParams = {"city_state:Washington","category_subject:Accounting, Budgetingand Financial Management/Financial Management"};
         endpoint = searchServiceHelper.build(courseSearchSolrQuery,"fraud", 1, 100, facetParams);
         assertEquals(DOUBLE_TERM_RESULT, endpoint);
 
-        final String TRIPLE_TERM_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:9090/solr/courses/select?q=(course_name:(\"fraud\"))^100 OR (course_name:(*fraud*))^9 OR (course_id:(*fraud*))^9 OR (course_code:(*fraud*))^6 OR (course_description:(*fraud*))^0.00001 OR (course_abstract:(*fraud*))^0.00001 OR (course_prerequisites:(*fraud*))^0.00001&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true&fq=city_state:\"Washington\"&fq=status:\"S\"&fq=category_subject:\"Accounting, Budgetingand Financial Management/Financial Management\"&group=true&group.field=course_id&group.facet=true&group.ngroups=true&group.format=simple&facet=true&facet.field={facet-exclude}city_state&facet.field=status&facet.field={facet-exclude}category_subject&sort={sort}&f.category_subject.facet.sort=index&facet.field={facet-exclude}delivery_method&f.delivery_method.facet.sort=index";
+        final String TRIPLE_TERM_RESULT = "fakeSolr/solr/courses/select?q=(course_name:(\"fraud\"))^100 OR (course_name:(*fraud*))^9 OR (course_id:(*fraud*))^9 OR (course_code:(*fraud*))^6 OR (course_description:(*fraud*))^0.00001 OR (course_abstract:(*fraud*))^0.00001 OR (course_prerequisites:(*fraud*))^0.00001&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true&fq=city_state:\"Washington\"&fq=status:\"S\"&fq=category_subject:\"Accounting, Budgetingand Financial Management/Financial Management\"&group=true&group.field=course_id&group.facet=true&group.ngroups=true&group.format=simple&facet=true&facet.field={facet-exclude}city_state&facet.field=status&facet.field={facet-exclude}category_subject&sort={sort}&f.category_subject.facet.sort=index&facet.field={facet-exclude}delivery_method&f.delivery_method.facet.sort=index";
         String[] facetTripleParams = {"city_state:Washington","status:S","category_subject:Accounting, Budgetingand Financial Management/Financial Management"};
         endpoint = searchServiceHelper.build(courseSearchSolrQuery,"fraud", 1, 100, facetTripleParams);
         assertEquals(TRIPLE_TERM_RESULT, endpoint);
@@ -183,21 +183,21 @@ public class SearchUrlBuilderTest {
     
     @Test 
     public void buildSearchWithNullArray() {
-        final String NULL_ARRAY_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:9090/solr/courses/select?q=(course_name:(\"fraud\"))^100 OR (course_name:(*fraud*))^9 OR (course_id:(*fraud*))^9 OR (course_code:(*fraud*))^6 OR (course_description:(*fraud*))^0.00001 OR (course_abstract:(*fraud*))^0.00001 OR (course_prerequisites:(*fraud*))^0.00001&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true&group=true&group.field=course_id&group.facet=true&group.ngroups=true&group.format=simple&facet=true&facet.field={facet-exclude}city_state&facet.field=status&facet.field={facet-exclude}category_subject&sort={sort}&f.category_subject.facet.sort=index&facet.field={facet-exclude}delivery_method&f.delivery_method.facet.sort=index";
+        final String NULL_ARRAY_RESULT = "fakeSolr/solr/courses/select?q=(course_name:(\"fraud\"))^100 OR (course_name:(*fraud*))^9 OR (course_id:(*fraud*))^9 OR (course_code:(*fraud*))^6 OR (course_description:(*fraud*))^0.00001 OR (course_abstract:(*fraud*))^0.00001 OR (course_prerequisites:(*fraud*))^0.00001&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true&group=true&group.field=course_id&group.facet=true&group.ngroups=true&group.format=simple&facet=true&facet.field={facet-exclude}city_state&facet.field=status&facet.field={facet-exclude}category_subject&sort={sort}&f.category_subject.facet.sort=index&facet.field={facet-exclude}delivery_method&f.delivery_method.facet.sort=index";
         String endpoint = searchServiceHelper.build(courseSearchSolrQuery,"fraud", 1, 100, null);
         assertEquals(NULL_ARRAY_RESULT, endpoint);
     }
     
     @Test 
     public void buildSearchWithArrayContainingNull() {
-        final String NULL_ARRAY_RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:9090/solr/courses/select?q=(course_name:(\"fraud\"))^100 OR (course_name:(*fraud*))^9 OR (course_id:(*fraud*))^9 OR (course_code:(*fraud*))^6 OR (course_description:(*fraud*))^0.00001 OR (course_abstract:(*fraud*))^0.00001 OR (course_prerequisites:(*fraud*))^0.00001&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true&group=true&group.field=course_id&group.facet=true&group.ngroups=true&group.format=simple&facet=true&facet.field={facet-exclude}city_state&facet.field=status&facet.field={facet-exclude}category_subject&sort={sort}&f.category_subject.facet.sort=index&facet.field={facet-exclude}delivery_method&f.delivery_method.facet.sort=index";
+        final String NULL_ARRAY_RESULT = "fakeSolr/solr/courses/select?q=(course_name:(\"fraud\"))^100 OR (course_name:(*fraud*))^9 OR (course_id:(*fraud*))^9 OR (course_code:(*fraud*))^6 OR (course_description:(*fraud*))^0.00001 OR (course_abstract:(*fraud*))^0.00001 OR (course_prerequisites:(*fraud*))^0.00001&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true&group=true&group.field=course_id&group.facet=true&group.ngroups=true&group.format=simple&facet=true&facet.field={facet-exclude}city_state&facet.field=status&facet.field={facet-exclude}category_subject&sort={sort}&f.category_subject.facet.sort=index&facet.field={facet-exclude}delivery_method&f.delivery_method.facet.sort=index";
         String endpoint = searchServiceHelper.build(courseSearchSolrQuery,"fraud", 1, 100, new String[] {null});
         assertEquals(NULL_ARRAY_RESULT, endpoint);
     }
 
     @Test
     public void buildSearchWithArrayContainingConnectorWords() {
-        final String RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:9090/solr/courses/select?q=(course_name:(\"a search of and that in contains the to for by with all connector words\"))^100 OR (course_name:(*search that contains all connector words*))^9 OR (course_id:(*search that contains all connector words*))^9 OR (course_code:(*search that contains all connector words*))^6 OR (course_description:(*search that contains all connector words*))^0.00001 OR (course_abstract:(*search that contains all connector words*))^0.00001 OR (course_prerequisites:(*search that contains all connector words*))^0.00001&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true&group=true&group.field=course_id&group.facet=true&group.ngroups=true&group.format=simple&facet=true&facet.field={facet-exclude}city_state&facet.field=status&facet.field={facet-exclude}category_subject&sort={sort}&f.category_subject.facet.sort=index&facet.field={facet-exclude}delivery_method&f.delivery_method.facet.sort=index";
+        final String RESULT = "fakeSolr/solr/courses/select?q=(course_name:(\"a search of and that in contains the to for by with all connector words\"))^100 OR (course_name:(*search that contains all connector words*))^9 OR (course_id:(*search that contains all connector words*))^9 OR (course_code:(*search that contains all connector words*))^6 OR (course_description:(*search that contains all connector words*))^0.00001 OR (course_abstract:(*search that contains all connector words*))^0.00001 OR (course_prerequisites:(*search that contains all connector words*))^0.00001&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true&group=true&group.field=course_id&group.facet=true&group.ngroups=true&group.format=simple&facet=true&facet.field={facet-exclude}city_state&facet.field=status&facet.field={facet-exclude}category_subject&sort={sort}&f.category_subject.facet.sort=index&facet.field={facet-exclude}delivery_method&f.delivery_method.facet.sort=index";
 
         String endpoint = searchServiceHelper.build(courseSearchSolrQuery,"a search of and that in contains the to for by with all connector words", 1, 100,new String[0]);
         assertEquals(RESULT, endpoint);
@@ -205,7 +205,7 @@ public class SearchUrlBuilderTest {
 
     @Test
     public void buildSearchWithArrayContainingBlacklistedTerms() {
-        final String RESULT = "http://ec2-52-2-60-235.compute-1.amazonaws.com:9090/solr/courses/select?q=(course_name:(\"Advanced Introduction to Finance with Basic and Intermediate\"))^100 OR (course_name:(*Finance*))^9 OR (course_id:(*Finance*))^9 OR (course_code:(*Finance*))^6 OR (course_description:(*Finance*))^0.00001 OR (course_abstract:(*Finance*))^0.00001 OR (course_prerequisites:(*Finance*))^0.00001&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true&group=true&group.field=course_id&group.facet=true&group.ngroups=true&group.format=simple&facet=true&facet.field={facet-exclude}city_state&facet.field=status&facet.field={facet-exclude}category_subject&sort={sort}&f.category_subject.facet.sort=index&facet.field={facet-exclude}delivery_method&f.delivery_method.facet.sort=index";
+        final String RESULT = "fakeSolr/solr/courses/select?q=(course_name:(\"Advanced Introduction to Finance with Basic and Intermediate\"))^100 OR (course_name:(*Finance*))^9 OR (course_id:(*Finance*))^9 OR (course_code:(*Finance*))^6 OR (course_description:(*Finance*))^0.00001 OR (course_abstract:(*Finance*))^0.00001 OR (course_prerequisites:(*Finance*))^0.00001&fq=course_description:[* TO *]&start=0&rows=100&wt=json&indent=true&group=true&group.field=course_id&group.facet=true&group.ngroups=true&group.format=simple&facet=true&facet.field={facet-exclude}city_state&facet.field=status&facet.field={facet-exclude}category_subject&sort={sort}&f.category_subject.facet.sort=index&facet.field={facet-exclude}delivery_method&f.delivery_method.facet.sort=index";
 
         String endpoint = searchServiceHelper.build(courseSearchSolrQuery,"Advanced Introduction to Finance with Basic and Intermediate", 1, 100,new String[0]);
         assertEquals(RESULT, endpoint);
