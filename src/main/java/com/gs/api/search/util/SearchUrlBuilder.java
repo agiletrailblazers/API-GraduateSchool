@@ -10,6 +10,12 @@ public class SearchUrlBuilder {
     @Value("${search.solr.endpoint}")
     private String searchSolrEndpoint;
 
+    @Value("${course.search.solr.blacklist.connectors}")
+    private String[] courseSearchSolrBlacklistConnectors;
+
+    @Value("${course.search.solr.blacklist.terms}")
+    private String[] courseSearchSolrBlacklistTerms;
+
     /**
      * Break apart each work (separated by spaces) in the search string and
      * format into the proper SOLR search format for multiple words. Example:
@@ -34,6 +40,7 @@ public class SearchUrlBuilder {
         }
         // build search criteria
         solrQuery = StringUtils.replace(solrQuery, "{search}", stripAndEncode(search));
+        solrQuery = StringUtils.replace(solrQuery, "{partial_search}", stripAndEncode(blacklistRemove(search)));
 
         // update start and num requested
         solrQuery = StringUtils.replace(solrQuery, "{start}", Integer.toString((currentPage - 1) * numRequested));
@@ -60,6 +67,30 @@ public class SearchUrlBuilder {
         String[] replaceList = { "", "", "", "", "\\+", "\\-", "\\||", "\\!", "\\(", "\\)", "\\{", "\\}", "\\[", "\\]",
                 "\\\"", "\\~", "\\*", "\\?", "\\:", "\\\\" };
         return StringUtils.replaceEach(search, searchList, replaceList);
+    }
+
+    /**
+     * Remove words from the search string specified in the properties.
+     *
+     * This currently contains conntector words such as "of, and, in, the, to, a, for, by, with"
+     * And generic terms such as "introduction, basic, intermediate, advanced"
+     *
+     * @param search - the string to perform the course search
+     * @return - the cleaned search string
+     */
+    protected String blacklistRemove(String search) {
+
+        //Replace the connector words
+        for (int i = 0; i<courseSearchSolrBlacklistConnectors.length; i++) {
+            search = StringUtils.replacePattern(search, "(?i)([\\s]+|\\b)" + courseSearchSolrBlacklistConnectors[i] + "([\\s]+|\\b)", StringUtils.SPACE);
+        }
+
+        //Replace the specified terms
+        for (int i = 0; i<courseSearchSolrBlacklistTerms.length; i++) {
+            search = StringUtils.replacePattern(search, "(?i)([\\s]+|\\b)" + courseSearchSolrBlacklistTerms[i] + "([\\s]+|\\b)", StringUtils.SPACE);
+        }
+
+        return search.trim();
     }
 
 }
