@@ -18,12 +18,9 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 
 import javax.sql.DataSource;
 
@@ -34,16 +31,16 @@ public class CourseSessionDAO {
     private JdbcTemplate jdbcTemplate;
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
-    @Value("${sql.course.session.query}")
+    @Value("${sql.course.sessions.query}")
     private String sql;
 
-    @Value("${sql.sessions.query}")
+    @Value("${sql.course.session.query}")
     private String sqlForSessions;
 
-    @Value("${sql.course.session.id.query}")
+    @Value("${sql.course.session.whereClause.sessionId}")
     private String sqlForSessionById;
 
-    @Value("${sql.sessions.sessiondomain.query}")
+    @Value("${sql.course.session.whereClause.sessionDomain}")
     private String sqlForSessionsByDomain;
 
 
@@ -157,17 +154,27 @@ public class CourseSessionDAO {
             session.setDays(rs.getString("SESSION_TEMPLATE"));
             session.setCourseId(rs.getString("COURSE_ID"));
             session.setOfferingSessionId(rs.getString("OFFERING_SESSION_ID"));
+            Location facility = new Location();
+            facility.setId(rs.getString("FACILITY_NO"));
+            facility.setName(rs.getString("FACILITY_NAME"));
+            facility.setTelephone(rs.getString("FAC_CONTACT_PHONE"));
+            facility.setAddress1(rs.getString("FAC_ADDR1"));
+            facility.setAddress2(rs.getString("FAC_ADDR2"));
+            facility.setCity(rs.getString("FAC_CITY"));
+            facility.setState(rs.getString("FAC_STATE"));
+            facility.setPostalCode(rs.getString("FAC_ZIP"));
             Location location = new Location();
-            location.setId(rs.getString("FACILITY_NO"));
-            location.setName(rs.getString("FACILITY_NAME"));
-            location.setTelephone(rs.getString("CONTACT_PHONE"));
-            location.setAddress1(rs.getString("ADDR1"));
-            location.setAddress2(rs.getString("ADDR2"));
-            location.setCity(rs.getString("CITY"));
-            location.setState(rs.getString("STATE"));
-            location.setPostalCode(rs.getString("ZIP"));
+            location.setId(rs.getString("LOCATION_NO"));
+            location.setName(rs.getString("LOCATION_NAME"));
+            location.setTelephone(rs.getString("LOC_CONTACT_PHONE"));
+            location.setAddress1(rs.getString("LOC_ADDR1"));
+            location.setAddress2(rs.getString("LOC_ADDR2"));
+            location.setCity(rs.getString("LOC_CITY"));
+            location.setState(rs.getString("LOC_STATE"));
+            location.setPostalCode(rs.getString("LOC_ZIP"));
             session.setCurricumTitle(rs.getString("CURRICUM_TITLE"));
             session.setCurricumTabDisplayOrder(rs.getInt("CURRICUMTABDISPLAYORDER"));
+            session.setFacility(facility);
             session.setLocation(location);
             if (!StringUtils.isEmpty(rs.getString("PERSON_NO"))) {
                 CourseInstructor instructor = new CourseInstructor();

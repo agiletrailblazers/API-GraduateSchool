@@ -22,6 +22,7 @@ public class CourseSession {
     private String notes;
     private double tuition;
     private Location location;
+    private Location facility;
     private CourseInstructor instructor;
     private String offeringSessionId;
     private String courseId;
@@ -141,6 +142,14 @@ public class CourseSession {
 
     public void setLocation(Location location) {
         this.location = location;
+    }
+
+    public Location getFacility() {
+        return facility;
+    }
+
+    public void setFacility(Location facility) {
+        this.facility = facility;
     }
 
     public CourseInstructor getInstructor() {

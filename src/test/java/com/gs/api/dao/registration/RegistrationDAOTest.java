@@ -606,6 +606,7 @@ public class RegistrationDAOTest {
                 START_DATE.getTime(),
                 END_DATE.getTime(),
                 address,
+                address,
                 TYPE
         );
         RegistrationDetails registrationDetails2 = new RegistrationDetails(
@@ -614,6 +615,7 @@ public class RegistrationDAOTest {
                 COURSE_TITLE+"2",
                 START_DATE.getTime(),
                 END_DATE.getTime(),
+                address,
                 address,
                 TYPE+"2"
         );
@@ -638,7 +640,7 @@ public class RegistrationDAOTest {
         assertEquals(COURSE_TITLE, createdRegistrationDetailsList.get(0).getCourseTitle());
         assertTrue(START_DATE.getTime() == createdRegistrationDetailsList.get(0).getStartDate());
         assertTrue(END_DATE.getTime() == createdRegistrationDetailsList.get(0).getEndDate());
-        assertEquals(address, createdRegistrationDetailsList.get(0).getAddress());
+        assertEquals(address, createdRegistrationDetailsList.get(0).getLocationAddress());
         assertEquals(TYPE, createdRegistrationDetailsList.get(0).getType());
 
         assertEquals(OFFERING_SESSION_ID+"2", createdRegistrationDetailsList.get(1).getSessionNo());
@@ -646,7 +648,7 @@ public class RegistrationDAOTest {
         assertEquals(COURSE_TITLE+"2", createdRegistrationDetailsList.get(1).getCourseTitle());
         assertTrue(START_DATE.getTime() == createdRegistrationDetailsList.get(1).getStartDate());
         assertTrue(END_DATE.getTime() == createdRegistrationDetailsList.get(1).getEndDate());
-        assertEquals(address, createdRegistrationDetailsList.get(1).getAddress());
+        assertEquals(address, createdRegistrationDetailsList.get(1).getLocationAddress());
         assertEquals(TYPE+"2", createdRegistrationDetailsList.get(1).getType());
     }
 
@@ -679,11 +681,16 @@ public class RegistrationDAOTest {
         when(rs.getString("title")).thenReturn(COURSE_TITLE);
         when(rs.getDate("start_date")).thenReturn(new java.sql.Date(START_DATE.getTime()));
         when(rs.getDate("end_date")).thenReturn(new java.sql.Date(END_DATE.getTime()));
-        when(rs.getString("addr1")).thenReturn(ADDRESS1);
-        when(rs.getString("addr2")).thenReturn(ADDRESS2);
-        when(rs.getString("city")).thenReturn(CITY);
-        when(rs.getString("state")).thenReturn(STATE);
-        when(rs.getString("zip")).thenReturn(ZIP);
+        when(rs.getString("LOC_ADDR1")).thenReturn(ADDRESS1);
+        when(rs.getString("LOC_ADDR2")).thenReturn(ADDRESS2);
+        when(rs.getString("LOC_CITY")).thenReturn(CITY);
+        when(rs.getString("LOC_STATE")).thenReturn(STATE);
+        when(rs.getString("LOC_ZIP")).thenReturn(ZIP);
+        when(rs.getString("FAC_ADDR1")).thenReturn(ADDRESS1);
+        when(rs.getString("FAC_ADDR2")).thenReturn(ADDRESS2);
+        when(rs.getString("FAC_CITY")).thenReturn(CITY);
+        when(rs.getString("FAC_STATE")).thenReturn(STATE);
+        when(rs.getString("FAC_ZIP")).thenReturn(ZIP);
         when(rs.getString("type")).thenReturn(TYPE);
 
         RegistrationDetails returnedRegistrationDetails = registrationDetailsRowMapper.mapRow(rs, 0);
@@ -694,11 +701,16 @@ public class RegistrationDAOTest {
         assertEquals(COURSE_TITLE, returnedRegistrationDetails.getCourseTitle());
         assertTrue(START_DATE.getTime() == returnedRegistrationDetails.getStartDate());
         assertTrue(END_DATE.getTime() == returnedRegistrationDetails.getEndDate());
-        assertEquals(ADDRESS1, returnedRegistrationDetails.getAddress().getAddress1());
-        assertEquals(ADDRESS2, returnedRegistrationDetails.getAddress().getAddress2());
-        assertEquals(CITY, returnedRegistrationDetails.getAddress().getCity());
-        assertEquals(STATE, returnedRegistrationDetails.getAddress().getState());
-        assertEquals(ZIP, returnedRegistrationDetails.getAddress().getPostalCode());
+        assertEquals(ADDRESS1, returnedRegistrationDetails.getLocationAddress().getAddress1());
+        assertEquals(ADDRESS2, returnedRegistrationDetails.getLocationAddress().getAddress2());
+        assertEquals(CITY, returnedRegistrationDetails.getLocationAddress().getCity());
+        assertEquals(STATE, returnedRegistrationDetails.getLocationAddress().getState());
+        assertEquals(ZIP, returnedRegistrationDetails.getLocationAddress().getPostalCode());
+        assertEquals(ADDRESS1, returnedRegistrationDetails.getFacilityAddress().getAddress1());
+        assertEquals(ADDRESS2, returnedRegistrationDetails.getFacilityAddress().getAddress2());
+        assertEquals(CITY, returnedRegistrationDetails.getFacilityAddress().getCity());
+        assertEquals(STATE, returnedRegistrationDetails.getFacilityAddress().getState());
+        assertEquals(ZIP, returnedRegistrationDetails.getFacilityAddress().getPostalCode());
         assertEquals(TYPE, returnedRegistrationDetails.getType());
     }
 }

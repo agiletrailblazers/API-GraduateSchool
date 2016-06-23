@@ -600,12 +600,19 @@ public class RegistrationDAO {
          * Map row for RegistrationDetails object from result set
          */
         public RegistrationDetails mapRow(ResultSet rs, int rowNum) throws SQLException {
-            Address address = new Address();
-            address.setAddress1(rs.getString("addr1"));
-            address.setAddress2(rs.getString("addr2"));
-            address.setCity(rs.getString("city"));
-            address.setState(rs.getString("state"));
-            address.setPostalCode(rs.getString("zip"));
+            Address locationAddress = new Address();
+            locationAddress.setAddress1(rs.getString("LOC_ADDR1"));
+            locationAddress.setAddress2(rs.getString("LOC_ADDR2"));
+            locationAddress.setCity(rs.getString("LOC_CITY"));
+            locationAddress.setState(rs.getString("LOC_STATE"));
+            locationAddress.setPostalCode(rs.getString("LOC_ZIP"));
+
+            Address facilityAddress = new Address();
+            facilityAddress.setAddress1(rs.getString("FAC_ADDR1"));
+            facilityAddress.setAddress2(rs.getString("FAC_ADDR2"));
+            facilityAddress.setCity(rs.getString("FAC_CITY"));
+            facilityAddress.setState(rs.getString("FAC_STATE"));
+            facilityAddress.setPostalCode(rs.getString("FAC_ZIP"));
 
             RegistrationDetails registrationDetails = new RegistrationDetails(
                     rs.getString("session_no"),
@@ -613,7 +620,8 @@ public class RegistrationDAO {
                     rs.getString("title"),
                     rs.getDate("start_date").getTime(),
                     rs.getDate("end_date").getTime(),
-                    address,
+                    locationAddress,
+                    facilityAddress,
                     rs.getString("type"));
 
             return registrationDetails;

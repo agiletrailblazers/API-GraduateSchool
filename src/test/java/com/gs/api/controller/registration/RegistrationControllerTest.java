@@ -306,6 +306,7 @@ public class RegistrationControllerTest {
                 START_DATE.getTime(),
                 END_DATE.getTime(),
                 address,
+                address,
                 TYPE
         );
 
@@ -324,11 +325,16 @@ public class RegistrationControllerTest {
                 .andExpect(jsonPath("$.[0].courseTitle", is(COURSE_TITLE)))
                 .andExpect(jsonPath("$.[0].startDate", is(START_DATE.getTime())))
                 .andExpect(jsonPath("$.[0].endDate", is(END_DATE.getTime())))
-                .andExpect(jsonPath("$.[0].address.address1", is(ADDRESS1)))
-                .andExpect(jsonPath("$.[0].address.address2", is(ADDRESS2)))
-                .andExpect(jsonPath("$.[0].address.city", is(CITY)))
-                .andExpect(jsonPath("$.[0].address.state", is(STATE)))
-                .andExpect(jsonPath("$.[0].address.postalCode", is(ZIP)))
+                .andExpect(jsonPath("$.[0].locationAddress.address1", is(ADDRESS1)))
+                .andExpect(jsonPath("$.[0].locationAddress.address2", is(ADDRESS2)))
+                .andExpect(jsonPath("$.[0].locationAddress.city", is(CITY)))
+                .andExpect(jsonPath("$.[0].locationAddress.state", is(STATE)))
+                .andExpect(jsonPath("$.[0].locationAddress.postalCode", is(ZIP)))
+                .andExpect(jsonPath("$.[0].facilityAddress.address1", is(ADDRESS1)))
+                .andExpect(jsonPath("$.[0].facilityAddress.address2", is(ADDRESS2)))
+                .andExpect(jsonPath("$.[0].facilityAddress.city", is(CITY)))
+                .andExpect(jsonPath("$.[0].facilityAddress.state", is(STATE)))
+                .andExpect(jsonPath("$.[0].facilityAddress.postalCode", is(ZIP)))
                 .andExpect(jsonPath("$.[0].type", is(TYPE)));
     }
 
