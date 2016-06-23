@@ -330,6 +330,11 @@ public class RegistrationControllerTest {
                 .andExpect(jsonPath("$.[0].locationAddress.city", is(CITY)))
                 .andExpect(jsonPath("$.[0].locationAddress.state", is(STATE)))
                 .andExpect(jsonPath("$.[0].locationAddress.postalCode", is(ZIP)))
+                .andExpect(jsonPath("$.[0].facilityAddress.address1", is(ADDRESS1)))
+                .andExpect(jsonPath("$.[0].facilityAddress.address2", is(ADDRESS2)))
+                .andExpect(jsonPath("$.[0].facilityAddress.city", is(CITY)))
+                .andExpect(jsonPath("$.[0].facilityAddress.state", is(STATE)))
+                .andExpect(jsonPath("$.[0].facilityAddress.postalCode", is(ZIP)))
                 .andExpect(jsonPath("$.[0].type", is(TYPE)));
     }
 
