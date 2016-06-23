@@ -56,8 +56,6 @@ public class CourseSessionDAOTest {
     @Mock
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
-
-    
     private CourseSessionDAO.SessionsRowMapper rowMapper;
 
     @Value("${sql.course.session.query}")
@@ -151,6 +149,46 @@ public class CourseSessionDAOTest {
         assertNotNull(session);
         assertEquals("12345", session.getClassNumber());
         assertEquals(null, session.getInstructor());
+    }
+
+    @Test
+    public void testSessionDAO_RowMapper_LocationAndFacility() throws Exception {
+        ResultSet rs = mock(ResultSet.class);
+
+        when(rs.getString("FACILITY_NO")).thenReturn("FAC_12345");
+        when(rs.getString("FACILITY_NAME")).thenReturn("Facility Name");
+        when(rs.getString("FAC_CONTACT_PHONE")).thenReturn("1234567890");
+        when(rs.getString("FAC_ADDR1")).thenReturn("123 Fac Street");
+        when(rs.getString("FAC_ADDR2")).thenReturn(null);
+        when(rs.getString("FAC_CITY")).thenReturn("FacCity");
+        when(rs.getString("FAC_STATE")).thenReturn("FS");
+        when(rs.getString("FAC_ZIP")).thenReturn("12345");
+        when(rs.getString("LOCATION_NO")).thenReturn("LOC_12345");
+        when(rs.getString("LOCATION_NAME")).thenReturn("Location Name");
+        when(rs.getString("LOC_CONTACT_PHONE")).thenReturn("1234567890");
+        when(rs.getString("LOC_ADDR1")).thenReturn("123 Loc Street");
+        when(rs.getString("LOC_ADDR2")).thenReturn(null);
+        when(rs.getString("LOC_CITY")).thenReturn("LocCity");
+        when(rs.getString("LOC_STATE")).thenReturn("LS");
+        when(rs.getString("LOC_ZIP")).thenReturn("12345");
+        CourseSession session = rowMapper.mapRow(rs, 0);
+        assertNotNull(session);
+        assertEquals("FAC_12345", session.getFacility().getId());
+        assertEquals("Facility Name", session.getFacility().getName());
+        assertEquals("1234567890", session.getFacility().getTelephone());
+        assertEquals("123 Fac Street", session.getFacility().getAddress1());
+        assertEquals(null, session.getFacility().getAddress2());
+        assertEquals("FacCity", session.getFacility().getCity());
+        assertEquals("FS", session.getFacility().getState());
+        assertEquals("12345", session.getFacility().getPostalCode());
+        assertEquals("LOC_12345", session.getLocation().getId());
+        assertEquals("Location Name", session.getLocation().getName());
+        assertEquals("1234567890", session.getLocation().getTelephone());
+        assertEquals("123 Loc Street", session.getLocation().getAddress1());
+        assertEquals(null, session.getLocation().getAddress2());
+        assertEquals("LocCity", session.getLocation().getCity());
+        assertEquals("LS", session.getLocation().getState());
+        assertEquals("12345", session.getLocation().getPostalCode());
     }
 
     @Test
