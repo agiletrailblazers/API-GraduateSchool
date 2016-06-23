@@ -13,16 +13,18 @@ public class RegistrationDetails {
     private String courseTitle;
     private Long startDate;
     private Long endDate;
-    private Address address;
+    private Address locationAddress;
+    private Address facilityAddress;
     private String type;
 
-    public RegistrationDetails(String sessionNo, String courseNo, String courseTitle, Long startDate, Long endDate, Address address, String type) {
+    public RegistrationDetails(String sessionNo, String courseNo, String courseTitle, Long startDate, Long endDate, Address locationAddress, Address facilityAddress, String type) {
         this.sessionNo = sessionNo;
         this.courseNo = courseNo;
         this.courseTitle = courseTitle;
         this.startDate = startDate;
         this.endDate = endDate;
-        this.address = address;
+        this.locationAddress = locationAddress;
+        this.facilityAddress = facilityAddress;
         this.type = type;
     }
 
@@ -47,8 +49,12 @@ public class RegistrationDetails {
         return endDate;
     }
 
-    public Address getAddress() {
-        return address;
+    public Address getLocationAddress() {
+        return locationAddress;
+    }
+
+    public Address getFacilityAddress() {
+        return facilityAddress;
     }
 
     public String getType() {

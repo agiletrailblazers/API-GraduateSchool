@@ -302,6 +302,7 @@ public class RegistrationServiceTest {
                 START_DATE.getTime(),
                 END_DATE.getTime(),
                 address,
+                address,
                 TYPE
         );
 
@@ -316,7 +317,7 @@ public class RegistrationServiceTest {
         assertEquals(COURSE_TITLE, createdRegistrationDetailsList.get(0).getCourseTitle());
         assertTrue(START_DATE.getTime() == createdRegistrationDetailsList.get(0).getStartDate());
         assertTrue(END_DATE.getTime() == createdRegistrationDetailsList.get(0).getEndDate());
-        assertEquals(address, createdRegistrationDetailsList.get(0).getAddress());
+        assertEquals(address, createdRegistrationDetailsList.get(0).getLocationAddress());
         assertEquals(TYPE, createdRegistrationDetailsList.get(0).getType());
     }
 }
