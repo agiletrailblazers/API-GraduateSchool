@@ -18,12 +18,9 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 
 import javax.sql.DataSource;
 
@@ -34,16 +31,16 @@ public class CourseSessionDAO {
     private JdbcTemplate jdbcTemplate;
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
-    @Value("${sql.course.session.query}")
+    @Value("${sql.course.sessions.query}")
     private String sql;
 
-    @Value("${sql.sessions.query}")
+    @Value("${sql.course.session.query}")
     private String sqlForSessions;
 
-    @Value("${sql.course.session.id.query}")
+    @Value("${sql.course.session.whereClause.sessionId}")
     private String sqlForSessionById;
 
-    @Value("${sql.sessions.sessiondomain.query}")
+    @Value("${sql.course.session.whereClause.sessionDomain}")
     private String sqlForSessionsByDomain;
 
 

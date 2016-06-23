@@ -58,16 +58,16 @@ public class CourseSessionDAOTest {
 
     private CourseSessionDAO.SessionsRowMapper rowMapper;
 
-    @Value("${sql.course.session.query}")
+    @Value("${sql.course.sessions.query}")
     private String sql;
 
-    @Value("${sql.sessions.query}")
+    @Value("${sql.course.session.query}")
     private String sqlForSessions;
 
-    @Value("${sql.course.session.id.query}")
+    @Value("${sql.course.session.whereClause.sessionId}")
     private String sqlForSessionById;
 
-    @Value("${sql.sessions.sessiondomain.query}")
+    @Value("${sql.course.session.whereClause.sessionDomain}")
     private String sqlForSessionsByDomain;
 
     @Captor
